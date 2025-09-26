@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retroalimentación Completada</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: #ffffff;
+            margin: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #fd7e14 0%, #e83e8c 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 300;
+        }
+        .content {
+            padding: 30px;
+        }
+        .info-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid #fd7e14;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .button {
+            display: inline-block;
+            background: linear-gradient(135deg, #fd7e14 0%, #e83e8c 100%);
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 25px;
+            margin: 20px 0;
+            font-weight: 500;
+            transition: transform 0.2s;
+        }
+        .button:hover {
+            transform: translateY(-2px);
+            color: white;
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+        .icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="icon">💬</div>
+            <h1>Retroalimentación Completada</h1>
+        </div>
+        
+        <div class="content">
+            <p>Estimado/a <strong>{{ destinatario_nombre }}</strong>,</p>
+            
+            <p>Le informamos que la reunión de retroalimentación para la evaluación del período <strong>{{ fecha_evaluacion }}</strong> ha sido completada exitosamente.</p>
+            
+            <div class="info-box">
+                <h3>📝 Detalles de la Retroalimentación</h3>
+                <p><strong>evaluado:</strong> {{ empleado_nombre }}</p>
+                <p><strong>Supervisor:</strong> {{ jefe_nombre }}</p>
+                <p><strong>Tipo de Evaluación:</strong> {{ tipo_evaluacion }}</p>
+                <p><strong>Período:</strong> {{ fecha_evaluacion }}</p>
+                <p><strong>Fecha de Reunión:</strong> {{ fecha_reunion }}</p>
+            </div>
+            
+            <p>✍️ <strong>Próximo Paso:</strong> La evaluación está ahora lista para ser firmada por el evaluado. Una vez firmada, el proceso de evaluación estará completamente finalizado.</p>
+            
+            <div style="text-align: center;">
+                <a href="{{ url_evaluacion }}" class="button">Ver Evaluación</a>
+            </div>
+            
+            <p><em>La firma de {{ empleado_nombre }} confirma que ha revisado y recibido la retroalimentación de su evaluación.</em></p>
+        </div>
+        
+        <div class="footer">
+            <p><strong>Este es un correo automático, por favor no responder.</strong></p>
+        </div>
+    </div>
+</body>
+</html>

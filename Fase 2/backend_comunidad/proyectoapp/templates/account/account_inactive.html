@@ -1,0 +1,14 @@
+{% extends "../base.html" %}
+{% load crispy_forms_tags%}
+{% load static %}
+
+{% load i18n %}
+
+{% block head_title %}{% trans "Account Inactive" %}{% endblock %}
+
+{% block content %}
+<script src='{% static "assets/js/bootstrap/bootstrap.bundle.min.js" %}'></script>
+<h1>{% trans "Account Inactive" %}</h1>
+
+<p>{% trans "This account is inactive." %}</p>
+{% endblock %}

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuevas Evaluaciones Asignadas</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f5f7fa; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; padding: 30px; text-align: center; }
+        .content { padding: 30px; }
+        .highlight-box { background-color: #f8fff9; border-left: 4px solid #28a745; padding: 20px; margin: 20px 0; border-radius: 8px; }
+        .evaluation-item { background-color: #f8f9fa; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 3px solid #28a745; }
+        .cta-button { 
+            display: inline-block; 
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%); 
+            color: white !important; 
+            padding: 15px 30px; 
+            text-decoration: none !important; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            margin: 20px 0; 
+            transition: transform 0.2s; 
+        }
+        .cta-button:hover { 
+            transform: translateY(-2px); 
+            color: white !important; 
+        }
+        .cta-button:visited { 
+            color: white !important; 
+        }
+        .cta-button:active { 
+            color: white !important; 
+        }
+        .cta-button:link { 
+            color: white !important; 
+        }
+        /* Específico para Gmail y otros clientes */
+        a[x-apple-data-detectors] {
+            color: inherit !important;
+            text-decoration: inherit !important;
+        }
+        .footer { background-color: #f8f9fa; padding: 20px; text-align: center; color: #6c757d; font-size: 14px; }
+        .icon { font-size: 48px; margin-bottom: 15px; }
+        .badge { background-color: #28a745; color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="icon">👥</div>
+            <h1>Nuevas Evaluaciones Asignadas</h1>
+        </div>
+        
+        <div class="content">
+            <p>Hola <strong>{{ nombre_completo }}</strong>,</p>
+            
+            <p>Se te han asignado <span class="badge">{{ total_evaluaciones }}</span> nuevas evaluaciones para realizar.</p>
+            
+            <div class="highlight-box">
+                <h3>📋 Evaluaciones Asignadas</h3>
+                {% for tipo, evaluaciones in evaluaciones_por_tipo.items %}
+                    <div class="evaluation-item">
+                        <h4>{{ tipo }}</h4>
+                        <p><strong>Cantidad:</strong> {{ evaluaciones|length }} evaluaciones</p>
+                        <p><strong>Período:</strong> {{ evaluaciones.0.fecha_evaluacion }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <p>Como supervisor, es importante que completes estas evaluaciones en el tiempo establecido para mantener el proceso de desarrollo del equipo.</p>
+            
+            <div style="text-align: center;">
+                <a href="{{ url_evaluacion_jefe }}" 
+                   class="cta-button" 
+                   style="color: white !important; text-decoration: none !important; background: linear-gradient(135deg, #28a745 0%, #20c997 100%); display: inline-block; padding: 15px 30px; border-radius: 8px; font-weight: bold; margin: 20px 0;">Ver Evaluaciones Pendientes</a>
+            </div>
+            
+            <p><small>Recuerda que las evaluaciones son una herramienta clave para el crecimiento profesional de tu equipo.</small></p>
+        </div>
+        
+        <div class="footer">
+            <p>Este es un mensaje automático de la plataforma de evaluaciones.</p>
+            <p>Por favor, no respondas a este correo.</p>
+        </div>
+    </div>
+</body>
+</html>

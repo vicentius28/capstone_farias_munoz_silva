@@ -1,0 +1,2 @@
+from proyectoapp.utils.email_utils import enviar_email, enviar_correo_solicitud, enviar_correo_solicitud_pendiente, enviar_correo_solicitud_pendiente_rrhh
+from proyectoapp.utils.validators import validate_rut

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nueva Autoevaluación Asignada</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f5f7fa; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; }
+        .content { padding: 30px; }
+        .highlight-box { background-color: #f8f9ff; border-left: 4px solid #667eea; padding: 20px; margin: 20px 0; border-radius: 8px; }
+        .cta-button { display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; margin: 20px 0; transition: transform 0.2s; }
+        .cta-button:hover { transform: translateY(-2px); }
+        .footer { background-color: #f8f9fa; padding: 20px; text-align: center; color: #6c757d; font-size: 14px; }
+        .icon { font-size: 48px; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="icon">📋</div>
+            <h1>Nueva Autoevaluación Asignada</h1>
+        </div>
+        
+        <div class="content">
+            <p>Hola <strong>{{ nombre_completo }}</strong>,</p>
+            
+            <p>Se te ha asignado una nueva autoevaluación que requiere tu atención.</p>
+            
+            <div class="highlight-box">
+                <h3>📊 Detalles de la Evaluación</h3>
+                <p><strong>Tipo:</strong> {{ tipo_evaluacion }}</p>
+                <p><strong>Período:</strong> {{ fecha_evaluacion }}</p>
+            </div>
+            
+            <p>Por favor, completa tu autoevaluación en el plazo establecido. Tu participación es importante para el proceso de desarrollo profesional.</p>
+            
+            <div style="text-align: center;">
+                <a href="{{ url_autoevaluacion }}" class="cta-button">Completar Autoevaluación</a>
+            </div>
+            
+            <p><small>Si tienes alguna pregunta sobre el proceso de evaluación, no dudes en contactar a tu supervisor o al departamento de Recursos Humanos.</small></p>
+        </div>
+        
+        <div class="footer">
+            <p>Este es un mensaje automático de la plataforma de evaluaciones.</p>
+            <p>Por favor, no respondas a este correo.</p>
+        </div>
+    </div>
+</body>
+</html>
