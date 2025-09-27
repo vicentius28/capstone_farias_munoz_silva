@@ -1,4 +1,0 @@
-from evaluacion.models.plantilla import TipoEvaluacion, AreaEvaluacion, Competencia, Indicador, NivelLogro
-from evaluacion.models.asignar import EvaluacionAsignada,JefeEvaluacionAsignada,JefeEvaluacionAsignadaDetalle
-from evaluacion.models.autoevaluacion import Autoevaluacion, RespuestaIndicador
-from evaluacion.models.evaluacion import EvaluacionJefe, RespuestaIndicadorJefe
