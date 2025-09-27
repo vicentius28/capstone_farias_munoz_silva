@@ -1,0 +1,132 @@
+@import "tailwindcss";
+@plugin './hero.ts';
+@source '../../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}';
+@custom-variant dark (&:is(.dark *));
+
+@layer utilities {
+  .bg-theme-gradient {
+    background-image: linear-gradient(
+      to bottom,
+      var(--background-from),
+      var(--background-to)
+    );
+  }
+
+  .dark .bg-theme-gradient-dark {
+    background-image: linear-gradient(
+      to bottom,
+      var(--background-from-dark),
+      var(--background-to-dark)
+    );
+  }
+}
+
+.pt-16 {
+  padding-top: 0.1rem !important;
+}
+
+.custom-event-style {
+  background-color: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+}
+
+/* 🌑 Estilos para modo oscuro en vista lista */
+.dark .fc .fc-list {
+  background-color: #1f2937;
+}
+
+.dark .fc .fc-day {
+  background-color: #111827;
+}
+
+.dark .fc .fc-list-day-cushion {
+  background-color: #111827;
+}
+
+.dark .fc .fc-list-day {
+  background-color: #111827;
+
+  /* gray-400 */
+}
+
+.dark .fc .fc-list-event {
+  background-color: #00173c;
+  /* blue-500 o similar */
+}
+
+.dark .fc .fc-list-event:hover {
+  background-color: #3b82f6 !important;
+  /* Tailwind blue-500 */
+  color: #fff !important;
+}
+
+.scrollbar-hide {
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* Internet Explorer 10+ */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+  /* Safari and Chrome */
+}
+
+html.dark .fc .fc-list-event:hover td,
+html.dark .fc .fc-list-event:hover .fc-list-event-dot {
+  color: white !important;
+  background-color: #111827 !important;
+}
+
+.joyride-active {
+  outline: 3px solid #9333ea;
+  border-radius: 8px;
+  transition: outline 0.3s ease-in-out;
+}
+
+.joyride-block-all * {
+  pointer-events: none !important;
+  user-select: none !important;
+}
+
+.joyride-allow-clicks {
+  pointer-events: auto !important;
+  user-select: auto !important;
+  z-index: 10001 !important;
+  /* opcional: si algún overlay bloquea */
+}
+
+.joyride-step__last .react-joyride__buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+/* Estilos específicos para TipTap Editor - Listas */
+.ProseMirror ul,
+.ProseMirror ol {
+  list-style-position: outside !important;
+  padding-left: 1.5rem !important;
+  margin: 0.5rem 0 !important;
+}
+
+.ProseMirror ul {
+  list-style-type: disc !important;
+}
+
+.ProseMirror ol {
+  list-style-type: decimal !important;
+}
+
+.ProseMirror li {
+  display: list-item !important;
+  margin: 0.25rem 0 !important;
+  list-style-position: outside !important;
+}
+
+/* Asegurar que los elementos de lista mantengan su estilo */
+.ProseMirror ul li::marker,
+.ProseMirror ol li::marker {
+  content: normal;
+}
