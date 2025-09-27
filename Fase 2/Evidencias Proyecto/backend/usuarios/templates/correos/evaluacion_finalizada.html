@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evaluación Finalizada</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: #ffffff;
+            margin: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #6f42c1 0%, #e83e8c 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 300;
+        }
+        .content {
+            padding: 30px;
+        }
+        .info-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid #6f42c1;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .success-box {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .button {
+            display: inline-block;
+            background: linear-gradient(135deg, #6f42c1 0%, #e83e8c 100%);
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 25px;
+            margin: 20px 0;
+            font-weight: 500;
+            transition: transform 0.2s;
+        }
+        .button:hover {
+            transform: translateY(-2px);
+            color: white;
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+        .icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="icon">🎉</div>
+            <h1>Evaluación Finalizada</h1>
+        </div>
+        
+        <div class="content">
+            <p>Estimado/a <strong>{{ destinatario_nombre }}</strong>,</p>
+            
+            <div class="success-box">
+                <h3>✅ ¡Proceso Completado!</h3>
+                <p>La evaluación del período <strong>{{ fecha_evaluacion }}</strong> ha sido finalizada exitosamente.</p>
+                <p><strong>¡Gracias por participar en el proceso de evaluación!</strong></p>
+                <p>Su compromiso y dedicación durante este proceso son fundamentales para el crecimiento profesional y el desarrollo organizacional.</p>
+                <p>📊 <em>El resumen completo de la evaluación se encuentra disponible en la plataforma para su consulta.</em></p>
+            </div>
+            
+            <div class="info-box">
+                <h3>📋 Resumen Final</h3>
+                <p><strong>Evaluado:</strong> {{ empleado_nombre }}</p>
+                <p><strong>Supervisor:</strong> {{ jefe_nombre }}</p>
+                <p><strong>Tipo de Evaluación:</strong> {{ tipo_evaluacion }}</p>
+                <p><strong>Período:</strong> {{ fecha_evaluacion }}</p>
+                <p><strong>Fecha de Firma:</strong> {{ fecha_firma }}</p>
+                <p><strong>Puntaje Final:</strong> {{ puntaje_obtenido }}%</p>
+            </div>
+            
+            <p>El {{ empleado_nombre }} ha firmado la evaluación, confirmando que ha recibido y revisado toda la retroalimentación proporcionada. El proceso de evaluación está ahora completamente finalizado.</p>
+            
+            <div style="text-align: center;">
+                <a href="{{ url_evaluacion }}" class="button">Ver Evaluación Final</a>
+            </div>
+            
+            <p><em>Gracias por participar en el proceso de evaluación. Los documentos finales están disponibles en la plataforma para futuras referencias.</em></p>
+        </div>
+        
+        <div class="footer">
+            <p><strong>Este es un correo automático, por favor no responder.</strong></p>
+        </div>
+    </div>
+</body>
+</html>

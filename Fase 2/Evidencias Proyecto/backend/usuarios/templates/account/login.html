@@ -1,0 +1,52 @@
+{% extends "../base.html" %}
+{% load crispy_forms_tags%}
+{% load static %}
+
+{% load i18n %}
+{% load account socialaccount %}
+
+{% block head_title %}{% trans "Sign In" %}{% endblock %}
+
+{% block content %}
+<script src='{% static "assets/js/bootstrap/bootstrap.bundle.min.js" %}'></script>
+<div class="text-center">
+  <h1>{% trans "Sign In" %}</h1>
+
+  <div id="g_id_onload" data-client_id="75188542476-j7mlhm2b8fg7vvnuc7fmjlb9ujepap1u.apps.googleusercontent.com"
+    data-context="signin" data-ux_mode="redirect" data-login_uri="http://127.0.0.1:8000" data-itp_support="true">
+  </div>
+
+  <div class="g_id_signin" data-type="standard" data-shape="pill" data-theme="filled_blue" data-text="signin_with"
+    data-size="large" data-locale="es-419" data-logo_alignment="left">
+  </div>
+
+  {% get_providers as socialaccount_providers %}
+
+  {% if socialaccount_providers %}
+  <p>{% blocktrans with site.name as site_name %}<a  href="{{ signup_url }}">{% endblocktrans %}</p>
+
+
+  {% else %}
+  <p>{% blocktrans %}If you have not created an account yet, then please
+    <a href="{{ signup_url }}">sign up</a> first.{% endblocktrans %}
+  </p>
+  {% endif %}
+  <div class="socialaccount_ballot">
+
+    <div class="socialaccount_providers col-md-4 mx-auto">
+      {% include "socialaccount/snippets/provider_list.html" with process="login" %}
+    </div>
+
+  </div>
+
+  {% include "socialaccount/snippets/login_extra.html" %}
+
+</div>
+</div>
+</div>
+
+<br>
+<hr>
+
+
+{% endblock %}

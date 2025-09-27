@@ -1,0 +1,26 @@
+{% load socialaccount %}
+{% load static %}
+<link rel=" stylesheet" type="text/css" href='{% static "CSS/google.css" %}'>
+
+{% get_providers as socialaccount_providers %}
+
+{% for provider in socialaccount_providers %}
+{% if provider.id == "openid" %}
+{% for brand in provider.get_brands %}
+<div>
+  <a title="{{brand.name}}" class="socialaccount_provider {{provider.id}} {{brand.id}}"
+    href="{% provider_login_url provider.id openid=brand.openid_url process=process %}">{{brand.name}}</a>
+</div>
+{% endfor %}
+{% endif %}
+<div  class="google">
+  <a  title="{{provider.name}}" class="socialaccount_provider {{provider.id}}"
+    href="{% provider_login_url provider.id process=process scope=scope auth_params=auth_params %}">
+    <div id="iniciar-sesion-btn" class="caja_google">
+      <img class="google-icon" src='{% static "../media/image/Google.jpg" %}' alt="10" width="30" height="30">
+      <span class="google-text">Iniciar sesión con Google</span>
+    </div>
+  </a>
+</div>
+</div>
+{% endfor %}
