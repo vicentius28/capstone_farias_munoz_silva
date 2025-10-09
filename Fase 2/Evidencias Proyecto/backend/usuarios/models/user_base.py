@@ -136,46 +136,7 @@ class User(AbstractUser, ContractMixin, AssignmentMixin):
         verbose_name="Código"
     )
 
-    # Contrato
-    tipo_contrato = models.CharField(
-        max_length=6, 
-        choices=TipoContrato.choices, 
-        default=TipoContrato.INDEFINIDO,
-        verbose_name="Tipo de contrato"
-    )
-    fecha_termino_contrato = models.DateField(
-        null=True, 
-        blank=True,
-        verbose_name="Fecha término contrato"
-    )
-    
-    # Gestión de días libres
-    d_ini = models.FloatField(
-        default=0, 
-        verbose_name=_('Cantidad Inicial')
-    )
-    observacion_dia = models.TextField(
-        blank=True, 
-        null=True, 
-        verbose_name=_('Observación Día')
-    )
-    dias_tomados = models.FloatField(
-        default=0, 
-        verbose_name=_('Días Tomados')
-    )
-    dias_restantes = models.FloatField(
-        default=DEFAULT_DIAS_RESTANTES, 
-        verbose_name=('Días Restantes')
-    )
-    dias_cumpleanios = models.FloatField(
-        default=DEFAULT_DIAS_CUMPLEANIOS, 
-        verbose_name=('Días cumpleaños')
-    )
-    cumpleanio_ocupado = models.FloatField(
-        default=0, 
-        verbose_name=_('Días cumpleaños ocupado')
-    )
-    
+
 
     # Campo deprecado - mantener para compatibilidad
     empresa = models.ForeignKey(
@@ -201,27 +162,10 @@ class User(AbstractUser, ContractMixin, AssignmentMixin):
             models.Index(fields=['rut']),
             models.Index(fields=['email']),
             models.Index(fields=['date_joined']),
-            models.Index(fields=['tipo_contrato']),
             models.Index(fields=['is_active']),
         ]
 
-    def clean(self):
-        """Validaciones del modelo"""
-        super().clean()
-        
-        if self.tipo_contrato == TipoContrato.INDEFINIDO:
-            self.fecha_termino_contrato = None
-        else:
-            if not self.fecha_termino_contrato:
-                raise ValidationError({
-                    "fecha_termino_contrato": "Requerida para este tipo de contrato."
-                })
-            inicio = _as_date(self.date_joined)
-            fin = _as_date(self.fecha_termino_contrato)
-            if fin < inicio:
-                raise ValidationError({
-                    "fecha_termino_contrato": "Debe ser ≥ a la fecha de inicio (date_joined)."
-                })
+ 
 
     def save(self, *args, **kwargs):
         """Lógica personalizada de guardado"""
