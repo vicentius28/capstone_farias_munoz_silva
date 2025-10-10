@@ -63,7 +63,7 @@ class UserSerializer(serializers.ModelSerializer):
             # calculados
             "tiempo", "tiempo_en", "edad",
             # días/licencias u otros campos propios
-             "observacion_dia", "dias_tomados", "dias_restantes",
+             "dias_tomados", "dias_restantes",
             "dias_cumpleanios", "cumpleanio_ocupado",
 
         ]
