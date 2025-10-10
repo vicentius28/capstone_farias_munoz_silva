@@ -135,8 +135,17 @@ class User(AbstractUser, ContractMixin, AssignmentMixin):
         blank=True,
         verbose_name="Código"
     )
-
-
+    tipo_contrato = models.CharField(
+        max_length=6, 
+        choices=TipoContrato.choices, 
+        default=TipoContrato.INDEFINIDO,
+        verbose_name="Tipo de contrato"
+    )
+    fecha_termino_contrato = models.DateField(
+        null=True, 
+        blank=True,
+        verbose_name="Fecha término contrato"
+    )
 
     # Campo deprecado - mantener para compatibilidad
     empresa = models.ForeignKey(
@@ -162,10 +171,27 @@ class User(AbstractUser, ContractMixin, AssignmentMixin):
             models.Index(fields=['rut']),
             models.Index(fields=['email']),
             models.Index(fields=['date_joined']),
+            models.Index(fields=['tipo_contrato']),
             models.Index(fields=['is_active']),
         ]
 
- 
+    def clean(self):
+        """Validaciones del modelo"""
+        super().clean()
+        
+        if self.tipo_contrato == TipoContrato.INDEFINIDO:
+            self.fecha_termino_contrato = None
+        else:
+            if not self.fecha_termino_contrato:
+                raise ValidationError({
+                    "fecha_termino_contrato": "Requerida para este tipo de contrato."
+                })
+            inicio = _as_date(self.date_joined)
+            fin = _as_date(self.fecha_termino_contrato)
+            if fin < inicio:
+                raise ValidationError({
+                    "fecha_termino_contrato": "Debe ser ≥ a la fecha de inicio (date_joined)."
+                })
 
     def save(self, *args, **kwargs):
         """Lógica personalizada de guardado"""
