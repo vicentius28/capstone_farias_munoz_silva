@@ -66,7 +66,7 @@ class UserResource(resources.ModelResource):
         fields = (
             'id', 'last_login', 'is_staff', 'is_active', 'rut', 'password', 'username',
             'first_name', 'last_name', 'email', 'is_superuser', 'birthday',
-            'date_joined', 'jefe', 'tiempo', 'tiempo_en', 'd_ini', 'dias_tomados',
+            'date_joined', 'jefe', 'tiempo', 'tiempo_en', 'dias_tomados',
             'dias_restantes', DIAS_cumpleanioS, 'group__name', 'cargo__cargo', 'ciclo__ciclo',
             'codigo__codigo', 'empresa', 'genero', 'foto',
             # nuevos
