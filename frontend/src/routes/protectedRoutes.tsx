@@ -20,9 +20,7 @@ const withSuspense = (
 // Páginas protegidas lazy
 const IndexPage = lazy(() => import("@/features/usuario/pages/IndexPage"));
 const UsersPage = lazy(() => import("@/features/usuario/pages/UsersPage"));
-const DiasTablePage = lazy(
-  () => import("@/features/usuario/pages/DiasTablePage"),
-);
+
 const ProfilePage = lazy(() => import("@/features/usuario/pages/ProfilePage"));
 const UserProfileView = lazy(
   () => import("@/features/usuario/pages/UserProfileView"),
