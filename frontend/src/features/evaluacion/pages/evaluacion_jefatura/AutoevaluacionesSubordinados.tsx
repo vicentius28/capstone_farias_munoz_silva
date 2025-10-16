@@ -749,10 +749,20 @@ function EnhancedUserCard({
         return `${persona.first_name.charAt(0)}${persona.last_name.charAt(0)}`.toUpperCase();
     };
 
+    // Normaliza el valor de logro_obtenido (maneja string/number)
+    const logroObtenido = (() => {
+        const valor: any = autoevaluacion.logro_obtenido as any;
+        if (typeof valor === "number") return valor;
+        if (typeof valor === "string") {
+            const parsed = parseFloat(valor.replace?.(",", ".") ?? valor);
+            return isNaN(parsed) ? 0 : parsed;
+        }
+        return 0;
+    })();
+
     const getStatusInfo = (autoevaluacion: AutoevaluacionSubordinado) => {
         if (autoevaluacion.completado) {
-            const logro = autoevaluacion.logro_obtenido || 0;
-            const evaluationInfo = EvaluationUtils.getEvaluationInfo(logro);
+            const evaluationInfo = EvaluationUtils.getEvaluationInfo(logroObtenido);
             return {
                 color: evaluationInfo.color,
                 text: evaluationInfo.text,
@@ -811,18 +821,18 @@ function EnhancedUserCard({
 
             <CardBody className="pt-0">
                 {/* Progreso de logro (solo si está completado) */}
-                {autoevaluacion.completado && autoevaluacion.logro_obtenido > 0 && (
+                {autoevaluacion.completado && logroObtenido > 0 && (
                     <div className="mb-4">
                         <div className="flex items-center justify-between mb-2">
                             <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
                                 Logro obtenido
                             </span>
                             <span className="text-sm font-bold text-slate-800 dark:text-white">
-                                {autoevaluacion.logro_obtenido.toFixed(1)}%
+                                {logroObtenido.toFixed(1)}%
                             </span>
                         </div>
                         <Progress
-                            value={autoevaluacion.logro_obtenido}
+                            value={logroObtenido}
                             color={statusInfo.color}
                             size="sm"
                             className="mb-1"

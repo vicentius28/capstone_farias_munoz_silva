@@ -152,14 +152,6 @@ export const protectedRoutes: RouteObject[] = [
         ),
       },
       {
-        path: "usuarios",
-        element: (
-          <ProtectedRoute permiso={PERMISSIONS.DIRECTIVO.USUARIOS}>
-            {withSuspense(DiasTablePage)}
-          </ProtectedRoute>
-        ),
-      },
-      {
         path: "ficha/user-profile",
         element: (
           <ProtectedRoute permiso={PERMISSIONS.FUNDACION.USUARIOS_FICHA}>
@@ -180,7 +172,7 @@ export const protectedRoutes: RouteObject[] = [
       {
         path: "evaluacion-crear",
         element: (
-          <ProtectedRoute permiso={PERMISSIONS.EVALUACION.CREAR}>
+          <ProtectedRoute permiso={PERMISSIONS.EVALUACION.PLANTILLAS}>
             {withSuspense(CreateEvaluationForm)}
           </ProtectedRoute>
         ),
