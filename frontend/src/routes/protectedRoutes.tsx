@@ -32,7 +32,9 @@ const EditarEvaluacionPage = lazy(
 const CreateEvaluationForm = lazy(
   () => import("@/features/evaluacion/pages/plantilla/createeva"),
 );
-
+const EditarFormularioWrapperPage = lazy(
+  () => import("@/features/evaluacion/pages/plantilla/EditarFormularioWrapper"),
+);
 const AsignarEvaluacionPage = lazy(
   () => import("@/features/evaluacion/pages/asignar/Asignar"),
 );
@@ -188,6 +190,14 @@ export const protectedRoutes: RouteObject[] = [
         element: (
           <ProtectedRoute permiso={PERMISSIONS.EVALUACION.ASIGNAR}>
             {withSuspense(CrearAsignacionPage)}
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "evaluacion-editar/edicion",
+        element: (
+          <ProtectedRoute permiso={PERMISSIONS.EVALUACION.PLANTILLAS}>
+            {withSuspense(EditarFormularioWrapperPage)}
           </ProtectedRoute>
         ),
       },
