@@ -6,9 +6,7 @@ interface Props {
   isEditing: boolean;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   isAutoevaluacion: boolean;
-  isPonderada: boolean;
   onToggleAutoevaluacion: (checked: boolean) => void;
-  onTogglePonderada: (checked: boolean) => void;
   showError?: boolean;
   errorMessage?: string;
   color?: "primary" | "secondary" | "danger"; // según HeroUI
@@ -19,9 +17,7 @@ export default function NombreEvaluacionInput({
   isEditing,
   onChange,
   isAutoevaluacion,
-  isPonderada,
   onToggleAutoevaluacion,
-  onTogglePonderada,
   showError = false,
   errorMessage = "",
   color = "primary",
@@ -61,8 +57,6 @@ export default function NombreEvaluacionInput({
         <Checkbox
           isDisabled={!isEditing}
           className="mt-4"
-          isSelected={isPonderada}
-          onValueChange={onTogglePonderada}
         >
           ¿Es Ponderada?
         </Checkbox>
