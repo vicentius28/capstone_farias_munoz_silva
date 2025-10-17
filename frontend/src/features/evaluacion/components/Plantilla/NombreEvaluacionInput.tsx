@@ -44,23 +44,14 @@ export default function NombreEvaluacionInput({
         onChange={onChange}
       />
       {showError && <p className="text-sm text-red-500">{errorMessage}</p>}
-      <div className="flex items-center justify-between gap-2">
-        <Checkbox
-          isDisabled
-          className="mt-4"
-          isSelected={isAutoevaluacion}
-          onValueChange={onToggleAutoevaluacion}
-        >
-          ¿Es una autoevaluación?
-        </Checkbox>
-
-        <Checkbox
-          isDisabled={!isEditing}
-          className="mt-4"
-        >
-          ¿Es Ponderada?
-        </Checkbox>
-      </div>
+      <Checkbox
+        isDisabled
+        className="mt-4"
+        isSelected={isAutoevaluacion}
+        onValueChange={onToggleAutoevaluacion}
+      >
+        ¿Es una autoevaluación?
+      </Checkbox>
     </div>
   );
 }
