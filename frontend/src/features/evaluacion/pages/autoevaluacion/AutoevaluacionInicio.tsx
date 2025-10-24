@@ -169,11 +169,11 @@ export default function AutoevaluacionInicioPage() {
       }
 
       try {
-        // Buscar en memoria primero
+        // Buscar en memoria primero (opcional)
         let item = all.find((e: any) => e?.id === id);
         let isPonderada = item?.ponderada;
 
-        // Fallback a la API si es necesario
+        // Fallback a la API si es necesario (opcional)
         if (typeof isPonderada !== "boolean") {
           const { data } = await axios.get(`/evaluacion/api/autoevaluaciones/${id}/`, {
             params: { _t: Date.now() },
@@ -181,7 +181,8 @@ export default function AutoevaluacionInicioPage() {
           isPonderada = !!(data?.ponderada ?? data?.tipo_evaluacion?.ponderada);
         }
 
-        navigate("/evaluacion-jefatura/tabla/detalle", {
+        // ✅ Navegar al detalle de autoevaluación finalizada
+        navigate("/autoevaluacion/inicio/detalle", {
           state: { id, from: "/autoevaluacion/inicio" }
         });
       } catch (error) {
