@@ -1,5 +1,5 @@
 // src/pages/DashboardPage.tsx
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { AcademicCapIcon, ClipboardDocumentListIcon, HeartIcon, ShieldCheckIcon } from "@heroicons/react/24/outline";
 import { useSession } from "@/hooks/useSession";

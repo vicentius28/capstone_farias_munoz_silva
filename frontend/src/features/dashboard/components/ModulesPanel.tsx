@@ -2,7 +2,6 @@
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Button } from "@heroui/button";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
 
 import { sections } from "@/data/sections";
 import { usePermissions } from "@/hooks/usePermissions";

@@ -6,7 +6,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useLocation, useNavigate } from "react-router-dom";
 import { addToast } from "@heroui/toast";
 
-import { title } from "@/shared/utils/primitives";
 import { Button } from "@heroui/button";
 import { ThemeSwitch } from "@/shared/components/ui/theme-switch";
 
@@ -108,42 +107,6 @@ const EnhancedBubbles = () => {
   return <AnimatePresence>{bubbles}</AnimatePresence>;
 };
 
-// Componente de fondo: Imagen atenuada con overlay
-const BackgroundImage = () => (
-  <div className="fixed inset-0 -z-10">
-    <div className="absolute inset-0 bg-[url('/bg-evalink.jpg')] bg-cover bg-center" />
-    <div className="absolute inset-0 bg-gradient-to-br from-white/70 via-rose-50/50 to-amber-50/60 dark:from-[#0b0f17]/70 dark:via-[#131a24]/80 dark:to-[#0b0f17]/70" />
-  </div>
-);
-
-// Componente de fondo: Blobs orgánicos
-const BackgroundBlobs = () => (
-  <div className="fixed inset-0 -z-10 overflow-hidden">
-    <svg className="absolute w-[140vw] h-[140vh] -left-[20vw] -top-[20vh]" viewBox="0 0 800 600">
-      <defs>
-        <radialGradient id="blob1" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="rgb(251 191 36 / 0.30)" />
-          <stop offset="100%" stopColor="transparent" />
-        </radialGradient>
-        <radialGradient id="blob2" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="rgb(244 114 182 / 0.25)" />
-          <stop offset="100%" stopColor="transparent" />
-        </radialGradient>
-        <radialGradient id="blob3" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="rgb(59 130 246 / 0.18)" />
-          <stop offset="100%" stopColor="transparent" />
-        </radialGradient>
-      </defs>
-      <g opacity="0.9">
-        <circle cx="160" cy="140" r="220" fill="url(#blob1)" />
-        <circle cx="640" cy="160" r="200" fill="url(#blob2)" />
-        <circle cx="360" cy="420" r="240" fill="url(#blob3)" />
-      </g>
-    </svg>
-    {/* Overlay para modos de color */}
-    <div className="absolute inset-0 bg-gradient-to-br from-rose-50/40 via-amber-50/40 to-orange-50/40 dark:from-[#0b0f17]/70 dark:via-[#131a24]/80 dark:to-[#0b0f17]/70" />
-  </div>
-);
 
 function Welcome() {
   const location = useLocation();
@@ -280,4 +243,3 @@ function Welcome() {
 export default Welcome;
 
 // Iconos de evaluación
-import { AcademicCapIcon, ClipboardDocumentListIcon, HeartIcon, ShieldCheckIcon } from "@heroicons/react/24/outline";
