@@ -299,7 +299,7 @@ export default function DashboardPage() {
         </svg>
 
         {/* Panel flotante divisorio */}
-        <div className="pointer-events-auto absolute left-1/2 bottom-0 z-40 w-full max-w-screen-lg -translate-x-1/2 translate-y-1/2 px-5">
+        <div className="pointer-events-auto absolute left-1/2 bottom-0 z-40 w-full max-w-screen-lg -translate-x-1/2 translate-y-1/2 px-5 mt-8">
           {isHydrating ? (
             <Card className="rounded-3xl bg-white/80 dark:bg-[#0f172a]/80 supports-[backdrop-filter]:backdrop-blur-xl ring-1 ring-black/10 dark:ring-white/10 shadow-xl max-w-4xl mx-auto">
               <CardHeader className="px-6 pt-5 flex items-center justify-center text-center gap-2">
