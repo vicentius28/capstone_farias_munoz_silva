@@ -32,23 +32,20 @@ export default function ModulesPanel({
         })
         .filter((section) => section.buttons.length > 0);
 
-    // Foco en evaluación/autoevaluación cuando se pide desde DashboardAccess
-    const focusedSections =
+    // Foco en evaluación/autoevaluación aplicado a nivel de acción dentro de cada sección
+    const sectionsWithFocus =
         focus === "eva"
-            ? visibleSections.filter((s) =>
-                s.buttons.some((btn) => /evalu/i.test(btn.label))
-            )
+            ? visibleSections
+                  .map((s) => ({ ...s, buttons: s.buttons.filter((btn) => /evalu/i.test(btn.label)) }))
+                  .filter((s) => s.buttons.length > 0)
             : visibleSections;
 
-    // Tarjetas de módulo (un estilo único para ambos)
-    const moduleCards = focusedSections
-        .map((s) => ({
-            title: s.title,
-            icon: s.icon,
-            label: s.buttons[0]?.label ?? "Acceder",
-            href: s.buttons[0]?.href ?? "#",
-        }))
-        .filter((m) => m.href && m.href !== "#");
+    // UNA tarjeta por sección, con TODAS sus acciones visibles dentro
+    const moduleCards = sectionsWithFocus.map((s) => ({
+        title: s.title,
+        icon: s.icon,
+        actions: s.buttons.map((btn) => ({ label: btn.label, href: btn.href })),
+    }));
 
     const count = moduleCards.length;
 
@@ -56,7 +53,7 @@ export default function ModulesPanel({
     const subtitle =
         focus === "eva"
             ? "Módulos de evaluación y autoevaluación"
-            : "Módulos disponibles"
+            : "Módulos disponibles";
 
     // Clases de grid según cantidad para centrar tarjetas
     const gridClass =
@@ -121,7 +118,7 @@ export default function ModulesPanel({
                         <div className={`${gridClass} gap-3 sm:gap-4`}>
                             {moduleCards.map((m, i) => (
                                 <div
-                                    key={i}
+                                    key={`${m.title}-${i}`}
                                     className="group w-full max-w-sm mx-auto rounded-2xl ring-1 ring-black/5 dark:ring-white/10 bg-white/70 dark:bg-[#0b1220]/70 supports-[backdrop-filter]:backdrop-blur p-4 flex flex-col gap-3 shadow-sm transition hover:shadow-md hover:-translate-y-[1px] text-center"
                                 >
                                     <div className="flex items-center justify-center gap-3">
@@ -135,15 +132,20 @@ export default function ModulesPanel({
                                             <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{m.title}</p>
                                         </div>
                                     </div>
-                                    <div className="flex justify-center items-center">
-                                        <Button
-                                            className="rounded-full h-8 px-3 text-xs font-semibold shadow-sm hover:opacity-95 active:opacity-90"
-                                            style={buttonStyle}
-                                            variant="solid"
-                                            onPress={() => navigate(m.href)}
-                                        >
-                                            {m.label}
-                                        </Button>
+
+                                    {/* Grupo de acciones dentro del mismo target */}
+                                    <div className="flex flex-wrap justify-center items-center gap-2">
+                                        {m.actions.map((action, idx) => (
+                                            <Button
+                                                key={`${m.title}-${action.href}-${idx}`}
+                                                className="rounded-full h-8 px-3 text-xs font-semibold shadow-sm hover:opacity-95 active:opacity-90"
+                                                style={buttonStyle}
+                                                variant="solid"
+                                                onPress={() => navigate(action.href)}
+                                            >
+                                                {action.label}
+                                            </Button>
+                                        ))}
                                     </div>
                                 </div>
                             ))}
