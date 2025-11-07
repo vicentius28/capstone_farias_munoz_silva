@@ -2,7 +2,6 @@
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Button } from "@heroui/button";
 import { useNavigate } from "react-router-dom";
-
 import { sections } from "@/data/sections";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useSession } from "@/hooks/useSession";
@@ -113,10 +112,10 @@ export default function ModulesPanel({
             {count > 0 && (
                 <Card className="rounded-3xl bg-white/80 dark:bg-[#0f172a]/80 supports-[backdrop-filter]:backdrop-blur-xl ring-1 ring-black/10 dark:ring-white/10 shadow-xl max-w-4xl mx-auto">
                     <CardHeader className="px-6 pt-5 flex flex-col items-center text-center gap-1">
-                        <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
+                        <h3 className="text-xl font-semibold text-slate-900 dark:text-white">
                             {title} {showCount && <span className="text-xs text-slate-500 dark:text-slate-400">· {count} módulos</span>}
                         </h3>
-                        <p className="text-xs text-slate-600 dark:text-slate-300">{subtitle}</p>
+                        <p className="text-sm text-slate-600 dark:text-slate-300">{subtitle}</p>
                     </CardHeader>
                     <CardBody className="px-6 pb-6">
                         <div className={`${gridClass} gap-3 sm:gap-4`}>

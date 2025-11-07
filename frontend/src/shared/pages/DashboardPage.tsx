@@ -31,7 +31,7 @@ class DashboardBoundary extends React.Component<{ children: React.ReactNode }, {
 }
 
 export default function DashboardPage() {
-  const { permisos, grupo } = usePermissions();
+  const { permisos } = usePermissions();
   const { user } = useSession();
   const displayName =
     (user?.nombres as string) ||
@@ -43,15 +43,12 @@ export default function DashboardPage() {
 
 
   const hasAny = (prefix: string) => permisos?.some((p) => p.startsWith(prefix));
-  const roleName =
-    (hasAny("directivo.") && "Equipo Directivo") ||
-    (hasAny("portal.") && "Docente") ||
-    (hasAny("fundacion.") && "Fundación") ||
-    (hasAny("sistema.") && "Administración") ||
-    grupo || "Usuario";
+
+
+
 
   const featureCards = (() => {
-    if (roleName === "Equipo Directivo") {
+    if (hasAny("directivo.")) {
       return [
         {
           icon: <ClipboardDocumentListIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />,
@@ -79,7 +76,7 @@ export default function DashboardPage() {
         },
       ];
     }
-    if (roleName === "Docente") {
+    if (hasAny("portal.")) {
       return [
         {
           icon: <HeartIcon className="w-5 h-5 text-rose-600 dark:text-rose-400" />,
@@ -148,8 +145,16 @@ export default function DashboardPage() {
     }
   }, [user, permisos]);
 
+
+  const quickStartSteps = ["Explora módulos disponibles", "Revisa la guía rápida", "Comienza tu primera evaluación"];
+
+
+
+
   return (
-    <main className="w-full">
+    <main
+      className="w-full min-h-screen bg-mesh"
+    >
       <section className="relative isolate overflow-visible text-white">
         {/* Fondo mesh azul→morado */}
         <div
@@ -187,27 +192,23 @@ export default function DashboardPage() {
         </svg>
 
         {/* Hero más compacto */}
-        <div className="max-w-screen-lg mx-auto px-5 pt-8 pb-20 min-h-[560px]">
+        <div className="max-w-screen-lg mx-auto px-4 pt-6 pb-12 min-h-[420px]">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-center">
             <div>
               <p className="text-[24px] font-semibold tracking-widest uppercase text-sky-200">Bienvenido</p>
               <h1 className="mt-1 text-3xl md:text-4xl font-bold leading-tight">{displayName}</h1>
-              <p className="mt-1.5 text-sm md:text-base text-sky-100/90">
-                Rol activo: <span className="font-semibold">{roleName}</span>
-              </p>
-              <p className="mt-3 text-sm md:text-base text-sky-100/95 max-w-[52ch]">
-                Centraliza evaluaciones y autoevaluaciones, revisa resultados y da seguimiento al progreso.
-              </p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                <span className="px-3 py-1 rounded-full bg-white/10 border border-white/20 text-sky-100 text-xs">Evaluación</span>
-                <span className="px-3 py-1 rounded-full bg-white/10 border border-white/20 text-sky-100 text-xs">Autoevaluación</span>
-                <span className="px-3 py-1 rounded-full bg-white/10 border border-white/20 text-sky-100 text-xs">Historial</span>
+
+              {/* Guía breve – tres pasos (rellena sin métricas) */}
+              <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3 text-sky-100/90">
+                {quickStartSteps.map((step, idx) => (
+                  <div key={idx} className="rounded-lg p-3 bg-white/12">
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex w-5 h-5 items-center justify-center rounded-full bg-white/20 text-[11px]">{idx + 1}</span>
+                      <span className="text-xs">{step}</span>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <ul className="mt-3 grid grid-cols-2 md:grid-cols-3 gap-3 text-sky-100/90 text-xs">
-                <li className="bg-white/5 rounded-lg p-3 border border-white/10">Revisa evaluaciones de desempeño</li>
-                <li className="bg-white/5 rounded-lg p-3 border border-white/10">Revisa feedback y resultados.</li>
-                <li className="bg-white/5 rounded-lg p-3 border border-white/10">Da seguimiento al avance y cumplimiento.</li>
-              </ul>
 
               {/* Tarjetas “Qué encontrarás” integradas al hero */}
               <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -237,8 +238,9 @@ export default function DashboardPage() {
                       className={`rounded-2xl backdrop-blur-xl shadow-md ring-1 ring-black/5 dark:ring-white/10 ${f.bg}`}
                     >
                       <CardHeader className="px-4 pt-4">
+                        {f.icon}
                         <div className="flex items-center gap-3 text-center">
-                          {f.icon}
+
                           <h2 className={`text-sm font-semibold ${f.titleColor}`}>{f.title}</h2>
                         </div>
                       </CardHeader>
@@ -253,6 +255,7 @@ export default function DashboardPage() {
 
             <div className="relative flex justify-center lg:justify-end">
               <div className="pointer-events-none absolute -z-10 inset-0">
+                {/* fondos decorativos del hero */}
                 <div className="absolute left-8 top-6 w-48 h-48 rounded-full bg-gradient-to-tr from-sky-400/40 to-violet-500/40 blur-2xl opacity-70" />
                 <svg className="absolute right-6 top-8 w-40 h-40 opacity-20" viewBox="0 0 120 120">
                   <circle cx="60" cy="60" r="50" fill="none" stroke="#ffffff" strokeOpacity="0.20" strokeWidth="2" />
@@ -268,27 +271,42 @@ export default function DashboardPage() {
                 </svg>
               </div>
 
-              {/* Ilustración existente */}
-              <img
-                src={bannerIllustration}
-                alt="Ilustración del portal"
-                className="w-full max-w-sm lg:max-w-md ml-auto rounded-2xl object-cover"
-              />
+              {/* Ilustración del teacher restaurada y mejorada */}
+              <div className="relative">
+                <div className="absolute -inset-5 rounded-[28px] bg-gradient-to-tr from-sky-400/25 via-indigo-400/25 to-violet-500/25 blur-2xl" />
+                <img
+                  src={bannerIllustration}
+                  alt="Ilustración del portal"
+                  className="relative z-10 w-full max-w-[20rem] lg:max-w-[24rem] rounded-2xl object-contain drop-shadow-xl"
+                />
+              </div>
             </div>
           </div>
 
 
         </div>
 
+        {/* Onda decorativa inferior para cerrar el hero */}
+        <svg
+          className="absolute inset-x-0 bottom-0 -z-10"
+          viewBox="0 0 1440 120"
+          preserveAspectRatio="none"
+        >
+          <path
+            d="M0,60 C240,120 480,0 720,60 C960,120 1200,0 1440,60 L1440,120 L0,120 Z"
+            fill="rgba(255,255,255,0.85)"
+          />
+        </svg>
+
         {/* Panel flotante divisorio */}
-        <div className="pointer-events-auto absolute left-1/2 bottom-0 z-20 w-full max-w-screen-lg -translate-x-1/2 translate-y-1/2 px-5">
+        <div className="pointer-events-auto absolute left-1/2 bottom-0 z-40 w-full max-w-screen-lg -translate-x-1/2 translate-y-1/2 px-5">
           {isHydrating ? (
             <Card className="rounded-3xl bg-white/80 dark:bg-[#0f172a]/80 supports-[backdrop-filter]:backdrop-blur-xl ring-1 ring-black/10 dark:ring-white/10 shadow-xl max-w-4xl mx-auto">
               <CardHeader className="px-6 pt-5 flex items-center justify-center text-center gap-2">
                 <span className="inline-flex">
                   <span className="w-5 h-5 rounded-full border-2 border-slate-300/70 dark:border-slate-600/70 border-t-transparent animate-spin" />
                 </span>
-                <span className="text-base font-semibold">Preparando accesos…</span>
+                <span className="text-xl font-semibold">Preparando accesos…</span>
               </CardHeader>
               <CardBody className="px-6 pb-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 justify-items-center">
@@ -315,6 +333,11 @@ export default function DashboardPage() {
         </div>
       </section>
 
+      {/* Separador para evitar solape con el panel flotante */}
+      <div aria-hidden className="h-28 sm:h-40 lg:h-48"/>
+
+
+
       {/* Oculto la sección independiente para evitar duplicados */}
       <section className="hidden w-full px-5 pt-8 pb-6 max-w-screen-lg mx-auto">
         <div className="flex items-end justify-between">
@@ -339,6 +362,8 @@ export default function DashboardPage() {
           ))}
         </div>
       </section>
+
+
     </main>
   );
 }
