@@ -244,7 +244,7 @@ def _generar_pdf_response(evaluacion, request):
                                 y -= 12
 
                         for lvl in ind.get('niveles', []):
-                            mark = "✔" if lvl.get('seleccionado') else "•"
+                            mark = "*" if lvl.get('seleccionado') else "-"
                             color = "#0f766e" if lvl.get('seleccionado') else "#6b7280"
                             ensure_space(12)
                             draw_text(margin + 32, y - 10, f"{mark} {lvl.get('nombre')} · {lvl.get('puntaje')}", size=10, color=color, bold=lvl.get('seleccionado') or False)
@@ -691,7 +691,7 @@ class EvaluacionViewSet(viewsets.ModelViewSet):
                                     y -= 12
 
                             for lvl in ind.get('niveles', []):
-                                mark = "✔" if lvl.get('seleccionado') else "•"
+                                mark = "*" if lvl.get('seleccionado') else "-"
                                 color = "#0f766e" if lvl.get('seleccionado') else "#6b7280"
                                 ensure_space(12)
                                 draw_text(margin + 32, y - 10, f"{mark} {lvl.get('nombre')} · {lvl.get('puntaje')}", size=10, color=color, bold=lvl.get('seleccionado') or False)
