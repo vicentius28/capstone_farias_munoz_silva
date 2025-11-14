@@ -41,12 +41,11 @@ body { font-family: Arial, Helvetica, sans-serif; margin: 0; padding: 24px; colo
   <div class="card">
     <div style="display:flex; justify-content:space-between; align-items:center;">
       <div>
-        <div class="h1">Docente de Asignatura</div>
-        <div class="small">Evaluado: {{ evaluado_nombre }} · Evaluador: {{ evaluador_nombre }}</div>
+        <div class="h1">Evaluado: {{ evaluado_nombre }} · Evaluador: {{ evaluador_nombre }}</div>
         <div class="small">Fecha evaluación: {{ evaluacion.fecha_evaluacion }} · Inicio: {{ evaluacion.fecha_inicio|date:"Y-m-d H:i" }}</div>
       </div>
       <div>
-        <div class="pill" style="margin-top:6px;">Tipo Informe: {{ tipo_evaluacion_nombre }}</div>
+        <div class="pill" style="margin-top:6px;">Tipo de Evaluación: {{ tipo_evaluacion_nombre }}</div>
       </div>
     </div>
   </div>

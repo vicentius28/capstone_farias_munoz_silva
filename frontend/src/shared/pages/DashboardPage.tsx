@@ -5,6 +5,7 @@ import { AcademicCapIcon, ClipboardDocumentListIcon, HeartIcon, ShieldCheckIcon 
 import { useSession } from "@/hooks/useSession";
 import { usePermissions } from "@/hooks/usePermissions";
 import ModulesPanel from "@/features/dashboard/components/ModulesPanel";
+import { Logo } from "@/shared/components/Icons/icons";
 
 // Error Boundary para encapsular el bloque
 class DashboardBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean }> {
@@ -39,6 +40,12 @@ export default function DashboardPage() {
     (user?.name as string) ||
     (user?.username as string) ||
     "Usuario";
+
+  const companyName =
+    (user?.empresa?.name as string) ||
+    (user?.empresa?.empresa as string) ||
+    (user?.empresa?.nombre as string) ||
+    "";
 
 
 
@@ -158,13 +165,25 @@ export default function DashboardPage() {
       <section className="relative isolate overflow-visible text-white">
         {/* Fondo mesh azul→morado */}
         <div
-          className="absolute inset-0 -z-10"
+          className="absolute inset-0 -z-10 dark:hidden"
           style={{
             backgroundImage: `
               radial-gradient(60% 80% at 12% 15%, rgba(59,130,246,0.25) 0%, rgba(59,130,246,0.12) 30%, transparent 70%),
               radial-gradient(80% 60% at 88% 20%, rgba(124,58,237,0.25) 0%, rgba(124,58,237,0.12) 35%, transparent 70%),
               radial-gradient(100% 80% at 50% 90%, rgba(99,102,241,0.20) 0%, rgba(99,102,241,0.10) 40%, transparent 75%),
               linear-gradient(120deg, #0e3aa7 0%, #2443b8 40%, #3b82f6 60%, #7c3aed 85%, #4c1d95 100%)
+            `,
+            backgroundBlendMode: "screen, screen, screen, normal",
+          }}
+        />
+        <div
+          className="absolute inset-0 -z-10 hidden dark:block"
+          style={{
+            backgroundImage: `
+              radial-gradient(60% 80% at 12% 15%, rgba(59,130,246,0.18) 0%, rgba(30,64,175,0.12) 30%, transparent 70%),
+              radial-gradient(80% 60% at 88% 20%, rgba(124,58,237,0.18) 0%, rgba(76,29,149,0.12) 35%, transparent 70%),
+              radial-gradient(100% 80% at 50% 90%, rgba(99,102,241,0.16) 0%, rgba(99,102,241,0.08) 40%, transparent 75%),
+              linear-gradient(120deg, #0b1220 0%, #0f172a 40%, #1e3a8a 60%, #312e81 85%, #0b1220 100%)
             `,
             backgroundBlendMode: "screen, screen, screen, normal",
           }}
@@ -191,12 +210,23 @@ export default function DashboardPage() {
           <circle cx="50" cy="50" r="32" fill="none" stroke="url(#heroAccent)" strokeWidth="3" />
         </svg>
 
+        <div className="pointer-events-none absolute left-6 top-1/2 -translate-y-1/4 translate-x-[50%] z-0 hidden md:block text-center">
+          <div className="rounded-3xl bg-white/15 dark:bg-[#0b1220]/40 ring-1 ring-black/10 dark:ring-white/10 supports-[backdrop-filter]:backdrop-blur-sm p-5 shadow-xl">
+            <Logo size={120} className="rounded-2xl" />
+          </div>
+        </div>
+
         {/* Hero más compacto */}
         <div className="max-w-screen-lg mx-auto px-4 pt-6 pb-12 min-h-[420px]">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-center">
             <div>
-              <p className="text-[24px] font-semibold tracking-widest uppercase text-sky-200">Bienvenido</p>
-              <h1 className="mt-1 text-3xl md:text-4xl font-bold leading-tight">{displayName}</h1>
+              <div className="flex items-center gap-10">
+                <p className="text-[32px] font-semibold tracking-widest uppercase text-sky-200">Bienvenido</p>
+                <h3 className="mt-1 text-2xl md:text-3xl font-bold leading-tight">{displayName}</h3>
+              </div>
+              {companyName && (
+                <p className="mt-1 text-sm text-sky-100/90">{companyName}</p>
+              )}
 
               {/* Guía breve – tres pasos (rellena sin métricas) */}
               <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3 text-sky-100/90">
@@ -279,11 +309,10 @@ export default function DashboardPage() {
                   alt="Ilustración del portal"
                   className="relative z-10 w-full max-w-[20rem] lg:max-w-[24rem] rounded-2xl object-contain drop-shadow-xl"
                 />
+
               </div>
             </div>
           </div>
-
-
         </div>
 
         {/* Onda decorativa inferior para cerrar el hero */}
@@ -294,7 +323,7 @@ export default function DashboardPage() {
         >
           <path
             d="M0,60 C240,120 480,0 720,60 C960,120 1200,0 1440,60 L1440,120 L0,120 Z"
-            fill="rgba(255,255,255,0.85)"
+            className="fill-white/85 dark:fill-[#0f172a]/85"
           />
         </svg>
 
@@ -334,7 +363,7 @@ export default function DashboardPage() {
       </section>
 
       {/* Separador para evitar solape con el panel flotante */}
-      <div aria-hidden className="h-28 sm:h-40 lg:h-48"/>
+      <div aria-hidden className="h-28 sm:h-40 lg:h-48" />
 
 
 
