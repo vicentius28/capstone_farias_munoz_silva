@@ -1,7 +1,6 @@
 import axios from "@/services/google/axiosInstance";
 
 type MaybeId = number | string | undefined | null;
-type MaybeUser = { id?: MaybeId } | null | undefined;
 
 export const API_BASE = "/evaluacion/api";
 
