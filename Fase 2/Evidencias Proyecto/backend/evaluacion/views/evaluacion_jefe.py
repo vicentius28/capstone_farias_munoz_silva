@@ -227,9 +227,9 @@ def _generar_pdf_response(evaluacion, request):
                 draw_text(margin + 12, y - 14, f"{ai+1}. {a['nombre']} · {a['puntaje_text']} · {a['porcentaje']}%", size=12, bold=True)
                 y -= 20
 
-                for ci, c_ in enumerate(a['competencias']):
-                    ensure_space(18)
-                    draw_text(margin + 18, y - 12, f"Competencia {ci+1}: {c_['nombre']} · {c_['puntaje_text']} · {c_['porcentaje']}%", size=11, color="#374151")
+                        for ci, c_ in enumerate(a['competencias']):
+                            ensure_space(18)
+                            draw_text(margin + 18, y - 12, f"Competencia {ci+1}: {c_.get('name') or c_.get('nombre') or 'Competencia'} · {c_['puntaje_text']} · {c_['porcentaje']}%", size=11, color="#374151")
                     y -= 16
 
                     for ind in c_['indicadores']:
@@ -676,7 +676,7 @@ class EvaluacionViewSet(viewsets.ModelViewSet):
 
                     for ci, c_ in enumerate(a['competencias']):
                         ensure_space(18)
-                        draw_text(margin + 18, y - 12, f"Competencia {ci+1}: {c_['nombre']} · {c_['puntaje_text']} · {c_['porcentaje']}%", size=11, color="#374151")
+                        draw_text(margin + 18, y - 12, f"Competencia {ci+1}: {c_.get('name') or c_.get('nombre') or 'Competencia'} · {c_['puntaje_text']} · {c_['porcentaje']}%", size=11, color="#374151")
                         y -= 16
 
                         for ind in c_['indicadores']:
