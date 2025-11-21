@@ -280,7 +280,7 @@ export default function AsignarEvaluacionPage() {
               )
             }
           >
-            {isEvaluaciones ? "Crear Evaluación" : "Crear AutoEvaluación"}
+            {isEvaluaciones ? "Asignar Evaluación" : "Asignar AutoEvaluación"}
           </Button>
         </div>
 
