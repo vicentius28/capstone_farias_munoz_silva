@@ -25,7 +25,9 @@ const ProfilePage = lazy(() => import("@/features/usuario/pages/ProfilePage"));
 const UserProfileView = lazy(
   () => import("@/features/usuario/pages/UserProfileView"),
 );
-const TableevaPage = lazy(() => import("@/features/evaluacion/pages/evaluacion_jefatura/tableeva"));
+const TableevaPage = lazy(
+  () => import("@/features/evaluacion/pages/evaluacion_jefatura/tableeva"),
+);
 const EditarEvaluacionPage = lazy(
   () => import("@/features/evaluacion/pages/plantilla/EditarEvaluacion"),
 );
@@ -93,7 +95,6 @@ const EvaluacionRetroalimentacionPage = lazy(
     ),
 );
 
-
 const AutoEvaluacionDetalleFinalizadaPage = lazy(
   () =>
     import(
@@ -159,7 +160,7 @@ export const protectedRoutes: RouteObject[] = [
           </ProtectedRoute>
         ),
       },
- 
+
       {
         path: "evaluacion-editar",
         element: (
@@ -333,8 +334,7 @@ export const protectedRoutes: RouteObject[] = [
           </ProtectedRoute>
         ),
       },
-      
- 
+
       {
         path: "evaluacion-mixta",
         element: (
@@ -353,6 +353,4 @@ export const protectedRoutes: RouteObject[] = [
       },
     ],
   },
-
-
 ];

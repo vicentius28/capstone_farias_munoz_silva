@@ -14,8 +14,6 @@ const getMatchedFields = (user?: User): string[] => {
 
   const matches: string[] = [];
 
-
-
   return matches;
 };
 

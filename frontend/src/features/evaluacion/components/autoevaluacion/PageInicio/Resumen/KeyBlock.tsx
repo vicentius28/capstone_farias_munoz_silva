@@ -17,19 +17,19 @@ export function KeyBlock({
     tone === "success"
       ? "bg-emerald-500"
       : tone === "warning"
-      ? "bg-amber-500"
-      : tone === "danger"
-      ? "bg-rose-500"
-      : "bg-gray-400";
+        ? "bg-amber-500"
+        : tone === "danger"
+          ? "bg-rose-500"
+          : "bg-gray-400";
 
   const ringTone =
     tone === "success"
       ? "ring-emerald-100"
       : tone === "warning"
-      ? "ring-amber-100"
-      : tone === "danger"
-      ? "ring-rose-100"
-      : "ring-gray-100";
+        ? "ring-amber-100"
+        : tone === "danger"
+          ? "ring-rose-100"
+          : "ring-gray-100";
 
   return (
     <section

@@ -3,7 +3,9 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 function parentOf(pathname: string) {
   const parts = pathname.split("/").filter(Boolean);
+
   if (parts.length > 1) return "/" + parts.slice(0, -1).join("/");
+
   return "/";
 }
 
@@ -26,12 +28,15 @@ export function useSmartBack() {
   const goBack = () => {
     if (canGoBack) {
       navigate(-1);
+
       return;
     }
     const parent = parentOf(location.pathname);
+
     if (parent !== location.pathname) {
       // IMPORTANTE: replace para no “apilar” el padre y evitar rebotes
       navigate(parent, { replace: true });
+
       return;
     }
     // Fallback final (también con replace)

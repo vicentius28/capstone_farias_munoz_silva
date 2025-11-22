@@ -1,5 +1,6 @@
-import { Chip, Tooltip } from "@heroui/react";
 import type { EstadoEvaluacion } from "@/features/evaluacion/types/evaluacion";
+
+import { Chip, Tooltip } from "@heroui/react";
 
 interface EstadoEvaluacionBadgeProps {
   estado: EstadoEvaluacion;
@@ -11,49 +12,49 @@ const estadoConfig = {
   pendiente: {
     color: "warning" as const,
     label: "Pendiente",
-    icon: "⏳"
+    icon: "⏳",
   },
   retroalimentar: {
     color: "primary" as const,
     label: "Retroalimentar",
-    icon: "💬"
+    icon: "💬",
   },
   firmar: {
     color: "warning" as const,
-    label: "Firmar",
-    icon: "✍️"
+    label: "Aceptar",
+    icon: "✍️",
   },
   finalizado: {
     color: "success" as const,
     label: "Finalizado",
-    icon: "✅"
+    icon: "✅",
   },
   // Agregar compatibilidad con estados antiguos mapeándolos a los nuevos
   completado: {
     color: "primary" as const,
     label: "Retroalimentar",
-    icon: "💬"
+    icon: "💬",
   },
   retroalimentacion: {
     color: "primary" as const,
-    label: "Retroalimentar", 
-    icon: "💬"
+    label: "Retroalimentar",
+    icon: "💬",
   },
   cerrado_para_firma: {
     color: "warning" as const,
-    label: "Firma",
-    icon: "✍️"
+    label: "Aceptar",
+    icon: "✍️",
   },
   firmado: {
     color: "success" as const,
     label: "Finalizado",
-    icon: "✅"
+    icon: "✅",
   },
   firmado_obs: {
     color: "success" as const,
     label: "Finalizado",
-    icon: "✅"
-  }
+    icon: "✅",
+  },
 };
 
 function getTooltipContent(estado: EstadoEvaluacion): string {
@@ -63,7 +64,7 @@ function getTooltipContent(estado: EstadoEvaluacion): string {
     case "retroalimentar":
       return "Evaluación completada, pendiente de retroalimentación";
     case "firmar":
-      return "pendiente firma del trabajador ";
+      return "pendiente aceptación del trabajador ";
     case "finalizado":
       return "Proceso completado";
     default:
@@ -74,7 +75,7 @@ function getTooltipContent(estado: EstadoEvaluacion): string {
 export function EstadoEvaluacionBadge({
   estado,
   size = "md",
-  variant = "flat"
+  variant = "flat",
 }: EstadoEvaluacionBadgeProps) {
   const config = estadoConfig[estado as keyof typeof estadoConfig];
 
@@ -84,16 +85,16 @@ export function EstadoEvaluacionBadge({
     const defaultConfig = {
       color: "default" as const,
       label: "Desconocido",
-      icon: "❓"
+      icon: "❓",
     };
-    
+
     return (
-      <Tooltip content="Estado no reconocido" className="text-xs">
+      <Tooltip className="text-xs" content="Estado no reconocido">
         <Chip
           color={defaultConfig.color}
           size={size}
-          variant={variant}
           startContent={<span className="text-xs">{defaultConfig.icon}</span>}
+          variant={variant}
         >
           {defaultConfig.label}
         </Chip>
@@ -104,12 +105,12 @@ export function EstadoEvaluacionBadge({
   const tooltipContent = getTooltipContent(estado);
 
   return (
-    <Tooltip content={tooltipContent} className="text-xs">
+    <Tooltip className="text-xs" content={tooltipContent}>
       <Chip
         color={config.color}
         size={size}
-        variant={variant}
         startContent={<span className="text-xs">{config.icon}</span>}
+        variant={variant}
       >
         {config.label}
       </Chip>

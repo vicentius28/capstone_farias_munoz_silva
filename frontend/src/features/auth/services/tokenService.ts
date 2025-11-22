@@ -18,8 +18,10 @@ let inMemory: Tokens = {};
 export function getTokens(): Tokens {
   return {
     access: inMemory.access ?? localStorage.getItem(ACCESS_TOKEN) ?? undefined,
-    refresh: inMemory.refresh ?? localStorage.getItem(REFRESH_TOKEN) ?? undefined,
-    google: inMemory.google ?? localStorage.getItem(GOOGLE_ACCESS_TOKEN) ?? undefined,
+    refresh:
+      inMemory.refresh ?? localStorage.getItem(REFRESH_TOKEN) ?? undefined,
+    google:
+      inMemory.google ?? localStorage.getItem(GOOGLE_ACCESS_TOKEN) ?? undefined,
   };
 }
 
@@ -51,7 +53,9 @@ export function getRefreshFailCount() {
 }
 export function bumpRefreshFailCount() {
   const n = getRefreshFailCount() + 1;
+
   localStorage.setItem(REFRESH_FAIL_COUNT, String(n));
+
   return n;
 }
 export function resetRefreshFailCount() {
@@ -63,7 +67,10 @@ export function getJwtExp(token?: string): number | null {
   if (!token) return null;
   try {
     const [, payload] = token.split(".");
-    const json = JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/")));
+    const json = JSON.parse(
+      atob(payload.replace(/-/g, "+").replace(/_/g, "/")),
+    );
+
     return typeof json?.exp === "number" ? json.exp : null;
   } catch {
     return null;

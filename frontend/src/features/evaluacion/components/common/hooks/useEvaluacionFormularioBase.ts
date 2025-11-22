@@ -46,14 +46,16 @@ export function useEvaluacionFormularioBase({
         setRespuestas(response.data.respuestas || []);
       } catch (error) {
         addToast({
-          title: `Error al cargar ${tipoEvaluacion === "autoevaluacion"
+          title: `Error al cargar ${
+            tipoEvaluacion === "autoevaluacion"
               ? "autoevaluación"
               : "evaluación"
-            }`,
-          description: `Hubo un error al cargar la ${tipoEvaluacion === "autoevaluacion"
+          }`,
+          description: `Hubo un error al cargar la ${
+            tipoEvaluacion === "autoevaluacion"
               ? "autoevaluación"
               : "evaluación"
-            }`,
+          }`,
           variant: "solid",
           color: "danger",
         });

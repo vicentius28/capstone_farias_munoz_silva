@@ -18,10 +18,10 @@ interface ListSectionProps {
   icon?: React.ReactNode;
   accent?: {
     // clases tailwind para color/gradiente
-    badgeBg?: string;      // ej: "bg-blue-500"
-    badgeText?: string;    // ej: "text-white"
+    badgeBg?: string; // ej: "bg-blue-500"
+    badgeText?: string; // ej: "text-white"
     cardGradient?: string; // ej: "from-blue-50 to-white dark:from-blue-900/20 dark:to-transparent"
-    border?: string;       // ej: "border-blue-200/60 dark:border-blue-400/20"
+    border?: string; // ej: "border-blue-200/60 dark:border-blue-400/20"
   };
 }
 
@@ -30,42 +30,48 @@ const container = {
   show: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.25 }
-  }
+    transition: { duration: 0.25 },
+  },
 };
 
 const list = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
-    transition: { staggerChildren: 0.06 }
-  }
+    transition: { staggerChildren: 0.06 },
+  },
 };
 
 const itemVar = {
   hidden: { opacity: 0, x: -10 },
-  show: { opacity: 1, x: 0, transition: { duration: 0.18 } }
+  show: { opacity: 1, x: 0, transition: { duration: 0.18 } },
 };
 
-const ListSection: React.FC<ListSectionProps> = ({ title, items, icon, accent }) => {
+const ListSection: React.FC<ListSectionProps> = ({
+  title,
+  items,
+  icon,
+  accent,
+}) => {
   if (!items || items.length === 0) return null;
 
   const {
     badgeBg = "bg-default-200 dark:bg-default-800",
     badgeText = "text-default-900 dark:text-default-100",
     cardGradient = "from-content1/50 to-content1/30",
-    border = "border-divider/30"
+    border = "border-divider/30",
   } = accent ?? {};
 
   const renderItem = (item: string | ListItem, index: number) => {
     if (typeof item === "string") {
       return (
-        <motion.div key={index} variants={itemVar}
+        <motion.div
+          key={index}
           className={`px-5 py-3 rounded-xl border ${border} bg-gradient-to-br ${cardGradient}`}
+          variants={itemVar}
         >
           <div className="flex items-center justify-between gap-4">
             <p className="text-sm text-foreground/80">{item}</p>
-
           </div>
         </motion.div>
       );
@@ -76,27 +82,35 @@ const ListSection: React.FC<ListSectionProps> = ({ title, items, icon, accent })
     const anio = item.anio ?? "Sin año";
 
     return (
-      <motion.div key={`${name}-${institucion}-${anio}-${index}`} variants={itemVar}
+      <motion.div
+        key={`${name}-${institucion}-${anio}-${index}`}
         className={`px-5 py-4 rounded-xl border ${border} bg-gradient-to-br ${cardGradient} hover:shadow-md transition-shadow`}
+        variants={itemVar}
       >
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <p className="text-base font-semibold text-foreground line-clamp-2">{name}</p>
-            <p className="text-sm text-default-500 mt-0.5">{institucion} ({anio})</p>
+            <p className="text-base font-semibold text-foreground line-clamp-2">
+              {name}
+            </p>
+            <p className="text-sm text-default-500 mt-0.5">
+              {institucion} ({anio})
+            </p>
           </div>
-          
         </div>
       </motion.div>
     );
   };
 
   return (
-    <motion.section variants={container} initial="hidden" animate="show" className="mb-8">
+    <motion.section
+      animate="show"
+      className="mb-8"
+      initial="hidden"
+      variants={container}
+    >
       <Divider className="my-6 opacity-30" />
       <div className="flex items-center gap-3 mb-4">
-        <div className={`p-2 rounded-lg ${badgeBg} ${badgeText}`}>
-          {icon}
-        </div>
+        <div className={`p-2 rounded-lg ${badgeBg} ${badgeText}`}>{icon}</div>
         <div>
           <h2 className="text-lg font-bold">{title}</h2>
           <p className="text-sm text-default-500">
@@ -105,8 +119,12 @@ const ListSection: React.FC<ListSectionProps> = ({ title, items, icon, accent })
         </div>
       </div>
 
-      <motion.div variants={list} initial="hidden" animate="show"
-        className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <motion.div
+        animate="show"
+        className="grid grid-cols-1 md:grid-cols-2 gap-4"
+        initial="hidden"
+        variants={list}
+      >
         {items.map(renderItem)}
       </motion.div>
     </motion.section>

@@ -28,11 +28,12 @@ export default function UsersTable({
     loading,
     error,
     refreshUsers,
-    lastRefresh
+    lastRefresh,
   } = useUsersCache();
 
   const [page, setPage] = useState<number>(() => {
     const stored = sessionStorage.getItem("lastUserTablePage");
+
     return stored ? parseInt(stored, 10) : 1;
   });
 
@@ -73,7 +74,9 @@ export default function UsersTable({
                 <Users className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <h2 className="text-xl font-semibold text-foreground">Usuarios</h2>
+                <h2 className="text-xl font-semibold text-foreground">
+                  Usuarios
+                </h2>
                 <p className="text-sm text-default-500">Cargando usuarios...</p>
               </div>
             </div>
@@ -82,7 +85,6 @@ export default function UsersTable({
               placeholder="Buscar por Nombre, Cargo, Empresa, Titulo, Magister o Diploma"
               value={searchTerm}
               onChange={setSearchTerm}
-
             />
           </CardBody>
         </Card>
@@ -106,7 +108,9 @@ export default function UsersTable({
                 <AlertTriangle className="w-5 h-5 text-danger" />
               </div>
               <div>
-                <h2 className="text-xl font-semibold text-foreground">Error al cargar usuarios</h2>
+                <h2 className="text-xl font-semibold text-foreground">
+                  Error al cargar usuarios
+                </h2>
                 <p className="text-sm text-danger">{error}</p>
               </div>
             </div>
@@ -114,9 +118,9 @@ export default function UsersTable({
             <div className="flex gap-4">
               <Button
                 color="danger"
+                startContent={<RefreshCw className="w-4 h-4" />}
                 variant="flat"
                 onPress={refreshUsers}
-                startContent={<RefreshCw className="w-4 h-4" />}
               >
                 Reintentar
               </Button>
@@ -124,7 +128,6 @@ export default function UsersTable({
                 placeholder="Buscar por Nombre, Cargo, Empresa, Titulo, Magister o Diploma"
                 value={searchTerm}
                 onChange={setSearchTerm}
-
               />
             </div>
           </CardBody>
@@ -144,28 +147,30 @@ export default function UsersTable({
                 <Users className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <h2 className="text-xl font-semibold text-foreground">Usuarios</h2>
+                <h2 className="text-xl font-semibold text-foreground">
+                  Usuarios
+                </h2>
                 <p className="text-sm text-default-500">
-                  {loading ? 'Cargando usuarios...' : 'Revisa los usuarios'}
+                  {loading ? "Cargando usuarios..." : "Revisa los usuarios"}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               {error && (
-                <Chip color="warning" variant="flat" size="sm">
+                <Chip color="warning" size="sm" variant="flat">
                   ⚠️ Error parcial
                 </Chip>
               )}
               <Chip
                 color={filteredUsers.length > 0 ? "primary" : "danger"}
-                variant="flat"
                 size="sm"
+                variant="flat"
               >
                 {filteredUsers.length} usuarios
                 {searchTerm && ` (filtrados de ${allUsers.length})`}
               </Chip>
               {lastRefresh && (
-                <Chip color="success" variant="flat" size="sm">
+                <Chip color="success" size="sm" variant="flat">
                   Actualizado: {lastRefresh.toLocaleTimeString()}
                 </Chip>
               )}
@@ -180,17 +185,16 @@ export default function UsersTable({
                 placeholder="Buscar por Nombre, Cargo, Empresa, Título, Magister, Diplomado, Bienio o Tramo"
                 value={searchTerm}
                 onChange={setSearchTerm}
-
               />
             </div>
             <Button
-              variant="flat"
-              size="sm"
-              onPress={refreshUsers}
               isLoading={loading}
+              size="sm"
               startContent={!loading && <RefreshCw className="w-4 h-4" />}
+              variant="flat"
+              onPress={refreshUsers}
             >
-              {loading ? 'Actualizando...' : 'Actualizar'}
+              {loading ? "Actualizando..." : "Actualizar"}
             </Button>
           </div>
         </CardBody>
@@ -203,12 +207,12 @@ export default function UsersTable({
             buttonText={buttonText}
             columns={columns}
             data={filteredUsers}
+            error={error}
+            loading={loading}
             page={page}
             searchTerm={searchTerm}
             setPage={setPage}
             onButtonClick={onButtonClick}
-            loading={loading}
-            error={error}
             onRefresh={refreshUsers}
           />
         </CardBody>

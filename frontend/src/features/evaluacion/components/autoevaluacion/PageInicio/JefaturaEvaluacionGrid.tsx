@@ -1,8 +1,11 @@
 // features/evaluacion/jefatura/components/JefaturaEvaluacionGrid.tsx
-import { memo } from "react";
 import type { Evaluacion } from "@/features/evaluacion/types/evaluacion";
-import EmptyState from "@/features/evaluacion/components/autoevaluacion/PageInicio/EmptyState";
+
+import { memo } from "react";
+
 import JefaturaEvaluacionCard from "./JefaturaEvaluacionCard";
+
+import EmptyState from "@/features/evaluacion/components/autoevaluacion/PageInicio/EmptyState";
 
 type Props = {
   items: Evaluacion[];
@@ -11,11 +14,18 @@ type Props = {
   extractTexto?: (ev: Evaluacion) => string | undefined;
 };
 
-const JefaturaEvaluacionGrid = memo(function JefaturaEvaluacionGrid({ items, firmado, onOpen, extractTexto }: Props) {
+const JefaturaEvaluacionGrid = memo(function JefaturaEvaluacionGrid({
+  items,
+  firmado,
+  onOpen,
+  extractTexto,
+}: Props) {
   if (!items.length) {
     return (
       <EmptyState>
-        {firmado ? "✅ Aún no hay evaluaciones finalizadas." : "📝 No tienes evaluaciones por firmar."}
+        {firmado
+          ? "✅ Aún no hay evaluaciones finalizadas."
+          : "📝 No tienes evaluaciones por firmar."}
       </EmptyState>
     );
   }
@@ -23,8 +33,17 @@ const JefaturaEvaluacionGrid = memo(function JefaturaEvaluacionGrid({ items, fir
   return (
     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
       {items.map((ev, i) => (
-        <div key={ev.id} className="animate-fadeInUp" style={{ animationDelay: `${i * 0.08}s` }}>
-          <JefaturaEvaluacionCard item={ev} firmado={firmado} onOpen={onOpen} extractTexto={extractTexto} />
+        <div
+          key={ev.id}
+          className="animate-fadeInUp"
+          style={{ animationDelay: `${i * 0.08}s` }}
+        >
+          <JefaturaEvaluacionCard
+            extractTexto={extractTexto}
+            firmado={firmado}
+            item={ev}
+            onOpen={onOpen}
+          />
         </div>
       ))}
     </div>

@@ -6,17 +6,12 @@ export const sections: Section[] = [
   {
     title: "TRABAJADOR",
     icon: "🧑‍🏫",
-    buttons: [
-      buttons.evaluacionAuto,
-    ],
+    buttons: [buttons.evaluacionAuto],
   },
   {
     title: "EVALUADOR",
     icon: "📋",
-    buttons: [
-      buttons.evaluarDesempeno,
-      buttons.evaluacionMixta,
-    ],
+    buttons: [buttons.evaluarDesempeno, buttons.evaluacionMixta],
   },
   {
     title: "FUNDACIÓN",

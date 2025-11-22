@@ -1,20 +1,25 @@
+import type {
+  Evaluacion,
+  EvaluacionJefe,
+  EstadoEvaluacion,
+} from "@/features/evaluacion/types/evaluacion";
+
 import React, { useEffect, useState, Suspense, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { addToast } from "@heroui/toast";
 import { Spinner } from "@heroui/spinner";
 import { Card, CardBody } from "@heroui/card";
 import { Chip } from "@heroui/chip";
-import { Badge } from "@heroui/badge";
 import { Button } from "@heroui/button";
+
 import { columns2 } from "@/hooks/columns";
 import axios from "@/services/google/axiosInstance";
-import type { Evaluacion, EvaluacionJefe, EstadoEvaluacion } from "@/features/evaluacion/types/evaluacion";
 import { EstadoEvaluacionBadge } from "@/features/evaluacion/components/flow/EstadoEvaluacionBadge";
 
-// Lazy load de la tabla de evaluación
-const TableComponent = React.lazy(() =>
+// Lazy load de la tabla optimizada para grandes volúmenes
+const OptimizedTableComponent = React.lazy(() =>
   import("@/shared/components").then((mod) => ({
-    default: mod.TableComponent,
+    default: mod.OptimizedTableComponent,
   })),
 );
 
@@ -39,33 +44,32 @@ const filtrosConfig = {
     label: "Pendientes",
     color: "default" as const,
     icon: "⏳",
-    description: "Evaluaciones sin completar"
+    description: "Evaluaciones sin completar",
   },
   completadas: {
     label: "Completadas",
     color: "primary" as const,
     icon: "✅",
-    description: "Evaluaciones terminadas"
+    description: "Evaluaciones terminadas",
   },
   con_retroalimentacion: {
     label: "Con Retroalimentación",
     color: "success" as const,
     icon: "💬",
-    description: "Con feedback completado"
+    description: "Con feedback completado",
   },
   cerradas_firma: {
-    label: "Listas para Firmar",
+    label: "Listas para Aceptar",
     color: "warning" as const,
     icon: "🔒",
-    description: "Esperando firma"
+    description: "Esperando aceptación",
   },
   firmadas: {
     label: "Firmadas",
     color: "success" as const,
     icon: "📝",
-    description: "Proceso finalizado"
+    description: "Proceso finalizado",
   },
-
 };
 
 export default function TableevaPage() {
@@ -77,15 +81,17 @@ export default function TableevaPage() {
   const [searchTerm] = useState("");
   const [asignaciones, setAsignaciones] = useState<EvaluacionJefe[]>([]);
   const [cargandoAsignaciones, setCargandoAsignaciones] = useState(true);
-  const [filtroActivo, setFiltroActivo] = useState<string | null>(state?.filtro || null);
+  const [filtroActivo, setFiltroActivo] = useState<string | null>(
+    state?.filtro || null,
+  );
 
   const tipo_evaluacion = state?.tipo_evaluacion;
   const fecha_evaluacion = state?.fecha_evaluacion;
   const periodoFormateado = fecha_evaluacion
     ? new Date(fecha_evaluacion + "-01T00:00:00").toLocaleDateString("es-CL", {
-      year: "numeric",
-      month: "long",
-    })
+        year: "numeric",
+        month: "long",
+      })
     : "";
 
   useEffect(() => {
@@ -97,16 +103,15 @@ export default function TableevaPage() {
 
         // Filtrar por tipo y fecha de evaluación
         const filtradas = todas
-          .filter(a =>
-            a?.tipo_evaluacion?.id === tipo_evaluacion?.id &&
-            a?.fecha_evaluacion === fecha_evaluacion
+          .filter(
+            (a) =>
+              a?.tipo_evaluacion?.id === tipo_evaluacion?.id &&
+              a?.fecha_evaluacion === fecha_evaluacion,
           )
-          .map(a => ({
+          .map((a) => ({
             ...a,
             __isPonderada:
-              typeof a?.ponderada === "boolean"
-                ? a.ponderada
-                : !!a?.ponderada,
+              typeof a?.ponderada === "boolean" ? a.ponderada : !!a?.ponderada,
           }));
 
         setAsignaciones(filtradas);
@@ -130,36 +135,40 @@ export default function TableevaPage() {
   // Función para determinar el estado de la evaluación
   const determinarEstado = (evaluacion: EvaluacionJefe): EstadoEvaluacion => {
     // Agregar debugging
-    console.log('🔍 Determinando estado para evaluación:', {
+    console.log("🔍 Determinando estado para evaluación:", {
       id: evaluacion.id,
       estado_firma: evaluacion.estado_firma,
       firmado: evaluacion.firmado,
       firmado_obs: evaluacion.firmado_obs,
       cerrado_para_firma: evaluacion.cerrado_para_firma,
       retroalimentacion: evaluacion.retroalimentacion,
-      completado: evaluacion.completado
+      completado: evaluacion.completado,
     });
 
     // 1. Si está firmado (con o sin observaciones) → finalizado
     if (evaluacion.firmado || evaluacion.firmado_obs) {
-      console.log('✅ Estado: finalizado');
+      console.log("✅ Estado: finalizado");
+
       return "finalizado";
     }
 
     // 2. Si tiene retroalimentación Y está cerrado para firma → firmar
     if (evaluacion.retroalimentacion && evaluacion.cerrado_para_firma) {
-      console.log('✅ Estado: firmar');
+      console.log("✅ Estado: Aceptar");
+
       return "firmar";
     }
 
     // 3. Si está completado → retroalimentar
     if (evaluacion.completado) {
-      console.log('✅ Estado: retroalimentar');
+      console.log("✅ Estado: retroalimentar");
+
       return "retroalimentar";
     }
 
     // 4. Por defecto → pendiente
-    console.log('✅ Estado: pendiente');
+    console.log("✅ Estado: pendiente");
+
     return "pendiente";
   };
 
@@ -167,17 +176,17 @@ export default function TableevaPage() {
   const asignacionesFiltradas = useMemo(() => {
     if (!filtroActivo) return asignaciones;
 
-    return asignaciones.filter(a => {
+    return asignaciones.filter((a) => {
       switch (filtroActivo) {
-        case 'pendientes':
+        case "pendientes":
           return !a.completado;
-        case 'con_retroalimentacion':
+        case "con_retroalimentacion":
           return a.completado && !a.retroalimentacion;
-        case 'cerradas_firma':
+        case "cerradas_firma":
           return a.cerrado_para_firma && !a.firmado;
-        case 'firmadas':
+        case "firmadas":
           return a.firmado;
-        case 'pendientes_firma':
+        case "pendientes_firma":
           return a.completado && !a.firmado;
         default:
           return true;
@@ -206,7 +215,7 @@ export default function TableevaPage() {
           accion = "Retroalimentar";
           break;
         case "firmar":
-          estado_texto = "Firmar";
+          estado_texto = "Aceptar";
           accion = "Ver resumen";
           break;
 
@@ -219,39 +228,60 @@ export default function TableevaPage() {
 
       return {
         id: a.id,
-        first_name: user?.first_name || '',
-        last_name: user?.last_name || '',
-        email: user?.email || '',
+        first_name: user?.first_name || "",
+        last_name: user?.last_name || "",
+        email: user?.email || "",
         foto_thumbnail: user?.foto_thumbnail,
-        ciclo: user?.ciclo || '',
-        cargo: user?.cargo || '',
+        ciclo: user?.ciclo || "",
+        cargo: user?.cargo || "",
         completado: !!a?.completado,
         estado_texto,
         estado,
-        accion
+        accion,
       };
     });
   }, [asignacionesFiltradas]);
 
+  // Eliminamos búsqueda superior en favor de filtros por columna en la tabla
+
   // Calcular estadísticas mejoradas
   const estadisticas = useMemo(() => {
-    const total = asignaciones.length;
-    const pendientes = asignaciones.filter(a => !a.firmado).length;
-    const conRetroalimentacion = asignaciones.filter(a => a.retroalimentacion && !a.cerrado_para_firma).length;
-    const cerradasFirma = asignaciones.filter(a => a.cerrado_para_firma && !a.firmado).length;
-    const firmadas = asignaciones.filter(a => a.firmado).length;
+    const total = dataFormateada.length;
+    const pendientes = dataFormateada.filter(
+      (a) => a.estado === "pendiente",
+    ).length;
+    const retroPendientes = dataFormateada.filter(
+      (a) => a.estado === "retroalimentar",
+    ).length;
+    const cerradasFirma = dataFormateada.filter(
+      (a) => a.estado === "firmar",
+    ).length;
+    const firmadas = dataFormateada.filter(
+      (a) => a.estado === "finalizado",
+    ).length;
 
-    const porcentajeCompletado = total > 0 ? Math.round(((total - pendientes) / total) * 100) : 0;
+    const porcentajeCompletado =
+      total > 0 ? Math.round(((total - pendientes) / total) * 100) : 0;
+
+    const promedioLogro =
+      pendientes === 0 && total > 0
+        ? Math.round(
+            asignaciones
+              .map((a) => a.porcentaje_total ?? 0)
+              .reduce((acc, v) => acc + v, 0) / total || 0,
+          )
+        : null;
 
     return {
       total,
       pendientes,
-      conRetroalimentacion,
+      retroPendientes,
       cerradasFirma,
       firmadas,
       porcentajeCompletado,
+      promedioLogro,
     };
-  }, [asignaciones]);
+  }, [dataFormateada, asignaciones]);
 
   // Función para cambiar filtros
   const cambiarFiltro = (nuevoFiltro: string | null) => {
@@ -267,12 +297,12 @@ export default function TableevaPage() {
           <CardBody className="flex flex-col items-center justify-center gap-4 py-12">
             <div className="relative">
               <Spinner
-                size="lg"
                 className="w-12 h-12"
                 classNames={{
                   circle1: "border-b-primary",
                   circle2: "border-b-primary-300",
                 }}
+                size="lg"
               />
             </div>
             <div className="text-center space-y-2">
@@ -291,34 +321,37 @@ export default function TableevaPage() {
 
   // Función para manejar el click del botón de acción principal
   const handleActionClick = (userId: number) => {
-    const evaluacion = asignacionesFiltradas.find(a => a.id === userId);
+    const evaluacion = asignacionesFiltradas.find((a) => a.id === userId);
 
     if (evaluacion) {
       // Determinar la ruta basada en el estado de la evaluación
       if (!evaluacion.completado) {
         // Evaluar - ir a página de evaluación
         navigate(`/evaluacion-jefatura/tabla/formulario`, {
-          state: { id: evaluacion.id }
+          state: { id: evaluacion.id },
         });
       } else if (evaluacion.completado && !evaluacion.retroalimentacion) {
         // Ver resumen o programar reunión
         navigate(`/evaluacion-jefatura/tabla/retroalimentacion`, {
-          state: { id: evaluacion.id }
+          state: { id: evaluacion.id },
         });
-      } else if (evaluacion.retroalimentacion && !evaluacion.cerrado_para_firma) {
+      } else if (
+        evaluacion.retroalimentacion &&
+        !evaluacion.cerrado_para_firma
+      ) {
         // Ver resumen
         navigate(`/evaluacion-jefatura/tabla/detalle`, {
-          state: { id: evaluacion.id }
+          state: { id: evaluacion.id },
         });
       } else if (evaluacion.cerrado_para_firma && !evaluacion.firmado) {
         // Firmar
         navigate(`/evaluacion-jefatura/tabla/detalle`, {
-          state: { id: evaluacion.id }
+          state: { id: evaluacion.id },
         });
       } else {
         // Ver resumen final
         navigate(`/evaluacion-jefatura/tabla/detalle`, {
-          state: { id: evaluacion.id }
+          state: { id: evaluacion.id },
         });
       }
     }
@@ -327,13 +360,14 @@ export default function TableevaPage() {
   // Nueva función para manejar el click del botón "Ver Progreso"
   const handleVerProgreso = (userId: number) => {
     navigate(`/evaluacion-jefatura/tabla/detalle-progreso`, {
-      state: { id: userId }
+      state: { id: userId },
     });
   };
 
   // Función para obtener el texto del botón según el estado
   const getButtonText = (userId: number): string => {
-    const evaluacion = dataFormateada.find(a => a.id === userId);
+    const evaluacion = dataFormateada.find((a) => a.id === userId);
+
     return evaluacion?.accion || "";
   };
 
@@ -342,7 +376,7 @@ export default function TableevaPage() {
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Header Section Mejorado */}
         <div className="mb-8">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+          <div className="flex flex-col lg:flex-row  lg:items-center lg:justify-between gap-6 ">
             <div className="space-y-3">
               <h1 className="text-3xl font-bold text-foreground tracking-tight">
                 {tipo_evaluacion?.n_tipo_evaluacion}
@@ -353,74 +387,183 @@ export default function TableevaPage() {
               {filtroActivo && (
                 <div className="flex items-center gap-2">
                   <Chip
-                    color="primary"
-                    variant="flat"
-                    size="sm"
                     className="font-semibold"
-                    startContent={<span className="text-xs">{filtrosConfig[filtroActivo as keyof typeof filtrosConfig]?.icon}</span>}
+                    color="primary"
+                    size="sm"
+                    startContent={
+                      <span className="text-xs">
+                        {
+                          filtrosConfig[
+                            filtroActivo as keyof typeof filtrosConfig
+                          ]?.icon
+                        }
+                      </span>
+                    }
+                    variant="flat"
                   >
-                    Filtro: {filtrosConfig[filtroActivo as keyof typeof filtrosConfig]?.label}
+                    Filtro:{" "}
+                    {
+                      filtrosConfig[filtroActivo as keyof typeof filtrosConfig]
+                        ?.label
+                    }
                   </Chip>
                 </div>
               )}
             </div>
 
+            {/* Se eliminó el buscador superior para priorizar filtros por columna en la tabla */}
+
             {/* Estadísticas Mejoradas */}
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               {/* Total */}
               <Card
-                className={`min-w-[120px] cursor-pointer transition-all duration-200 hover:scale-105 ${filtroActivo === null ? 'bg-default-100 border-default-300 shadow-md' : 'bg-default-50 border-default-200'
-                  }`}
                 isPressable
+                className={`min-w-[120px] cursor-pointer transition-all duration-200 hover:scale-105 ${
+                  filtroActivo === null
+                    ? "bg-default-100 border-default-300 shadow-md"
+                    : "bg-default-50 border-default-200"
+                }`}
                 onPress={() => cambiarFiltro(null)}
               >
                 <CardBody className="p-3">
                   <div className="flex flex-col items-center text-center">
                     <div className="p-2 rounded-full bg-default-200 mb-2">
-                      <svg className="w-4 h-4 text-default-600" fill="currentColor" viewBox="0 0 20 20">
+                      <svg
+                        className="w-4 h-4 text-default-600"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
                         <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
-                        <path fillRule="evenodd" d="M4 5a2 2 0 012-2v1a1 1 0 102 0V3h4v1a1 1 0 102 0V3a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm8 8a1 1 0 100-2 1 1 0 000 2zm-3-1a1 1 0 11-2 0 1 1 0 012 0zm-3-1a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                        <path
+                          clipRule="evenodd"
+                          d="M4 5a2 2 0 012-2v1a1 1 0 102 0V3h4v1a1 1 0 102 0V3a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm8 8a1 1 0 100-2 1 1 0 000 2zm-3-1a1 1 0 11-2 0 1 1 0 012 0zm-3-1a1 1 0 100-2 1 1 0 000 2z"
+                          fillRule="evenodd"
+                        />
                       </svg>
                     </div>
-                    <p className="text-xl font-bold text-default-700">{estadisticas.total}</p>
-                    <p className="text-xs text-default-600 font-medium">Total</p>
+                    <p className="text-xl font-bold text-default-700">
+                      {estadisticas.total}
+                    </p>
+                    <p className="text-xs text-default-600 font-medium">
+                      Total
+                    </p>
                   </div>
                 </CardBody>
               </Card>
+              {/* Promedio de logro (solo si todas firmadas) */}
+              {estadisticas.promedioLogro !== null && (
+                <Card className="min-w-[120px] bg-success-50 border-success-200">
+                  <CardBody className="p-3">
+                    <div className="flex flex-col items-center text-center">
+                      <div className="p-2 rounded-full bg-success-200 mb-2">
+                        <span className="text-sm">🎯</span>
+                      </div>
+                      <p className="text-xl font-bold text-success-700">
+                        {estadisticas.promedioLogro}%
+                      </p>
+                      <p className="text-xs text-success-600 font-medium">
+                        Promedio de logro
+                      </p>
+                    </div>
+                  </CardBody>
+                </Card>
+              )}
 
               {/* Pendientes */}
               <Card
-                className={`min-w-[120px] cursor-pointer transition-all duration-200 hover:scale-105 ${filtroActivo === 'pendientes' ? 'bg-default-100 border-default-300 shadow-md' : 'bg-default-50 border-default-200'
-                  }`}
                 isPressable
-                onPress={() => cambiarFiltro('pendientes')}
+                className={`min-w-[120px] cursor-pointer transition-all duration-200 hover:scale-105 ${
+                  filtroActivo === "pendientes"
+                    ? "bg-default-100 border-default-300 shadow-md"
+                    : "bg-default-50 border-default-200"
+                }`}
+                onPress={() => cambiarFiltro("pendientes")}
               >
                 <CardBody className="p-3">
                   <div className="flex flex-col items-center text-center">
                     <div className="p-2 rounded-full bg-default-200 mb-2">
                       <span className="text-sm">⏳</span>
                     </div>
-                    <p className="text-xl font-bold text-default-700">{estadisticas.pendientes}</p>
-                    <p className="text-xs text-default-600 font-medium">Pendientes</p>
+                    <p className="text-xl font-bold text-default-700">
+                      {estadisticas.pendientes}
+                    </p>
+                    <p className="text-xs text-default-600 font-medium">
+                      Pendientes
+                    </p>
                   </div>
                 </CardBody>
               </Card>
 
+              {/* Retroalimentar */}
+              <Card
+                isPressable
+                className={`min-w-[120px] cursor-pointer transition-all duration-200 hover:scale-105 ${
+                  filtroActivo === "con_retroalimentacion"
+                    ? "bg-secondary-100 border-secondary-300 shadow-md"
+                    : "bg-secondary-50 border-secondary-200"
+                }`}
+                onPress={() => cambiarFiltro("con_retroalimentacion")}
+              >
+                <CardBody className="p-3">
+                  <div className="flex flex-col items-center text-center">
+                    <div className="p-2 rounded-full bg-secondary-200 mb-2">
+                      <span className="text-sm">💬</span>
+                    </div>
+                    <p className="text-xl font-bold text-secondary-700">
+                      {estadisticas.retroPendientes}
+                    </p>
+                    <p className="text-xs text-secondary-600 font-medium">
+                      Retroalimentar
+                    </p>
+                  </div>
+                </CardBody>
+              </Card>
 
+              {/* Reunión Finalizada (cerradas para firma) */}
+              <Card
+                isPressable
+                className={`min-w-[120px] cursor-pointer transition-all duration-200 hover:scale-105 ${
+                  filtroActivo === "cerradas_firma"
+                    ? "bg-primary-100 border-primary-300 shadow-md"
+                    : "bg-primary-50 border-primary-200"
+                }`}
+                onPress={() => cambiarFiltro("cerradas_firma")}
+              >
+                <CardBody className="p-3">
+                  <div className="flex flex-col items-center text-center">
+                    <div className="p-2 rounded-full bg-primary-200 mb-2">
+                      <span className="text-sm">📅</span>
+                    </div>
+                    <p className="text-xl font-bold text-primary-700">
+                      {estadisticas.cerradasFirma}
+                    </p>
+                    <p className="text-xs text-primary-600 font-medium">
+                      Aceptar
+                    </p>
+                  </div>
+                </CardBody>
+              </Card>
               {/* Firmadas */}
               <Card
-                className={`min-w-[120px] cursor-pointer transition-all duration-200 hover:scale-105 ${filtroActivo === 'firmadas' ? 'bg-success-100 border-success-300 shadow-md' : 'bg-success-50 border-success-200'
-                  }`}
                 isPressable
-                onPress={() => cambiarFiltro('firmadas')}
+                className={`min-w-[120px] cursor-pointer transition-all duration-200 hover:scale-105 ${
+                  filtroActivo === "firmadas"
+                    ? "bg-success-100 border-success-300 shadow-md"
+                    : "bg-success-50 border-success-200"
+                }`}
+                onPress={() => cambiarFiltro("firmadas")}
               >
                 <CardBody className="p-3">
                   <div className="flex flex-col items-center text-center">
                     <div className="p-2 rounded-full bg-success-200 mb-2">
                       <span className="text-sm">📝</span>
                     </div>
-                    <p className="text-xl font-bold text-success-700">{estadisticas.firmadas}</p>
-                    <p className="text-xs text-success-600 font-medium">Finalizadas</p>
+                    <p className="text-xl font-bold text-success-700">
+                      {estadisticas.firmadas}
+                    </p>
+                    <p className="text-xs text-success-600 font-medium">
+                      Aceptadas
+                    </p>
                   </div>
                 </CardBody>
               </Card>
@@ -432,9 +575,16 @@ export default function TableevaPage() {
             <Card className="bg-background/60 backdrop-blur-sm border-default-200">
               <CardBody className="p-4">
                 <div className="flex flex-wrap items-center gap-4">
-                  <span className="text-sm font-semibold text-foreground">Estados de evaluación:</span>
+                  <span className="text-sm font-semibold text-foreground">
+                    Estados de evaluación:
+                  </span>
                   <div className="flex flex-wrap gap-3">
-                    {["pendiente", "retroalimentar", "firmar", "finalizado"].map((estado) => (
+                    {[
+                      "pendiente",
+                      "retroalimentar",
+                      "firmar",
+                      "finalizado",
+                    ].map((estado) => (
                       <EstadoEvaluacionBadge
                         key={estado}
                         estado={estado as EstadoEvaluacion}
@@ -447,38 +597,7 @@ export default function TableevaPage() {
               </CardBody>
             </Card>
           </div>
-
-          {/* Barras de Progreso Mejoradas */}
-          {estadisticas.total > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-1 gap-6 mt-6">
-              {/* Progreso de Evaluación */}
-              <Card className="bg-gradient-to-r from-primary-50 to-primary-100/50 border-primary-200">
-                <CardBody className="p-6">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-semibold text-primary-700">
-                      Progreso de Evaluación
-                    </span>
-                    <Badge content={`${estadisticas.porcentajeCompletado}%`} color="primary" variant="flat">
-                      <div className="w-8 h-8" />
-                    </Badge>
-                  </div>
-                  <div className="w-full bg-primary-200 rounded-full h-3 overflow-hidden mb-3">
-                    <div
-                      className="bg-gradient-to-r from-primary-500 to-primary-600 h-3 rounded-full transition-all duration-700 ease-out shadow-sm"
-                      style={{ width: `${estadisticas.porcentajeCompletado}%` }}
-                    />
-                  </div>
-                  <div className="flex justify-between text-xs text-primary-600">
-                    <span>{estadisticas.pendientes} pendientes</span>
-                    <span>{estadisticas.firmadas} completadas</span>
-
-                  </div>
-                </CardBody>
-              </Card>
-            </div>
-          )}
         </div>
-
 
         {/* Main Content */}
         <div className="space-y-6">
@@ -489,16 +608,13 @@ export default function TableevaPage() {
               </div>
             }
           >
-            <TableComponent
+            <OptimizedTableComponent
+              buttonText="Acción"
               columns={columns2}
               data={dataFormateada}
-              isLoading={cargandoAsignaciones}
-              page={page}
-              searchTerm={searchTerm}
-              setPage={setPage}
-              buttonText="Acción"
               getButtonText={getButtonText}
-              onButtonClick={handleActionClick}
+              loading={cargandoAsignaciones}
+              page={page}
               renderCell={(item: EvaluacionFormateada, columnKey: string) => {
                 if (columnKey === "estado_texto") {
                   return (
@@ -515,11 +631,11 @@ export default function TableevaPage() {
                   return (
                     <div className="flex gap-2">
                       <Button
-                        color={item.completado ? "success" : "primary"}
-                        variant={item.completado ? "flat" : "solid"}
-                        size="sm"
-                        onPress={() => handleActionClick(item.id)}
                         className="font-medium"
+                        color={item.completado ? "success" : "primary"}
+                        size="sm"
+                        variant={item.completado ? "flat" : "solid"}
+                        onPress={() => handleActionClick(item.id)}
                       >
                         {getButtonText(item.id)}
                       </Button>
@@ -527,11 +643,11 @@ export default function TableevaPage() {
                       {/* Mostrar botón "Ver Progreso" solo para evaluaciones pendientes */}
                       {!item.completado && (
                         <Button
-                          color="primary"
-                          variant="ghost"
-                          size="sm"
-                          onPress={() => handleVerProgreso(item.id)}
                           className="font-medium"
+                          color="primary"
+                          size="sm"
+                          variant="ghost"
+                          onPress={() => handleVerProgreso(item.id)}
                         >
                           Ver Progreso
                         </Button>
@@ -542,6 +658,9 @@ export default function TableevaPage() {
 
                 return undefined; // Usar renderizado por defecto para otras columnas
               }}
+              searchTerm={searchTerm}
+              setPage={setPage}
+              onButtonClick={handleActionClick}
             />
           </Suspense>
         </div>
@@ -549,4 +668,3 @@ export default function TableevaPage() {
     </div>
   );
 }
-

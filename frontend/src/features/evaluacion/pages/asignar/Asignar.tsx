@@ -5,13 +5,13 @@ import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Spinner } from "@heroui/spinner";
 import { Tabs, Tab } from "@heroui/tabs";
 import { Chip } from "@heroui/chip";
-import { 
-  PlusIcon, 
-  DocumentTextIcon, 
+import {
+  PlusIcon,
+  DocumentTextIcon,
   UserIcon,
   CalendarDaysIcon,
   EyeIcon,
-  ClipboardDocumentListIcon
+  ClipboardDocumentListIcon,
 } from "@heroicons/react/24/outline";
 
 import {
@@ -69,7 +69,8 @@ export default function AsignarEvaluacionPage() {
     [tiposEvaluacion],
   );
 
-  const lista = tabSeleccionado === "evaluaciones" ? evaluaciones : autoevaluaciones;
+  const lista =
+    tabSeleccionado === "evaluaciones" ? evaluaciones : autoevaluaciones;
   const isEvaluaciones = tabSeleccionado === "evaluaciones";
 
   const AsignacionCard = ({
@@ -91,11 +92,13 @@ export default function AsignarEvaluacionPage() {
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between w-full">
           <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-lg ${
-              isEvaluaciones 
-                ? "bg-primary/10 text-primary" 
-                : "bg-secondary/10 text-secondary"
-            }`}>
+            <div
+              className={`p-2 rounded-lg ${
+                isEvaluaciones
+                  ? "bg-primary/10 text-primary"
+                  : "bg-secondary/10 text-secondary"
+              }`}
+            >
               {isEvaluaciones ? (
                 <DocumentTextIcon className="w-5 h-5" />
               ) : (
@@ -131,26 +134,29 @@ export default function AsignarEvaluacionPage() {
 
   const EmptyState = () => (
     <div className="flex flex-col items-center justify-center py-16 px-6">
-      <div className={`p-4 rounded-full mb-4 ${
-        isEvaluaciones 
-          ? "bg-primary/10 text-primary" 
-          : "bg-secondary/10 text-secondary"
-      }`}>
+      <div
+        className={`p-4 rounded-full mb-4 ${
+          isEvaluaciones
+            ? "bg-primary/10 text-primary"
+            : "bg-secondary/10 text-secondary"
+        }`}
+      >
         <ClipboardDocumentListIcon className="w-8 h-8" />
       </div>
       <h3 className="text-lg font-medium text-foreground mb-2">
-        {isEvaluaciones ? "No hay evaluaciones asignadas" : "No hay autoevaluaciones asignadas"}
+        {isEvaluaciones
+          ? "No hay evaluaciones asignadas"
+          : "No hay autoevaluaciones asignadas"}
       </h3>
       <p className="text-sm text-default-500 text-center mb-6 max-w-sm">
-        {isEvaluaciones 
+        {isEvaluaciones
           ? "Crea y asigna tu primera evaluación para comenzar el proceso de evaluación."
-          : "Crea y asigna tu primera autoevaluación para habilitar la autoevaluación de usuarios."
-        }
+          : "Crea y asigna tu primera autoevaluación para habilitar la autoevaluación de usuarios."}
       </p>
       <Button
         color={isEvaluaciones ? "primary" : "secondary"}
-        variant="flat"
         startContent={<PlusIcon className="w-4 h-4" />}
+        variant="flat"
         onPress={() =>
           navigate(
             `/evaluacion-asignar/crear?auto=${tabSeleccionado === "autoevaluaciones"}`,
@@ -167,21 +173,23 @@ export default function AsignarEvaluacionPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="relative">
-            <Spinner 
-              size="lg" 
-              color="primary"
+            <Spinner
               classNames={{
                 circle1: "border-b-primary",
                 circle2: "border-b-primary/30",
               }}
+              color="primary"
+              size="lg"
             />
             <div className="absolute inset-0 animate-ping">
-              <div className="w-full h-full rounded-full bg-primary/10"></div>
+              <div className="w-full h-full rounded-full bg-primary/10" />
             </div>
           </div>
           <div className="text-center">
             <p className="text-lg font-medium text-foreground">Cargando</p>
-            <p className="text-sm text-default-500">Obteniendo asignaciones...</p>
+            <p className="text-sm text-default-500">
+              Obteniendo asignaciones...
+            </p>
           </div>
         </div>
       </div>
@@ -202,7 +210,8 @@ export default function AsignarEvaluacionPage() {
             Asignar Evaluaciones
           </h1>
           <p className="text-default-600 max-w-2xl mx-auto">
-            Gestiona y supervisa las asignaciones de evaluación y autoevaluación activas
+            Gestiona y supervisa las asignaciones de evaluación y autoevaluación
+            activas
           </p>
         </div>
 
@@ -211,39 +220,50 @@ export default function AsignarEvaluacionPage() {
           <div className="p-1 bg-default-100/80 dark:bg-default-100/20 backdrop-blur-sm rounded-xl border border-default-200/50">
             <Tabs
               aria-label="Tipos de evaluación"
-              selectedKey={tabSeleccionado}
-              onSelectionChange={(key) =>
-                setTabSeleccionado(key as "evaluaciones" | "autoevaluaciones")
-              }
               classNames={{
                 tabList: "gap-1",
                 cursor: "bg-background shadow-sm",
                 tab: "h-12 px-6 data-[selected=true]:text-foreground",
-                tabContent: "group-data-[selected=true]:text-foreground text-default-600"
+                tabContent:
+                  "group-data-[selected=true]:text-foreground text-default-600",
               }}
+              selectedKey={tabSeleccionado}
+              onSelectionChange={(key) =>
+                setTabSeleccionado(key as "evaluaciones" | "autoevaluaciones")
+              }
             >
-              <Tab 
-                key="evaluaciones" 
+              <Tab
+                key="evaluaciones"
                 title={
                   <div className="flex items-center gap-2">
                     <DocumentTextIcon className="w-4 h-4" />
                     <span>Evaluaciones</span>
                     {evaluaciones.length > 0 && (
-                      <Chip size="sm" variant="flat" color="primary" className="text-xs">
+                      <Chip
+                        className="text-xs"
+                        color="primary"
+                        size="sm"
+                        variant="flat"
+                      >
                         {evaluaciones.length}
                       </Chip>
                     )}
                   </div>
                 }
               />
-              <Tab 
-                key="autoevaluaciones" 
+              <Tab
+                key="autoevaluaciones"
                 title={
                   <div className="flex items-center gap-2">
                     <UserIcon className="w-4 h-4" />
                     <span>AutoEvaluaciones</span>
                     {autoevaluaciones.length > 0 && (
-                      <Chip size="sm" variant="flat" color="secondary" className="text-xs">
+                      <Chip
+                        className="text-xs"
+                        color="secondary"
+                        size="sm"
+                        variant="flat"
+                      >
                         {autoevaluaciones.length}
                       </Chip>
                     )}
@@ -258,22 +278,25 @@ export default function AsignarEvaluacionPage() {
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-3">
             <h2 className="text-xl font-semibold text-foreground">
-              {isEvaluaciones ? "Evaluaciones Asignadas" : "AutoEvaluaciones Asignadas"}
+              {isEvaluaciones
+                ? "Evaluaciones Asignadas"
+                : "AutoEvaluaciones Asignadas"}
             </h2>
-            <Chip 
-              size="sm" 
-              variant="flat" 
+            <Chip
               color={isEvaluaciones ? "primary" : "secondary"}
+              size="sm"
+              variant="flat"
             >
-              {lista.length} {lista.length === 1 ? "asignación" : "asignaciones"}
+              {lista.length}{" "}
+              {lista.length === 1 ? "asignación" : "asignaciones"}
             </Chip>
           </div>
-          
+
           <Button
-            color={isEvaluaciones ? "primary" : "secondary"}
-            variant="shadow"
-            startContent={<PlusIcon className="w-4 h-4" />}
             className="font-medium"
+            color={isEvaluaciones ? "primary" : "secondary"}
+            startContent={<PlusIcon className="w-4 h-4" />}
+            variant="shadow"
             onPress={() =>
               navigate(
                 `/evaluacion-asignar/crear?auto=${tabSeleccionado === "autoevaluaciones"}`,

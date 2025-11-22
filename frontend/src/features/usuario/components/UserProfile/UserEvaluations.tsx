@@ -1,5 +1,12 @@
 import React from "react";
-import { Eye, FileText, TrendingUp, Calendar, ExternalLink, ChartBar } from "lucide-react";
+import {
+  Eye,
+  FileText,
+  TrendingUp,
+  Calendar,
+  ExternalLink,
+  ChartBar,
+} from "lucide-react";
 import { Card, CardBody } from "@heroui/card";
 import { Button } from "@heroui/button";
 import { Chip } from "@heroui/chip";
@@ -29,15 +36,22 @@ const UserEvaluations: React.FC<Props> = ({ evaluaciones }) => {
   }
 
   // Calcular estadísticas
-  const promedioGeneral = evaluaciones.reduce((acc, eva) => acc + Number(eva.porcentaje), 0) / evaluaciones.length;
-  const mejorEvaluacion = Math.max(...evaluaciones.map(eva => Number(eva.porcentaje)));
-  const evaluacionesOrdenadas = [...evaluaciones].sort((a, b) => Number(b.anio) - Number(a.anio));
+  const promedioGeneral =
+    evaluaciones.reduce((acc, eva) => acc + Number(eva.porcentaje), 0) /
+    evaluaciones.length;
+  const mejorEvaluacion = Math.max(
+    ...evaluaciones.map((eva) => Number(eva.porcentaje)),
+  );
+  const evaluacionesOrdenadas = [...evaluaciones].sort(
+    (a, b) => Number(b.anio) - Number(a.anio),
+  );
 
   // Función para obtener color basado en porcentaje
   const getScoreColor = (porcentaje: number) => {
     if (porcentaje >= 90) return "success";
     if (porcentaje >= 80) return "primary";
     if (porcentaje >= 70) return "warning";
+
     return "danger";
   };
 
@@ -54,7 +68,9 @@ const UserEvaluations: React.FC<Props> = ({ evaluaciones }) => {
               Evaluaciones de Desempeño
             </h2>
             <p className="text-sm text-default-500 dark:text-default-400">
-              {evaluaciones.length} evaluación{evaluaciones.length !== 1 ? 'es' : ''} registrada{evaluaciones.length !== 1 ? 's' : ''}
+              {evaluaciones.length} evaluación
+              {evaluaciones.length !== 1 ? "es" : ""} registrada
+              {evaluaciones.length !== 1 ? "s" : ""}
             </p>
           </div>
         </div>
@@ -120,16 +136,18 @@ const UserEvaluations: React.FC<Props> = ({ evaluaciones }) => {
                   hover:bg-default-100/60 dark:hover:bg-default-100/10 
                   hover:border-${scoreColor}/30 dark:hover:border-${scoreColor}/40
                   transition-all duration-300 hover:shadow-md dark:hover:shadow-default-500/10
-                  ${isLatest ? 'ring-2 ring-primary/20 dark:ring-primary/30' : ''}
+                  ${isLatest ? "ring-2 ring-primary/20 dark:ring-primary/30" : ""}
                 `}
-                shadow="none"
                 radius="lg"
+                shadow="none"
               >
                 <CardBody className="p-5">
                   <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4">
                     {/* Icono y contenido principal */}
                     <div className="flex items-start gap-4 flex-1">
-                      <div className={`bg-${scoreColor}/10 dark:bg-${scoreColor}/20 rounded-lg p-3 flex-shrink-0`}>
+                      <div
+                        className={`bg-${scoreColor}/10 dark:bg-${scoreColor}/20 rounded-lg p-3 flex-shrink-0`}
+                      >
                         <FileText className={`w-5 h-5 text-${scoreColor}`} />
                       </div>
 
@@ -140,10 +158,10 @@ const UserEvaluations: React.FC<Props> = ({ evaluaciones }) => {
                           </h4>
                           {isLatest && (
                             <Chip
-                              size="sm"
-                              color="primary"
-                              variant="flat"
                               className="bg-primary/10 dark:bg-primary/20 text-primary font-medium"
+                              color="primary"
+                              size="sm"
+                              variant="flat"
                             >
                               Más reciente
                             </Chip>
@@ -163,17 +181,20 @@ const UserEvaluations: React.FC<Props> = ({ evaluaciones }) => {
                             <span className="text-sm text-default-600 dark:text-default-400">
                               Puntuación obtenida
                             </span>
-                            <span className={`font-bold text-${scoreColor} text-lg`}>
+                            <span
+                              className={`font-bold text-${scoreColor} text-lg`}
+                            >
                               {porcentaje.toLocaleString("es-CL", {
                                 maximumFractionDigits: 0,
-                              })}%
+                              })}
+                              %
                             </span>
                           </div>
                           <Progress
-                            value={porcentaje}
-                            color={scoreColor}
                             className="max-w-full"
+                            color={scoreColor}
                             size="sm"
+                            value={porcentaje}
                           />
                         </div>
                       </div>
@@ -184,16 +205,16 @@ const UserEvaluations: React.FC<Props> = ({ evaluaciones }) => {
                       <div className="w-full lg:w-auto">
                         <Button
                           as="a"
-                          href={eva.drive_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                          className="w-full lg:w-auto bg-default-100/60 dark:bg-default-100/10 hover:bg-default-200/80 dark:hover:bg-default-100/20"
                           color={scoreColor}
-                          variant="flat"
+                          endContent={<ExternalLink className="w-3 h-3" />}
+                          href={eva.drive_url}
                           radius="lg"
+                          rel="noopener noreferrer"
                           size="md"
                           startContent={<Eye className="w-4 h-4" />}
-                          endContent={<ExternalLink className="w-3 h-3" />}
-                          className="w-full lg:w-auto bg-default-100/60 dark:bg-default-100/10 hover:bg-default-200/80 dark:hover:bg-default-100/20"
+                          target="_blank"
+                          variant="flat"
                         >
                           Ver drive
                         </Button>

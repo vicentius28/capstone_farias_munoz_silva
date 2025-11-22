@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+
 import { useProtectedRoute } from "@/features/auth/hooks/useProtectedRoute";
 import LoadingOverlay from "@/shared/components/ui/Loaders/LoadingOverlay";
 
@@ -27,6 +28,5 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   return <>{children}</>;
 };
-
 
 export default ProtectedRoute;

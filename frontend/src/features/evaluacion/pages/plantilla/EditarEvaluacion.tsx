@@ -9,7 +9,7 @@ import {
   PlusIcon,
   DocumentTextIcon,
   UserIcon,
-  SparklesIcon
+  SparklesIcon,
 } from "@heroicons/react/24/outline";
 
 import { fetchEvaluacion } from "@/features/evaluacion/services/plantilla/evaluacion";
@@ -27,6 +27,7 @@ export default function EditarEvaluacionPage() {
     const fetchData = async () => {
       try {
         const tiposEvaluacionResponse = await fetchEvaluacion();
+
         setTiposEvaluacion(
           Array.isArray(tiposEvaluacionResponse) ? tiposEvaluacionResponse : [],
         );
@@ -50,7 +51,8 @@ export default function EditarEvaluacionPage() {
     [tiposEvaluacion],
   );
 
-  const lista = tabSeleccionado === "evaluaciones" ? evaluaciones : autoevaluaciones;
+  const lista =
+    tabSeleccionado === "evaluaciones" ? evaluaciones : autoevaluaciones;
   const isEvaluaciones = tabSeleccionado === "evaluaciones";
 
   const TipoEvaluacionCard = ({
@@ -72,10 +74,13 @@ export default function EditarEvaluacionPage() {
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between w-full">
           <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-lg ${isEvaluaciones
-              ? "bg-primary/10 text-primary"
-              : "bg-secondary/10 text-secondary"
-              }`}>
+            <div
+              className={`p-2 rounded-lg ${
+                isEvaluaciones
+                  ? "bg-primary/10 text-primary"
+                  : "bg-secondary/10 text-secondary"
+              }`}
+            >
               {isEvaluaciones ? (
                 <DocumentTextIcon className="w-5 h-5" />
               ) : (
@@ -89,10 +94,10 @@ export default function EditarEvaluacionPage() {
             </div>
           </div>
           <Chip
+            className="text-xs"
+            color={isEvaluaciones ? "primary" : "secondary"}
             size="sm"
             variant="flat"
-            color={isEvaluaciones ? "primary" : "secondary"}
-            className="text-xs"
           >
             {isEvaluaciones ? "Evaluación" : "AutoEvaluación"}
           </Chip>
@@ -108,10 +113,13 @@ export default function EditarEvaluacionPage() {
 
   const EmptyState = () => (
     <div className="flex flex-col items-center justify-center py-16 px-6">
-      <div className={`p-4 rounded-full mb-4 ${isEvaluaciones
-        ? "bg-primary/10 text-primary"
-        : "bg-secondary/10 text-secondary"
-        }`}>
+      <div
+        className={`p-4 rounded-full mb-4 ${
+          isEvaluaciones
+            ? "bg-primary/10 text-primary"
+            : "bg-secondary/10 text-secondary"
+        }`}
+      >
         {isEvaluaciones ? (
           <DocumentTextIcon className="w-8 h-8" />
         ) : (
@@ -124,13 +132,12 @@ export default function EditarEvaluacionPage() {
       <p className="text-sm text-default-500 text-center mb-6 max-w-sm">
         {isEvaluaciones
           ? "Crea tu primera evaluación para comenzar a gestionar el proceso de evaluación."
-          : "Crea tu primera autoevaluación para permitir la autoevaluación de usuarios."
-        }
+          : "Crea tu primera autoevaluación para permitir la autoevaluación de usuarios."}
       </p>
       <Button
         color={isEvaluaciones ? "primary" : "secondary"}
-        variant="flat"
         startContent={<PlusIcon className="w-4 h-4" />}
+        variant="flat"
         onPress={() =>
           navigate(
             `/evaluacion-crear?auto=${tabSeleccionado === "autoevaluaciones"}`,
@@ -148,20 +155,22 @@ export default function EditarEvaluacionPage() {
         <div className="flex flex-col items-center gap-4">
           <div className="relative">
             <Spinner
-              size="lg"
-              color="primary"
               classNames={{
                 circle1: "border-b-primary",
                 circle2: "border-b-primary/30",
               }}
+              color="primary"
+              size="lg"
             />
             <div className="absolute inset-0 animate-ping">
-              <div className="w-full h-full rounded-full bg-primary/10"></div>
+              <div className="w-full h-full rounded-full bg-primary/10" />
             </div>
           </div>
           <div className="text-center">
             <p className="text-lg font-medium text-foreground">Cargando</p>
-            <p className="text-sm text-default-500">Obteniendo tipos de evaluación...</p>
+            <p className="text-sm text-default-500">
+              Obteniendo tipos de evaluación...
+            </p>
           </div>
         </div>
       </div>
@@ -182,7 +191,8 @@ export default function EditarEvaluacionPage() {
             Gestión de Plantillas
           </h1>
           <p className="text-default-600 max-w-2xl mx-auto">
-            Administra y personaliza tus plantillas de evaluación y autoevaluación
+            Administra y personaliza tus plantillas de evaluación y
+            autoevaluación
           </p>
         </div>
 
@@ -191,16 +201,17 @@ export default function EditarEvaluacionPage() {
           <div className="p-1 bg-default-100/80 dark:bg-default-100/20 backdrop-blur-sm rounded-xl border border-default-200/50">
             <Tabs
               aria-label="Tipos de evaluación"
-              selectedKey={tabSeleccionado}
-              onSelectionChange={(key) =>
-                setTabSeleccionado(key as "evaluaciones" | "autoevaluaciones")
-              }
               classNames={{
                 tabList: "gap-1",
                 cursor: "bg-background shadow-sm",
                 tab: "h-12 px-6 data-[selected=true]:text-foreground",
-                tabContent: "group-data-[selected=true]:text-foreground text-default-600"
+                tabContent:
+                  "group-data-[selected=true]:text-foreground text-default-600",
               }}
+              selectedKey={tabSeleccionado}
+              onSelectionChange={(key) =>
+                setTabSeleccionado(key as "evaluaciones" | "autoevaluaciones")
+              }
             >
               <Tab
                 key="evaluaciones"
@@ -209,7 +220,12 @@ export default function EditarEvaluacionPage() {
                     <DocumentTextIcon className="w-4 h-4" />
                     <span>Evaluaciones</span>
                     {evaluaciones.length > 0 && (
-                      <Chip size="sm" variant="flat" color="primary" className="text-xs">
+                      <Chip
+                        className="text-xs"
+                        color="primary"
+                        size="sm"
+                        variant="flat"
+                      >
                         {evaluaciones.length}
                       </Chip>
                     )}
@@ -223,7 +239,12 @@ export default function EditarEvaluacionPage() {
                     <UserIcon className="w-4 h-4" />
                     <span>AutoEvaluaciones</span>
                     {autoevaluaciones.length > 0 && (
-                      <Chip size="sm" variant="flat" color="secondary" className="text-xs">
+                      <Chip
+                        className="text-xs"
+                        color="secondary"
+                        size="sm"
+                        variant="flat"
+                      >
                         {autoevaluaciones.length}
                       </Chip>
                     )}
@@ -241,19 +262,19 @@ export default function EditarEvaluacionPage() {
               {isEvaluaciones ? "Evaluaciones" : "AutoEvaluaciones"}
             </h2>
             <Chip
+              color={isEvaluaciones ? "primary" : "secondary"}
               size="sm"
               variant="flat"
-              color={isEvaluaciones ? "primary" : "secondary"}
             >
               {lista.length} {lista.length === 1 ? "plantilla" : "plantillas"}
             </Chip>
           </div>
 
           <Button
-            color={isEvaluaciones ? "primary" : "secondary"}
-            variant="shadow"
-            startContent={<PlusIcon className="w-4 h-4" />}
             className="font-medium"
+            color={isEvaluaciones ? "primary" : "secondary"}
+            startContent={<PlusIcon className="w-4 h-4" />}
+            variant="shadow"
             onPress={() =>
               navigate(
                 `/evaluacion-crear?auto=${tabSeleccionado === "autoevaluaciones"}`,

@@ -10,6 +10,7 @@ export const getUserPermissions = async (): Promise<UserPermissions> => {
   const response = await api.get("/acceso/api/auth/user/access/");
 
   const data = response.data;
+
   if (
     !data ||
     typeof data.grupo !== "string" ||

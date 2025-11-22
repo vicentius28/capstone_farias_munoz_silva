@@ -24,7 +24,7 @@ import {
   DropdownItem,
 } from "@heroui/dropdown";
 import { Avatar } from "@heroui/avatar";
-import { Settings, UserIcon } from "lucide-react";
+import { Settings, UserIcon, BarChart } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { Bars3Icon } from "@heroicons/react/24/outline";
 import { Button } from "@heroui/button";
@@ -38,11 +38,14 @@ import { buildFileUrl } from "@/utils/urlUtils";
 import { useUser } from "@/hooks/useUser";
 import { SidebarDrawer } from "@/shared/components/layout/Sidebar";
 import { sidebarRoutes } from "@/shared/utils/sidebarRoutes";
+import { usePermissions } from "@/hooks/usePermissions";
+import { PERMISSIONS } from "@/constants/permissions";
 
 export const Navbar: React.FC = () => {
   const { isAuthorized, logout } = useAuthentication();
   const { user } = useUser();
   const navigate = useNavigate();
+  const { hasAccess } = usePermissions();
 
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
@@ -88,8 +91,9 @@ export const Navbar: React.FC = () => {
 
   return (
     <HeroUINavbar
-      className={`top-0 z-50 transition-transform duration-300 bg-default-50 shadow-sm ${showNavbar ? "translate-y-0" : "-translate-y-full"
-        }`}
+      className={`top-0 z-50 transition-transform duration-300 bg-default-50 shadow-sm ${
+        showNavbar ? "translate-y-0" : "-translate-y-full"
+      }`}
       maxWidth="xl"
       position="sticky"
     >
@@ -170,8 +174,8 @@ export const Navbar: React.FC = () => {
             ) : (
               <Button
                 isIconOnly
-                variant="ghost"
                 className="h-10 w-10 rounded-full border-2 border-default-200"
+                variant="ghost"
               >
                 <UserIcon className="w-6 h-6" />
               </Button>
@@ -197,6 +201,18 @@ export const Navbar: React.FC = () => {
                   </div>
                 </DropdownItem>
               </>
+            ) : null}
+
+            {user.is_superuser || hasAccess(PERMISSIONS.EVALUACION.ASIGNAR) ? (
+              <DropdownItem
+                key="metabase"
+                onPress={() => window.open("https://meta.gsr.cat", "_blank", "noopener")}
+              >
+                <div className="flex items-center gap-x-2">
+                  <BarChart className="w-4 h-4" />
+                  <span>Metabase</span>
+                </div>
+              </DropdownItem>
             ) : null}
 
             <DropdownItem key="perfil" onPress={handleProfileClick}>

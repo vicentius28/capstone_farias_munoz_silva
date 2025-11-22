@@ -1,11 +1,13 @@
 import { useState } from "react";
+
 import { AreaEvaluacion } from "@/features/evaluacion/types/evaluacion";
 import { cloneNiveles } from "@/features/evaluacion/constants/defaults";
 
-const crearNivel = () => cloneNiveles().map(nivel => ({
-  ...nivel,
-  descripcion: ""
-}));
+const crearNivel = () =>
+  cloneNiveles().map((nivel) => ({
+    ...nivel,
+    descripcion: "",
+  }));
 
 const crearIndicador = () => ({
   numero: 1,

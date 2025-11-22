@@ -1,7 +1,12 @@
 // pages/auth/GoogleRedirectHandler.tsx
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { setTokens, clearTokens, getTokens } from "@/features/auth/services/tokenService";
+
+import {
+  setTokens,
+  clearTokens,
+  getTokens,
+} from "@/features/auth/services/tokenService";
 import { fetchUsuarioActual } from "@/api/user/user";
 
 function parseParams() {
@@ -13,7 +18,9 @@ function parseParams() {
   const hashParams = new URLSearchParams(hash);
 
   const get = (k: string) => searchParams.get(k) || hashParams.get(k);
-  const hasAnyParam = Array.from(searchParams.keys()).length > 0 || Array.from(hashParams.keys()).length > 0;
+  const hasAnyParam =
+    Array.from(searchParams.keys()).length > 0 ||
+    Array.from(hashParams.keys()).length > 0;
 
   return {
     hasAnyParam,
@@ -38,25 +45,34 @@ const GoogleRedirectHandler = () => {
       // Si entraste acá sin params (recarga/visita directa), manda al home si ya tienes tokens
       if (!hasAnyParam) {
         const { access: a, refresh: r } = getTokens();
+
         if (a && r) {
           navigate("/", { replace: true });
+
           return;
         }
         // sin tokens -> al login
         navigate("/login", { replace: true });
+
         return;
       }
 
       if (error) {
         clearTokens();
         // limpia la URL para evitar re-procesos si el usuario recarga
-        history.replaceState({}, "", "/login?error=" + encodeURIComponent(error));
+        history.replaceState(
+          {},
+          "",
+          "/login?error=" + encodeURIComponent(error),
+        );
+
         return;
       }
 
       if (!access || !refresh) {
         clearTokens();
         history.replaceState({}, "", "/login?error=NoTokens");
+
         return;
       }
 
@@ -66,6 +82,7 @@ const GoogleRedirectHandler = () => {
         // (opcional) obtenemos el usuario; si falla, igual seguimos
         try {
           const user = await fetchUsuarioActual();
+
           if (user) localStorage.setItem("user", JSON.stringify(user));
         } catch {
           // no interrumpir el flujo por esto
@@ -83,8 +100,23 @@ const GoogleRedirectHandler = () => {
   }, [navigate]);
 
   return (
-    <div style={{ display:"flex", justifyContent:"center", alignItems:"center", height:"100vh", background:"#f5f5f5" }}>
-      <div style={{ padding:20, borderRadius:8, background:"#fff", boxShadow:"0 2px 10px rgba(0,0,0,.1)" }}>
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100vh",
+        background: "#f5f5f5",
+      }}
+    >
+      <div
+        style={{
+          padding: 20,
+          borderRadius: 8,
+          background: "#fff",
+          boxShadow: "0 2px 10px rgba(0,0,0,.1)",
+        }}
+      >
         Procesando autenticación...
       </div>
     </div>

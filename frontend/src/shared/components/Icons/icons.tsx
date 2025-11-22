@@ -26,7 +26,8 @@ export const Logo: React.FC<LogoProps> = ({ size = 40, className = "" }) => {
         // Asegura que user.empresa sea del tipo Empresa
         if (user && typeof user.empresa === "object" && user.empresa?.logo) {
           const logoUrl = buildFileUrl(user.empresa.logo);
-          if (logoUrl && logoUrl.trim() !== '') {
+
+          if (logoUrl && logoUrl.trim() !== "") {
             setLogoUrl(logoUrl);
           } else {
             setHasError(true); // No hay logo válido
@@ -35,7 +36,7 @@ export const Logo: React.FC<LogoProps> = ({ size = 40, className = "" }) => {
           setHasError(true); // No hay empresa o logo
         }
       } catch (error) {
-        console.warn('Error loading user logo:', error);
+        console.warn("Error loading user logo:", error);
         setHasError(true);
       } finally {
         setIsLoading(false);
@@ -62,10 +63,7 @@ export const Logo: React.FC<LogoProps> = ({ size = 40, className = "" }) => {
         className={`flex items-center justify-center bg-gray-100 rounded-full ${className}`}
         style={{ width: size, height: size }}
       >
-        <Building2
-          size={Math.floor(size * 0.6)}
-          className="text-gray-500"
-        />
+        <Building2 className="text-gray-500" size={Math.floor(size * 0.6)} />
       </div>
     );
   }

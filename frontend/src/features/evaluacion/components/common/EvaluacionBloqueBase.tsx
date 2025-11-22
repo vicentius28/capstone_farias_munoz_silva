@@ -1,4 +1,3 @@
-
 import { JSX } from "react";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Progress } from "@heroui/progress";
@@ -77,9 +76,11 @@ export default function EvaluacionBloqueBase({
   const getCompetenciaProgress = (competencia: any) => {
     const totalIndicadores = competencia.indicadores.length;
     const respondidos = competencia.indicadores.filter((ind: any) =>
-      estaRespondido(ind.id)
+      estaRespondido(ind.id),
     ).length;
-    const porcentaje = totalIndicadores > 0 ? (respondidos / totalIndicadores) * 100 : 0;
+    const porcentaje =
+      totalIndicadores > 0 ? (respondidos / totalIndicadores) * 100 : 0;
+
     return { respondidos, total: totalIndicadores, porcentaje };
   };
 
@@ -89,11 +90,17 @@ export default function EvaluacionBloqueBase({
         {/* Header mejorado */}
         <div className="text-center space-y-4 py-6">
           <div className="inline-flex items-center gap-3 bg-default rounded-full px-6 py-3 shadow-sm border border-default-200">
-            <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-            <h1 className="text-2xl font-semibold text-default-900">{area.n_area}</h1>
+            <div className="w-3 h-3 bg-blue-500 rounded-full" />
+            <h1 className="text-2xl font-semibold text-default-900">
+              {area.n_area}
+            </h1>
           </div>
           <div className="max-w-md mx-auto">
-            <ProgressIndicator area={area} progresoArea={progresoArea} guardando={guardando} />
+            <ProgressIndicator
+              area={area}
+              guardando={guardando}
+              progresoArea={progresoArea}
+            />
           </div>
         </div>
 
@@ -104,7 +111,10 @@ export default function EvaluacionBloqueBase({
             const isCompleted = progress.respondidos === progress.total;
 
             return (
-              <Card key={competencia.id} className="shadow-lg border-0 overflow-hidden relative">
+              <Card
+                key={competencia.id}
+                className="shadow-lg border-0 overflow-hidden relative"
+              >
                 {/* Header sticky que se mantiene visible */}
                 <div className="sticky top-0 z-10">
                   <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 shadow-lg">
@@ -121,29 +131,33 @@ export default function EvaluacionBloqueBase({
                           </div>
                         </div>
                         <Chip
-                          size="lg"
-                          variant="flat"
-                          color={isCompleted ? "success" : "warning"}
                           className="bg-white/20 backdrop-blur-sm text-white font-semibold"
+                          color={isCompleted ? "success" : "warning"}
+                          size="lg"
                           startContent={
-                            isCompleted ?
-                              <CheckCircleIcon className="w-4 h-4" /> :
+                            isCompleted ? (
+                              <CheckCircleIcon className="w-4 h-4" />
+                            ) : (
                               <ClockIcon className="w-4 h-4" />
+                            )
                           }
+                          variant="flat"
                         >
                           {progress.respondidos}/{progress.total}
                         </Chip>
                       </div>
                       <div className="bg-white/20 rounded-full p-1">
                         <Progress
-                          value={progress.porcentaje}
-                          color={isCompleted ? "success" : "warning"}
-                          size="sm"
                           className="w-full"
                           classNames={{
                             track: "bg-white/30",
-                            indicator: isCompleted ? "bg-green-400" : "bg-yellow-400"
+                            indicator: isCompleted
+                              ? "bg-green-400"
+                              : "bg-yellow-400",
                           }}
+                          color={isCompleted ? "success" : "warning"}
+                          size="sm"
+                          value={progress.porcentaje}
                         />
                       </div>
                     </div>
@@ -154,9 +168,9 @@ export default function EvaluacionBloqueBase({
                 <CardBody className="p-0 max-h-[70vh] overflow-y-auto">
                   <CompetenciaCompacta
                     competencia={competencia}
-                    obtenerPuntaje={obtenerPuntaje}
-                    manejarCambioPuntaje={manejarCambioPuntaje}
                     estaRespondido={estaRespondido}
+                    manejarCambioPuntaje={manejarCambioPuntaje}
+                    obtenerPuntaje={obtenerPuntaje}
                     renderRadioNivel={renderRadioNivel}
                   />
                 </CardBody>
@@ -172,6 +186,7 @@ export default function EvaluacionBloqueBase({
           </CardHeader>
           <CardBody className="p-6">
             <FinalComments
+              guardando={guardando}
               handleFinalizar={handleFinalizar}
               mostrarTextarea={mostrarTextarea}
               progresoGlobal={progresoGlobal}
@@ -184,7 +199,6 @@ export default function EvaluacionBloqueBase({
               totalIndicadoresGlobal={totalIndicadoresGlobal}
               // ✅ PASAR AMBOS ESTADOS DE LOADING
               isLoading={isLoading}
-              guardando={guardando}
             />
           </CardBody>
         </Card>

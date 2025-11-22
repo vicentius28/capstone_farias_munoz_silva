@@ -23,7 +23,9 @@ export function useProtectedRoute(permiso?: Permiso) {
 
   const accessDenied = useMemo(() => {
     if (!permiso || permissionsLoading) return false;
-    const check = (p: string) => (typeof hasAccess === "function" ? hasAccess(p) : false);
+    const check = (p: string) =>
+      typeof hasAccess === "function" ? hasAccess(p) : false;
+
     return Array.isArray(permiso) ? !permiso.some(check) : !check(permiso);
   }, [permiso, hasAccess, permissionsLoading]);
 
@@ -46,7 +48,9 @@ export function useProtectedRoute(permiso?: Permiso) {
     // No autenticado → al login con redirect a la ruta original
     if (isAuthenticated === false) {
       const current = `${location.pathname}${location.search}`;
+
       doRedirect(`/login?redirect=${encodeURIComponent(current)}`);
+
       return;
     }
 
@@ -59,6 +63,7 @@ export function useProtectedRoute(permiso?: Permiso) {
         timeout: 3000,
       });
       doRedirect("/");
+
       return;
     }
 

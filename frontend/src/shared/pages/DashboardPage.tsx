@@ -1,14 +1,23 @@
 // src/pages/DashboardPage.tsx
 import React from "react";
 import { Card, CardBody, CardHeader } from "@heroui/card";
-import { AcademicCapIcon, ClipboardDocumentListIcon, HeartIcon, ShieldCheckIcon } from "@heroicons/react/24/outline";
+import {
+  AcademicCapIcon,
+  ClipboardDocumentListIcon,
+  HeartIcon,
+  ShieldCheckIcon,
+} from "@heroicons/react/24/outline";
+
 import { useSession } from "@/hooks/useSession";
 import { usePermissions } from "@/hooks/usePermissions";
 import ModulesPanel from "@/features/dashboard/components/ModulesPanel";
 import { Logo } from "@/shared/components/Icons/icons";
 
 // Error Boundary para encapsular el bloque
-class DashboardBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean }> {
+class DashboardBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean }
+> {
   constructor(props: { children: React.ReactNode }) {
     super(props);
     this.state = { hasError: false };
@@ -27,6 +36,7 @@ class DashboardBoundary extends React.Component<{ children: React.ReactNode }, {
         </div>
       );
     }
+
     return this.props.children;
   }
 }
@@ -47,18 +57,16 @@ export default function DashboardPage() {
     (user?.empresa?.nombre as string) ||
     "";
 
-
-
-  const hasAny = (prefix: string) => permisos?.some((p) => p.startsWith(prefix));
-
-
-
+  const hasAny = (prefix: string) =>
+    permisos?.some((p) => p.startsWith(prefix));
 
   const featureCards = (() => {
     if (hasAny("directivo.")) {
       return [
         {
-          icon: <ClipboardDocumentListIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />,
+          icon: (
+            <ClipboardDocumentListIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+          ),
           title: "Gestión de procesos",
           desc: "Operaciones del portal y seguimiento general.",
           bg: "bg-blue-50/70 dark:bg-blue-900/20",
@@ -66,7 +74,9 @@ export default function DashboardPage() {
           descColor: "text-blue-800/80 dark:text-blue-200/80",
         },
         {
-          icon: <AcademicCapIcon className="w-5 h-5 text-amber-600 dark:text-amber-300" />,
+          icon: (
+            <AcademicCapIcon className="w-5 h-5 text-amber-600 dark:text-amber-300" />
+          ),
           title: "Indicadores y seguimiento",
           desc: "Visualización consolidada sin detalles sensibles.",
           bg: "bg-amber-50/70 dark:bg-amber-900/20",
@@ -74,7 +84,9 @@ export default function DashboardPage() {
           descColor: "text-amber-800/80 dark:text-amber-200/80",
         },
         {
-          icon: <ShieldCheckIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-300" />,
+          icon: (
+            <ShieldCheckIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-300" />
+          ),
           title: "Privacidad y acceso",
           desc: "Accesos y protección por roles.",
           bg: "bg-emerald-50/70 dark:bg-emerald-900/20",
@@ -86,7 +98,9 @@ export default function DashboardPage() {
     if (hasAny("portal.")) {
       return [
         {
-          icon: <HeartIcon className="w-5 h-5 text-rose-600 dark:text-rose-400" />,
+          icon: (
+            <HeartIcon className="w-5 h-5 text-rose-600 dark:text-rose-400" />
+          ),
           title: "Mi espacio",
           desc: "Vista personal y herramientas del portal.",
           bg: "bg-rose-50/70 dark:bg-rose-900/20",
@@ -94,7 +108,9 @@ export default function DashboardPage() {
           descColor: "text-rose-800/80 dark:text-rose-200/80",
         },
         {
-          icon: <ClipboardDocumentListIcon className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />,
+          icon: (
+            <ClipboardDocumentListIcon className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+          ),
           title: "Progreso general",
           desc: "Seguimiento de actividad sin exponer detalle.",
           bg: "bg-indigo-50/70 dark:bg-indigo-900/20",
@@ -102,7 +118,9 @@ export default function DashboardPage() {
           descColor: "text-indigo-800/80 dark:text-indigo-200/80",
         },
         {
-          icon: <ShieldCheckIcon className="w-5 h-5 text-sky-600 dark:text-sky-400" />,
+          icon: (
+            <ShieldCheckIcon className="w-5 h-5 text-sky-600 dark:text-sky-400" />
+          ),
           title: "Privacidad",
           desc: "Datos protegidos conforme a políticas de acceso.",
           bg: "bg-sky-50/70 dark:bg-sky-900/20",
@@ -111,9 +129,12 @@ export default function DashboardPage() {
         },
       ];
     }
+
     return [
       {
-        icon: <ShieldCheckIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-300" />,
+        icon: (
+          <ShieldCheckIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-300" />
+        ),
         title: "Gobernanza y seguridad",
         desc: "Gestión de accesos y resguardo de datos.",
         bg: "bg-emerald-50/70 dark:bg-emerald-900/20",
@@ -121,7 +142,9 @@ export default function DashboardPage() {
         descColor: "text-emerald-800/80 dark:text-emerald-200/80",
       },
       {
-        icon: <ClipboardDocumentListIcon className="w-5 h-5 text-amber-600 dark:text-amber-300" />,
+        icon: (
+          <ClipboardDocumentListIcon className="w-5 h-5 text-amber-600 dark:text-amber-300" />
+        ),
         title: "Operaciones",
         desc: "Procesos y coordinación del portal.",
         bg: "bg-amber-50/70 dark:bg-amber-900/20",
@@ -129,7 +152,9 @@ export default function DashboardPage() {
         descColor: "text-amber-800/80 dark:text-amber-200/80",
       },
       {
-        icon: <AcademicCapIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />,
+        icon: (
+          <AcademicCapIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+        ),
         title: "Calidad de servicio",
         desc: "Mejora continua y soporte.",
         bg: "bg-blue-50/70 dark:bg-blue-900/20",
@@ -144,24 +169,25 @@ export default function DashboardPage() {
 
   // Puerta de hidratación: sincroniza loaders de hero y módulos
   const [isHydrating, setIsHydrating] = React.useState(true);
+
   React.useEffect(() => {
     const ready = !!user && Array.isArray(permisos);
+
     if (ready) {
       const t = setTimeout(() => setIsHydrating(false), 350);
+
       return () => clearTimeout(t);
     }
   }, [user, permisos]);
 
-
-  const quickStartSteps = ["Explora módulos disponibles", "Revisa la guía rápida", "Comienza tu primera evaluación"];
-
-
-
+  const quickStartSteps = [
+    "Explora módulos disponibles",
+    "Revisa la guía rápida",
+    "Comienza tu primera evaluación",
+  ];
 
   return (
-    <main
-      className="w-full min-h-screen bg-mesh"
-    >
+    <main className="w-full min-h-screen bg-mesh">
       <section className="relative isolate overflow-visible text-white">
         {/* Fondo mesh azul→morado */}
         <div
@@ -202,17 +228,24 @@ export default function DashboardPage() {
           viewBox="0 0 100 100"
         >
           <defs>
-            <linearGradient id="heroAccent" x1="0" y1="0" x2="1" y2="1">
+            <linearGradient id="heroAccent" x1="0" x2="1" y1="0" y2="1">
               <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.6" />
               <stop offset="100%" stopColor="#7c3aed" stopOpacity="0.6" />
             </linearGradient>
           </defs>
-          <circle cx="50" cy="50" r="32" fill="none" stroke="url(#heroAccent)" strokeWidth="3" />
+          <circle
+            cx="50"
+            cy="50"
+            fill="none"
+            r="32"
+            stroke="url(#heroAccent)"
+            strokeWidth="3"
+          />
         </svg>
 
         <div className="pointer-events-none absolute left-6 top-1/2 -translate-y-1/4 translate-x-[50%] z-0 hidden md:block text-center">
           <div className="rounded-3xl bg-white/15 dark:bg-[#0b1220]/40 ring-1 ring-black/10 dark:ring-white/10 supports-[backdrop-filter]:backdrop-blur-sm p-5 shadow-xl">
-            <Logo size={120} className="rounded-2xl" />
+            <Logo className="rounded-2xl" size={120} />
           </div>
         </div>
 
@@ -221,8 +254,12 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-center">
             <div>
               <div className="flex items-center gap-10">
-                <p className="text-[32px] font-semibold tracking-widest uppercase text-sky-200">Bienvenido</p>
-                <h3 className="mt-1 text-2xl md:text-3xl font-bold leading-tight">{displayName}</h3>
+                <p className="text-[32px] font-semibold tracking-widest uppercase text-sky-200">
+                  Bienvenido
+                </p>
+                <h3 className="mt-1 text-2xl md:text-3xl font-bold leading-tight">
+                  {displayName}
+                </h3>
               </div>
               {companyName && (
                 <p className="mt-1 text-sm text-sky-100/90">{companyName}</p>
@@ -233,7 +270,9 @@ export default function DashboardPage() {
                 {quickStartSteps.map((step, idx) => (
                   <div key={idx} className="rounded-lg p-3 bg-white/12">
                     <div className="flex items-center gap-2">
-                      <span className="inline-flex w-5 h-5 items-center justify-center rounded-full bg-white/20 text-[11px]">{idx + 1}</span>
+                      <span className="inline-flex w-5 h-5 items-center justify-center rounded-full bg-white/20 text-[11px]">
+                        {idx + 1}
+                      </span>
                       <span className="text-xs">{step}</span>
                     </div>
                   </div>
@@ -270,8 +309,11 @@ export default function DashboardPage() {
                       <CardHeader className="px-4 pt-4">
                         {f.icon}
                         <div className="flex items-center gap-3 text-center">
-
-                          <h2 className={`text-sm font-semibold ${f.titleColor}`}>{f.title}</h2>
+                          <h2
+                            className={`text-sm font-semibold ${f.titleColor}`}
+                          >
+                            {f.title}
+                          </h2>
                         </div>
                       </CardHeader>
                       <CardBody className="px-4 pb-4 text-center">
@@ -287,17 +329,52 @@ export default function DashboardPage() {
               <div className="pointer-events-none absolute -z-10 inset-0">
                 {/* fondos decorativos del hero */}
                 <div className="absolute left-8 top-6 w-48 h-48 rounded-full bg-gradient-to-tr from-sky-400/40 to-violet-500/40 blur-2xl opacity-70" />
-                <svg className="absolute right-6 top-8 w-40 h-40 opacity-20" viewBox="0 0 120 120">
-                  <circle cx="60" cy="60" r="50" fill="none" stroke="#ffffff" strokeOpacity="0.20" strokeWidth="2" />
-                  <circle cx="60" cy="60" r="35" fill="none" stroke="#ffffff" strokeOpacity="0.15" strokeWidth="2" />
+                <svg
+                  className="absolute right-6 top-8 w-40 h-40 opacity-20"
+                  viewBox="0 0 120 120"
+                >
+                  <circle
+                    cx="60"
+                    cy="60"
+                    fill="none"
+                    r="50"
+                    stroke="#ffffff"
+                    strokeOpacity="0.20"
+                    strokeWidth="2"
+                  />
+                  <circle
+                    cx="60"
+                    cy="60"
+                    fill="none"
+                    r="35"
+                    stroke="#ffffff"
+                    strokeOpacity="0.15"
+                    strokeWidth="2"
+                  />
                 </svg>
-                <svg className="absolute left-0 bottom-0 w-36 h-24 opacity-20" viewBox="0 0 140 80">
+                <svg
+                  className="absolute left-0 bottom-0 w-36 h-24 opacity-20"
+                  viewBox="0 0 140 80"
+                >
                   <defs>
-                    <pattern id="dots" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
-                      <circle cx="1.5" cy="1.5" r="1.5" fill="#ffffff" opacity="0.18" />
+                    <pattern
+                      height="8"
+                      id="dots"
+                      patternUnits="userSpaceOnUse"
+                      width="8"
+                      x="0"
+                      y="0"
+                    >
+                      <circle
+                        cx="1.5"
+                        cy="1.5"
+                        fill="#ffffff"
+                        opacity="0.18"
+                        r="1.5"
+                      />
                     </pattern>
                   </defs>
-                  <rect x="0" y="0" width="140" height="80" fill="url(#dots)" />
+                  <rect fill="url(#dots)" height="80" width="140" x="0" y="0" />
                 </svg>
               </div>
 
@@ -305,11 +382,10 @@ export default function DashboardPage() {
               <div className="relative">
                 <div className="absolute -inset-5 rounded-[28px] bg-gradient-to-tr from-sky-400/25 via-indigo-400/25 to-violet-500/25 blur-2xl" />
                 <img
-                  src={bannerIllustration}
                   alt="Ilustración del portal"
                   className="relative z-10 w-full max-w-[20rem] lg:max-w-[24rem] rounded-2xl object-contain drop-shadow-xl"
+                  src={bannerIllustration}
                 />
-
               </div>
             </div>
           </div>
@@ -318,12 +394,12 @@ export default function DashboardPage() {
         {/* Onda decorativa inferior para cerrar el hero */}
         <svg
           className="absolute inset-x-0 bottom-0 -z-10"
-          viewBox="0 0 1440 120"
           preserveAspectRatio="none"
+          viewBox="0 0 1440 120"
         >
           <path
-            d="M0,60 C240,120 480,0 720,60 C960,120 1200,0 1440,60 L1440,120 L0,120 Z"
             className="fill-white/85 dark:fill-[#0f172a]/85"
+            d="M0,60 C240,120 480,0 720,60 C960,120 1200,0 1440,60 L1440,120 L0,120 Z"
           />
         </svg>
 
@@ -335,7 +411,9 @@ export default function DashboardPage() {
                 <span className="inline-flex">
                   <span className="w-5 h-5 rounded-full border-2 border-slate-300/70 dark:border-slate-600/70 border-t-transparent animate-spin" />
                 </span>
-                <span className="text-xl font-semibold">Preparando accesos…</span>
+                <span className="text-xl font-semibold">
+                  Preparando accesos…
+                </span>
               </CardHeader>
               <CardBody className="px-6 pb-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 justify-items-center">
@@ -365,23 +443,30 @@ export default function DashboardPage() {
       {/* Separador para evitar solape con el panel flotante */}
       <div aria-hidden className="h-28 sm:h-40 lg:h-48" />
 
-
-
       {/* Oculto la sección independiente para evitar duplicados */}
       <section className="hidden w-full px-5 pt-8 pb-6 max-w-screen-lg mx-auto">
         <div className="flex items-end justify-between">
           <div>
-            <h3 className="text-base font-semibold text-slate-900 dark:text-white">Qué encontrarás aquí</h3>
-            <p className="mt-1 text-xs text-slate-700 dark:text-slate-300">Capacidades del portal según tu rol.</p>
+            <h3 className="text-base font-semibold text-slate-900 dark:text-white">
+              Qué encontrarás aquí
+            </h3>
+            <p className="mt-1 text-xs text-slate-700 dark:text-slate-300">
+              Capacidades del portal según tu rol.
+            </p>
           </div>
         </div>
         <div className="mt-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {featureCards.map((f, idx) => (
-            <Card key={idx} className={`rounded-2xl backdrop-blur-xl shadow-xl ring-1 ring-black/5 dark:ring-white/10 ${f.bg}`}>
+            <Card
+              key={idx}
+              className={`rounded-2xl backdrop-blur-xl shadow-xl ring-1 ring-black/5 dark:ring-white/10 ${f.bg}`}
+            >
               <CardHeader className="px-5 pt-5">
                 <div className="flex items-center gap-3">
                   {f.icon}
-                  <h2 className={`text-base font-semibold ${f.titleColor}`}>{f.title}</h2>
+                  <h2 className={`text-base font-semibold ${f.titleColor}`}>
+                    {f.title}
+                  </h2>
                 </div>
               </CardHeader>
               <CardBody className="px-5 pb-5">
@@ -391,8 +476,6 @@ export default function DashboardPage() {
           ))}
         </div>
       </section>
-
-
     </main>
   );
 }

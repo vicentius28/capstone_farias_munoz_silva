@@ -15,23 +15,27 @@
 export const buildFileUrl = (fileUrl?: string, baseUrl?: string): string => {
   if (!fileUrl) {
     console.warn("buildFileUrl recibió un valor undefined o vacío");
+
     return "";
   }
 
   // Limpiar la URL de espacios en blanco y caracteres extraños
   const cleanUrl = fileUrl.trim();
-  
+
   // Debug logging
   console.log("buildFileUrl input:", {
     original: fileUrl,
     cleaned: cleanUrl,
     startsWithHttp: cleanUrl.startsWith("http"),
-    includesGoogleapis: cleanUrl.includes("googleapis.com")
+    includesGoogleapis: cleanUrl.includes("googleapis.com"),
   });
 
   // Si ya es una URL completa (http/https), devolverla tal como está
   if (cleanUrl.startsWith("http://") || cleanUrl.startsWith("https://")) {
-    console.log("buildFileUrl: URL completa detectada, devolviendo tal como está");
+    console.log(
+      "buildFileUrl: URL completa detectada, devolviendo tal como está",
+    );
+
     return cleanUrl;
   }
 
@@ -41,8 +45,12 @@ export const buildFileUrl = (fileUrl?: string, baseUrl?: string): string => {
     cleanUrl.includes("storage.googleapis.com")
   ) {
     // Si no tiene protocolo, agregarlo
-    const result = cleanUrl.startsWith("//") ? `https:${cleanUrl}` : `https://${cleanUrl}`;
+    const result = cleanUrl.startsWith("//")
+      ? `https:${cleanUrl}`
+      : `https://${cleanUrl}`;
+
     console.log("buildFileUrl: URL de GCS detectada, resultado:", result);
+
     return result;
   }
 
@@ -50,8 +58,9 @@ export const buildFileUrl = (fileUrl?: string, baseUrl?: string): string => {
   const apiBaseUrl =
     baseUrl || import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
   const fullUrl = `${apiBaseUrl}${cleanUrl.startsWith("/") ? cleanUrl : "/" + cleanUrl}`;
-  
+
   console.log("buildFileUrl: URL relativa, resultado:", fullUrl);
+
   return fullUrl;
 };
 

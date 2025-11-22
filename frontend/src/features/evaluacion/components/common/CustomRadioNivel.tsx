@@ -13,15 +13,17 @@ export const CustomRadioNivel = ({
   puntaje,
   ...props
 }: CustomRadioNivelProps) => {
-  const { Component, getBaseProps, getInputProps, getLabelProps } = useRadio(props);
+  const { Component, getBaseProps, getInputProps, getLabelProps } =
+    useRadio(props);
 
   // Colores dinámicos basados en el puntaje para mejor UX
   const getPuntajeColor = (puntos: number) => {
-    if (puntos >= 4) return 'emerald'; // Alto rendimiento
-    if (puntos >= 3) return 'emerald';    // Buen rendimiento  
-    if (puntos >= 2) return 'emerald';   // Rendimiento medio
-    if (puntos >= 1) return 'emerald';   // Rendimiento medio
-    return 'amber';                      // Bajo rendimiento
+    if (puntos >= 4) return "emerald"; // Alto rendimiento
+    if (puntos >= 3) return "emerald"; // Buen rendimiento
+    if (puntos >= 2) return "emerald"; // Rendimiento medio
+    if (puntos >= 1) return "emerald"; // Rendimiento medio
+
+    return "amber"; // Bajo rendimiento
   };
 
   const colorScheme = getPuntajeColor(puntaje);
@@ -29,29 +31,41 @@ export const CustomRadioNivel = ({
   // Estilos dinámicos mejorados para ultra small screens
   const styles = {
     emerald: {
-      radio: 'border-emerald-300 bg-emerald-50 group-data-[selected=true]:border-emerald-500 group-data-[selected=true]:bg-emerald-500',
-      text: 'group-data-[selected=true]:text-emerald-800',
-      badge: 'group-data-[selected=true]:bg-emerald-100 group-data-[selected=true]:text-emerald-700',
-      container: 'group-data-[selected=true]:bg-emerald-50/80 group-data-[selected=true]:border-emerald-200',
+      radio:
+        "border-emerald-300 bg-emerald-50 group-data-[selected=true]:border-emerald-500 group-data-[selected=true]:bg-emerald-500",
+      text: "group-data-[selected=true]:text-emerald-800",
+      badge:
+        "group-data-[selected=true]:bg-emerald-100 group-data-[selected=true]:text-emerald-700",
+      container:
+        "group-data-[selected=true]:bg-emerald-50/80 group-data-[selected=true]:border-emerald-200",
     },
     blue: {
-      radio: 'border-blue-300 bg-blue-50 group-data-[selected=true]:border-blue-500 group-data-[selected=true]:bg-blue-500',
-      text: 'group-data-[selected=true]:text-blue-800',
-      badge: 'group-data-[selected=true]:bg-blue-100 group-data-[selected=true]:text-blue-700',
-      container: 'group-data-[selected=true]:bg-blue-50/80 group-data-[selected=true]:border-blue-200',
+      radio:
+        "border-blue-300 bg-blue-50 group-data-[selected=true]:border-blue-500 group-data-[selected=true]:bg-blue-500",
+      text: "group-data-[selected=true]:text-blue-800",
+      badge:
+        "group-data-[selected=true]:bg-blue-100 group-data-[selected=true]:text-blue-700",
+      container:
+        "group-data-[selected=true]:bg-blue-50/80 group-data-[selected=true]:border-blue-200",
     },
     amber: {
-      radio: 'border-amber-300 bg-amber-50 group-data-[selected=true]:border-amber-500 group-data-[selected=true]:bg-amber-500',
-      text: 'group-data-[selected=true]:text-amber-800',
-      badge: 'group-data-[selected=true]:bg-amber-100 group-data-[selected=true]:text-amber-700',
-      container: 'group-data-[selected=true]:bg-amber-50/80 group-data-[selected=true]:border-amber-200',
+      radio:
+        "border-amber-300 bg-amber-50 group-data-[selected=true]:border-amber-500 group-data-[selected=true]:bg-amber-500",
+      text: "group-data-[selected=true]:text-amber-800",
+      badge:
+        "group-data-[selected=true]:bg-amber-100 group-data-[selected=true]:text-amber-700",
+      container:
+        "group-data-[selected=true]:bg-amber-50/80 group-data-[selected=true]:border-amber-200",
     },
     red: {
-      radio: 'border-red-300 bg-red-50 group-data-[selected=true]:border-red-500 group-data-[selected=true]:bg-red-500',
-      text: 'group-data-[selected=true]:text-red-800',
-      badge: 'group-data-[selected=true]:bg-red-100 group-data-[selected=true]:text-red-700',
-      container: 'group-data-[selected=true]:bg-red-50/80 group-data-[selected=true]:border-red-200',
-    }
+      radio:
+        "border-red-300 bg-red-50 group-data-[selected=true]:border-red-500 group-data-[selected=true]:bg-red-500",
+      text: "group-data-[selected=true]:text-red-800",
+      badge:
+        "group-data-[selected=true]:bg-red-100 group-data-[selected=true]:text-red-700",
+      container:
+        "group-data-[selected=true]:bg-red-50/80 group-data-[selected=true]:border-red-200",
+    },
   };
 
   const currentStyles = styles[colorScheme];
@@ -88,7 +102,7 @@ export const CustomRadioNivel = ({
           <div
             className={`absolute inset-0 rounded-full transition-all duration-300
               opacity-0 group-data-[selected=true]:animate-ping group-data-[selected=true]:opacity-20
-              ${currentStyles.radio.split(' ')[2]?.replace('bg-', 'bg-')}`}
+              ${currentStyles.radio.split(" ")[2]?.replace("bg-", "bg-")}`}
           />
         </div>
       </div>
@@ -113,7 +127,7 @@ export const CustomRadioNivel = ({
               ${currentStyles.badge} group-data-[selected=true]:shadow-sm
               min-w-[2.5rem] xs:min-w-[3rem] justify-center`}
           >
-            <div className="w-1 h-1 xs:w-1.5 xs:h-1.5 rounded-full bg-current opacity-60"></div>
+            <div className="w-1 h-1 xs:w-1.5 xs:h-1.5 rounded-full bg-current opacity-60" />
             <span className="whitespace-nowrap">{puntaje} pts</span>
           </div>
         </div>
@@ -129,7 +143,7 @@ export const CustomRadioNivel = ({
         className={`absolute top-1 xs:top-2 right-1 xs:right-2 w-2 h-2 xs:w-2.5 xs:h-2.5 rounded-full 
           transition-all duration-300 transform
           scale-0 opacity-0 group-data-[selected=true]:scale-100 group-data-[selected=true]:opacity-100
-          ${currentStyles.radio.split(' ')[4]?.replace('group-data-[selected=true]:bg-', 'bg-')}
+          ${currentStyles.radio.split(" ")[4]?.replace("group-data-[selected=true]:bg-", "bg-")}
           shadow-sm`}
       />
     </Component>

@@ -3,7 +3,6 @@ import { SectionButton } from "@/types/sections";
 import { PERMISSIONS } from "@/constants/permissions";
 
 export const buttons: Record<string, SectionButton> = {
-  
   evaluacionAuto: {
     label: "EVALUACIÓN DE DESEMPEÑO",
     href: "/autoevaluacion",
@@ -27,7 +26,7 @@ export const buttons: Record<string, SectionButton> = {
   usuarios: {
     label: "USUARIOS",
     href: "/usuarios",
-    permiso: PERMISSIONS.SISTEMA.USUARIOS
+    permiso: PERMISSIONS.SISTEMA.USUARIOS,
   },
   evaluacionMixta: {
     label: "EVALUACIÓN MIXTA",

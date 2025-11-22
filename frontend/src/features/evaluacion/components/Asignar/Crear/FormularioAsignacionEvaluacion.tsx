@@ -13,11 +13,8 @@ import {
   DocumentTextIcon,
   UserIcon,
   EyeIcon,
-  SparklesIcon
+  SparklesIcon,
 } from "@heroicons/react/24/outline";
-
-
-
 
 import { useFormularioAsignacion } from "./hooks/useFormularioAsignacion";
 
@@ -34,39 +31,39 @@ import { Usuario } from "@/features/evaluacion/types/asignar/evaluacion";
 function MonthNative({
   value,
   onChange,
-}: { value: string; onChange: (v: string) => void }) {
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) {
   // value esperado: "YYYY-MM"
   return (
     <div className="space-y-1">
       <div className="flex items-center gap-2">
         <Input
           isRequired
-          label="Período de evaluación"
-          labelPlacement="outside"
-          type="month"
-          lang="es-ES"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          startContent={<CalendarDaysIcon className="w-4 h-4 text-default-400" />}
           classNames={{
             input: "text-sm",
             inputWrapper:
               "bg-background/50 border border-default-200/50 rounded-2xl shadow-sm hover:border-default-300",
             label: "text-default-600 font-medium",
           }}
-          min="2020-01"
+          label="Período de evaluación"
+          labelPlacement="outside"
+          lang="es-ES"
           max="2030-12"
+          min="2020-01"
+          startContent={
+            <CalendarDaysIcon className="w-4 h-4 text-default-400" />
+          }
+          type="month"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
         />
-
       </div>
-      <p className="text-xs text-default-500">
-        Selecciona solo mes y año.
-      </p>
+      <p className="text-xs text-default-500">Selecciona solo mes y año.</p>
     </div>
   );
 }
-
-
 
 const FormularioAsignacionEvaluacion = () => {
   const {
@@ -94,7 +91,8 @@ const FormularioAsignacionEvaluacion = () => {
     handleDeseleccionarTodos,
   } = useFormularioAsignacion();
 
-  const isFormValid = tipoEvaluacion && fechaEvaluacion && usuariosSeleccionados.length > 0;
+  const isFormValid =
+    tipoEvaluacion && fechaEvaluacion && usuariosSeleccionados.length > 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-900 dark:via-blue-950/30 dark:to-indigo-950/50 rounded-xl">
@@ -110,18 +108,23 @@ const FormularioAsignacionEvaluacion = () => {
             Asignar {isAutoevaluacion ? "AutoEvaluación" : "Evaluación"}
           </h1>
           <p className="text-default-600 max-w-2xl mx-auto">
-            Configura y asigna {isAutoevaluacion ? "autoevaluaciones" : "evaluaciones"} a los usuarios seleccionados
+            Configura y asigna{" "}
+            {isAutoevaluacion ? "autoevaluaciones" : "evaluaciones"} a los
+            usuarios seleccionados
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form className="space-y-6" onSubmit={handleSubmit}>
           {/* Configuration Section */}
           <Card className="border-0 bg-background/60 backdrop-blur-sm shadow-sm dark:bg-default-50/5">
             <CardHeader className="flex items-center gap-3 pb-3">
-              <div className={`p-2 rounded-lg ${isAutoevaluacion
-                ? "bg-secondary/10 text-secondary"
-                : "bg-primary/10 text-primary"
-                }`}>
+              <div
+                className={`p-2 rounded-lg ${
+                  isAutoevaluacion
+                    ? "bg-secondary/10 text-secondary"
+                    : "bg-primary/10 text-primary"
+                }`}
+              >
                 {isAutoevaluacion ? (
                   <UserIcon className="w-5 h-5" />
                 ) : (
@@ -130,7 +133,8 @@ const FormularioAsignacionEvaluacion = () => {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-foreground">
-                  Configuración de {isAutoevaluacion ? "AutoEvaluación" : "Evaluación"}
+                  Configuración de{" "}
+                  {isAutoevaluacion ? "AutoEvaluación" : "Evaluación"}
                 </h3>
                 <p className="text-sm text-default-500">
                   Selecciona el tipo y fecha de la evaluación
@@ -142,9 +146,9 @@ const FormularioAsignacionEvaluacion = () => {
                 <div className="space-y-2">
                   <SelectTipoEvaluacion
                     isAutoevaluacion={isAutoevaluacion}
+                    isLoading={tiposLoading}
                     selectedId={tipoEvaluacion?.id ?? null}
                     tipos={tiposFiltrados}
-                    isLoading={tiposLoading}
                     onSelect={setTipoEvaluacion}
                   />
                 </div>
@@ -166,7 +170,9 @@ const FormularioAsignacionEvaluacion = () => {
                 <SparklesIcon className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-foreground">Filtros</h3>
+                <h3 className="text-lg font-semibold text-foreground">
+                  Filtros
+                </h3>
                 <p className="text-sm text-default-500">
                   Filtra usuarios por empresa y ciclo
                 </p>
@@ -204,10 +210,10 @@ const FormularioAsignacionEvaluacion = () => {
               <div className="flex items-center gap-2">
                 {usuariosSeleccionados.length > 0 && (
                   <Chip
-                    size="sm"
                     color="success"
-                    variant="flat"
+                    size="sm"
                     startContent={<CheckCircleIcon className="w-3 h-3" />}
+                    variant="flat"
                   >
                     {usuariosSeleccionados.length} seleccionados
                   </Chip>
@@ -240,9 +246,9 @@ const FormularioAsignacionEvaluacion = () => {
                 <div className="flex items-center gap-3">
                   <Button
                     color="default"
-                    variant="flat"
                     isDisabled={usuariosSeleccionados.length === 0}
                     startContent={<EyeIcon className="w-4 h-4" />}
+                    variant="flat"
                     onPress={() => setMostrarModal(true)}
                   >
                     Ver Seleccionados
@@ -251,7 +257,10 @@ const FormularioAsignacionEvaluacion = () => {
                   {usuariosSeleccionados.length > 0 && (
                     <div className="flex items-center gap-2 text-sm text-default-600">
                       <CheckCircleIcon className="w-4 h-4 text-success" />
-                      <span>{usuariosSeleccionados.length} usuarios listos para asignar</span>
+                      <span>
+                        {usuariosSeleccionados.length} usuarios listos para
+                        asignar
+                      </span>
                     </div>
                   )}
                 </div>
@@ -273,26 +282,32 @@ const FormularioAsignacionEvaluacion = () => {
                       <span>
                         <Button
                           isDisabled
+                          className="font-medium"
                           color={isAutoevaluacion ? "secondary" : "primary"}
                           size="lg"
-                          className="font-medium"
                         >
-                          Asignar {isAutoevaluacion ? "AutoEvaluación" : "Evaluación"}
+                          Asignar{" "}
+                          {isAutoevaluacion ? "AutoEvaluación" : "Evaluación"}
                         </Button>
                       </span>
                     </Tooltip>
                   ) : (
                     <Button
+                      className="font-medium min-w-[200px]"
                       color={isAutoevaluacion ? "secondary" : "primary"}
+                      isDisabled={!isFormValid}
                       size="lg"
+                      startContent={<CheckCircleIcon className="w-5 h-5" />}
                       type="submit"
                       variant="shadow"
-                      isDisabled={!isFormValid}
-                      startContent={<CheckCircleIcon className="w-5 h-5" />}
-                      className="font-medium min-w-[200px]"
                     >
-                      Asignar {isAutoevaluacion ? "AutoEvaluación" : "Evaluación"}
-                      <Chip size="sm" variant="flat" className="ml-2 bg-white/20">
+                      Asignar{" "}
+                      {isAutoevaluacion ? "AutoEvaluación" : "Evaluación"}
+                      <Chip
+                        className="ml-2 bg-white/20"
+                        size="sm"
+                        variant="flat"
+                      >
                         {usuariosSeleccionados.length}
                       </Chip>
                     </Button>

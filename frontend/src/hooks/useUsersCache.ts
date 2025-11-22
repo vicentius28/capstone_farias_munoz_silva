@@ -1,14 +1,16 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+
 import { User } from "../types/types";
+
 import { fetchAllUsers } from "@/api/user/user";
 
 const CACHE_CONFIG = {
   MEMORY_TTL: 5 * 60 * 1000, // 5 minutos en memoria
   STORAGE_TTL: 30 * 60 * 1000, // 30 minutos en localStorage
-  STORAGE_KEY: 'users_cache_data',
-  TIMESTAMP_KEY: 'users_cache_timestamp',
-  VERSION_KEY: 'users_cache_version',
-  CURRENT_VERSION: '1.1.0' // Incrementar versión para limpiar caché corrupto
+  STORAGE_KEY: "users_cache_data",
+  TIMESTAMP_KEY: "users_cache_timestamp",
+  VERSION_KEY: "users_cache_version",
+  CURRENT_VERSION: "1.1.0", // Incrementar versión para limpiar caché corrupto
 };
 
 interface CacheData {
@@ -34,43 +36,70 @@ const useUsersCache = () => {
 
   // Función mejorada para obtener usuarios
   const fetchUsers = useCallback(async (searchQuery?: string) => {
-    console.log('🔍 Fetching users with query:', searchQuery);
-    
+    console.log("🔍 Fetching users with query:", searchQuery);
+
     try {
       // Si hay búsqueda, usar el backend; si no, usar caché
       if (searchQuery && searchQuery.trim()) {
-        console.log('📡 Fetching from backend with search query');
+        console.log("📡 Fetching from backend with search query");
         const users = await fetchAllUsers(searchQuery.trim());
-        console.log('✅ Search results:', users.length, 'users');
+
+        console.log("✅ Search results:", users.length, "users");
+
         return users;
       } else {
         // Lógica de caché existente para cuando no hay búsqueda
         const now = Date.now();
 
         // Verificar caché en memoria
-        if (memoryCache && (now - memoryCache.timestamp) < CACHE_CONFIG.MEMORY_TTL) {
-          console.log('💾 Using memory cache:', memoryCache.users.length, 'users');
+        if (
+          memoryCache &&
+          now - memoryCache.timestamp < CACHE_CONFIG.MEMORY_TTL
+        ) {
+          console.log(
+            "💾 Using memory cache:",
+            memoryCache.users.length,
+            "users",
+          );
+
           return memoryCache.users;
         }
 
         // Verificar caché en localStorage
         try {
           const cachedData = localStorage.getItem(CACHE_CONFIG.STORAGE_KEY);
-          const cachedTimestamp = localStorage.getItem(CACHE_CONFIG.TIMESTAMP_KEY);
+          const cachedTimestamp = localStorage.getItem(
+            CACHE_CONFIG.TIMESTAMP_KEY,
+          );
           const cachedVersion = localStorage.getItem(CACHE_CONFIG.VERSION_KEY);
 
-          if (cachedData && cachedTimestamp && cachedVersion === CACHE_CONFIG.CURRENT_VERSION) {
+          if (
+            cachedData &&
+            cachedTimestamp &&
+            cachedVersion === CACHE_CONFIG.CURRENT_VERSION
+          ) {
             const timestamp = parseInt(cachedTimestamp);
-            if ((now - timestamp) < CACHE_CONFIG.STORAGE_TTL) {
+
+            if (now - timestamp < CACHE_CONFIG.STORAGE_TTL) {
               const users = JSON.parse(cachedData);
-              console.log('💽 Using localStorage cache:', users.length, 'users');
+
+              console.log(
+                "💽 Using localStorage cache:",
+                users.length,
+                "users",
+              );
               // Actualizar caché en memoria
-              memoryCache = { users, timestamp, version: CACHE_CONFIG.CURRENT_VERSION };
+              memoryCache = {
+                users,
+                timestamp,
+                version: CACHE_CONFIG.CURRENT_VERSION,
+              };
+
               return users;
             }
           }
         } catch (error) {
-          console.warn('⚠️ Error al leer caché del localStorage:', error);
+          console.warn("⚠️ Error al leer caché del localStorage:", error);
           // Limpiar caché corrupto
           localStorage.removeItem(CACHE_CONFIG.STORAGE_KEY);
           localStorage.removeItem(CACHE_CONFIG.TIMESTAMP_KEY);
@@ -78,81 +107,97 @@ const useUsersCache = () => {
         }
 
         // Obtener datos frescos del servidor
-        console.log('📡 Fetching fresh data from server');
+        console.log("📡 Fetching fresh data from server");
         const users = await fetchAllUsers();
-        console.log('✅ Fresh data received:', users.length, 'users');
+
+        console.log("✅ Fresh data received:", users.length, "users");
 
         // Validar que los datos sean válidos
         if (!Array.isArray(users)) {
-          console.error('❌ Invalid data format received:', users);
-          throw new Error('Formato de datos inválido recibido del servidor');
+          console.error("❌ Invalid data format received:", users);
+          throw new Error("Formato de datos inválido recibido del servidor");
         }
 
         // Actualizar ambos cachés
-        const cacheData = { users, timestamp: now, version: CACHE_CONFIG.CURRENT_VERSION };
+        const cacheData = {
+          users,
+          timestamp: now,
+          version: CACHE_CONFIG.CURRENT_VERSION,
+        };
+
         memoryCache = cacheData;
 
         try {
           localStorage.setItem(CACHE_CONFIG.STORAGE_KEY, JSON.stringify(users));
           localStorage.setItem(CACHE_CONFIG.TIMESTAMP_KEY, now.toString());
-          localStorage.setItem(CACHE_CONFIG.VERSION_KEY, CACHE_CONFIG.CURRENT_VERSION);
-          console.log('💾 Cache updated successfully');
+          localStorage.setItem(
+            CACHE_CONFIG.VERSION_KEY,
+            CACHE_CONFIG.CURRENT_VERSION,
+          );
+          console.log("💾 Cache updated successfully");
         } catch (error) {
-          console.warn('⚠️ Error al guardar en localStorage:', error);
+          console.warn("⚠️ Error al guardar en localStorage:", error);
         }
 
         return users;
       }
     } catch (error) {
-      console.error('❌ Error al obtener usuarios:', error);
+      console.error("❌ Error al obtener usuarios:", error);
       throw error;
     }
   }, []);
 
   // Función de búsqueda con debounce mejorada
-  const performSearch = useCallback(async (searchTerm: string) => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-  
-    abortControllerRef.current = new AbortController();
-  
-    try {
-      setLoading(true);
-      setError(null);
-      console.log('🔄 Performing search for:', searchTerm);
-  
-      const results = await fetchUsers(searchTerm);
-      
-      // Validar resultados
-      if (!Array.isArray(results)) {
-        throw new Error('Datos inválidos recibidos del servidor');
+  const performSearch = useCallback(
+    async (searchTerm: string) => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
       }
 
-      setFilteredUsers(results);
-  
-      // Si no hay término de búsqueda, también actualizar allUsers
-      if (!searchTerm.trim()) {
-        setAllUsers(results);
-        console.log('📊 Total users loaded:', results.length);
-      }
-    } catch (error: any) {
-      if (error.name !== 'AbortError') {
-        const errorMessage = error.response?.data?.message || error.message || 'Error al buscar usuarios';
-        setError(errorMessage);
-        console.error('❌ Error en búsqueda:', error);
-        
-        // En caso de error, intentar usar datos del caché como fallback
-        if (!searchTerm.trim() && memoryCache) {
-          console.log('🔄 Using cache as fallback');
-          setFilteredUsers(memoryCache.users);
-          setAllUsers(memoryCache.users);
+      abortControllerRef.current = new AbortController();
+
+      try {
+        setLoading(true);
+        setError(null);
+        console.log("🔄 Performing search for:", searchTerm);
+
+        const results = await fetchUsers(searchTerm);
+
+        // Validar resultados
+        if (!Array.isArray(results)) {
+          throw new Error("Datos inválidos recibidos del servidor");
         }
+
+        setFilteredUsers(results);
+
+        // Si no hay término de búsqueda, también actualizar allUsers
+        if (!searchTerm.trim()) {
+          setAllUsers(results);
+          console.log("📊 Total users loaded:", results.length);
+        }
+      } catch (error: any) {
+        if (error.name !== "AbortError") {
+          const errorMessage =
+            error.response?.data?.message ||
+            error.message ||
+            "Error al buscar usuarios";
+
+          setError(errorMessage);
+          console.error("❌ Error en búsqueda:", error);
+
+          // En caso de error, intentar usar datos del caché como fallback
+          if (!searchTerm.trim() && memoryCache) {
+            console.log("🔄 Using cache as fallback");
+            setFilteredUsers(memoryCache.users);
+            setAllUsers(memoryCache.users);
+          }
+        }
+      } finally {
+        setLoading(false);
       }
-    } finally {
-      setLoading(false);
-    }
-  }, [fetchUsers]);
+    },
+    [fetchUsers],
+  );
 
   // Efecto para manejar búsqueda con debounce
   useEffect(() => {
@@ -176,13 +221,13 @@ const useUsersCache = () => {
     if (isInitializedRef.current) return;
     isInitializedRef.current = true;
 
-    console.log('🚀 Initializing users cache');
+    console.log("🚀 Initializing users cache");
     performSearch(""); // Cargar usuarios iniciales
   }, [performSearch]);
 
   // Función para refrescar datos
   const refreshUsers = useCallback(async () => {
-    console.log('🔄 Refreshing users data');
+    console.log("🔄 Refreshing users data");
     // Limpiar cachés
     memoryCache = null;
     localStorage.removeItem(CACHE_CONFIG.STORAGE_KEY);
@@ -214,22 +259,24 @@ const useUsersCache = () => {
   // Función para verificar si el caché es válido
   const isCacheValid = useCallback(() => {
     const now = Date.now();
-    if (memoryCache && (now - memoryCache.timestamp) < CACHE_CONFIG.MEMORY_TTL) {
+
+    if (memoryCache && now - memoryCache.timestamp < CACHE_CONFIG.MEMORY_TTL) {
       return true;
     }
-    
+
     try {
       const cachedTimestamp = localStorage.getItem(CACHE_CONFIG.TIMESTAMP_KEY);
       const cachedVersion = localStorage.getItem(CACHE_CONFIG.VERSION_KEY);
-      
+
       if (cachedTimestamp && cachedVersion === CACHE_CONFIG.CURRENT_VERSION) {
         const timestamp = parseInt(cachedTimestamp);
-        return (now - timestamp) < CACHE_CONFIG.STORAGE_TTL;
+
+        return now - timestamp < CACHE_CONFIG.STORAGE_TTL;
       }
     } catch (error) {
-      console.warn('Error al verificar caché:', error);
+      console.warn("Error al verificar caché:", error);
     }
-    
+
     return false;
   }, []);
 
@@ -257,7 +304,7 @@ const useUsersCache = () => {
     // Funciones de filtrado específico (mantenidas por compatibilidad)
     titulos: filteredUsers,
     magisters: filteredUsers,
-    diplomados: filteredUsers
+    diplomados: filteredUsers,
   };
 };
 

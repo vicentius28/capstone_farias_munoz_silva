@@ -54,9 +54,10 @@ export default function AreaTabs({
           <Button
             key={areaIndex}
             className={`px-4 py-2 rounded-md border text-sm font-medium transition-all
-              ${activeAreaIndex === areaIndex
-                ? "bg-secondary text-white border-secondary"
-                : "text-default-800 border-default-300 hover:bg-default-100"
+              ${
+                activeAreaIndex === areaIndex
+                  ? "bg-secondary text-white border-secondary"
+                  : "text-default-800 border-default-300 hover:bg-default-100"
               }`}
             type="button"
             onPress={() => setActiveAreaIndex(areaIndex)}
@@ -86,7 +87,6 @@ export default function AreaTabs({
               />
             </div>
 
-
             <div className="w-40">
               <Input
                 // no usamos required para evitar validaciones molestas
@@ -109,12 +109,12 @@ export default function AreaTabs({
                     Math.max(parseInt(e.target.value || "0", 10), 0),
                     100,
                   );
+
                   // solo si el handler existe
                   updatePonderacion?.(activeAreaIndex, value);
                 }}
               />
             </div>
-
           </div>
 
           <div className="flex flex-wrap gap-3">

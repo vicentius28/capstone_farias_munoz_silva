@@ -87,8 +87,8 @@ const EditarTipoEvaluacion = () => {
             competenciaHandlers={competenciaHandlers}
             indicadorHandlers={indicadorHandlers}
             isEditing={isEditing}
-            updatePonderacion={updatePonderacion}
             nivelHandlers={nivelHandlers}
+            updatePonderacion={updatePonderacion}
             onAddArea={addArea}
             onAreaChange={handleAreaChange}
             onRemoveArea={removeArea}

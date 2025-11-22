@@ -5,18 +5,12 @@ import { es } from "date-fns/locale";
 import { Card, CardBody } from "@heroui/card";
 import { Tabs, Tab } from "@heroui/tabs";
 import { Badge } from "@heroui/badge";
-import {
-  UserIcon,
-  FileText,
-
-} from "lucide-react";
+import { UserIcon, FileText } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { Select as HSelect, SelectItem } from "@heroui/select";
 
 import { UserEvaluations } from "../UserProfile";
-import {
-  UserInfoCard,
-} from "../UserProfile";
+import { UserInfoCard } from "../UserProfile";
 
 import { useSession } from "@/hooks/useSession";
 import { fetchUserById } from "@/api/user/user";
@@ -40,12 +34,16 @@ const UserProfile: React.FC<UserProfileProps> = ({ hideEmptyTabs = false }) => {
     const date = new Date(dateString);
     const offset = date.getTimezoneOffset() + 180;
     const localDate = new Date(date.getTime() + offset * 60 * 1000);
+
     return format(localDate, "dd MMMM yyyy", { locale: es });
   };
 
-  const stats = useMemo(() => ({
-    evaluaciones: user?.evaluacion?.length ?? 0,
-  }), [user]);
+  const stats = useMemo(
+    () => ({
+      evaluaciones: user?.evaluacion?.length ?? 0,
+    }),
+    [user],
+  );
 
   // Cargar usuario
   useEffect(() => {
@@ -53,11 +51,13 @@ const UserProfile: React.FC<UserProfileProps> = ({ hideEmptyTabs = false }) => {
       if (!userId) {
         setError("ID de usuario no proporcionado");
         setLoading(false);
+
         return;
       }
 
       try {
         const userData = await fetchUserById(userId);
+
         if (userData) {
           setUser(userData);
         } else {
@@ -83,7 +83,14 @@ const UserProfile: React.FC<UserProfileProps> = ({ hideEmptyTabs = false }) => {
         icon: <UserIcon className="w-4 h-4" />,
         count: null,
         color: "primary" as const,
-        content: <UserInfoCard formatDate={formatDate} image={user?.foto} user={user} userId={userId} />,
+        content: (
+          <UserInfoCard
+            formatDate={formatDate}
+            image={user?.foto}
+            user={user}
+            userId={userId}
+          />
+        ),
         show: true,
       },
 
@@ -94,26 +101,32 @@ const UserProfile: React.FC<UserProfileProps> = ({ hideEmptyTabs = false }) => {
         count: stats.evaluaciones,
         color: "secondary" as const,
         content: <UserEvaluations evaluaciones={user?.evaluacion || []} />,
-        show: (!hideEmptyTabs || stats.evaluaciones > 0) && [15, 11, 7].includes(loggedUser?.group || 0),
+        show:
+          (!hideEmptyTabs || stats.evaluaciones > 0) &&
+          [15, 11, 7].includes(loggedUser?.group || 0),
       },
-
-    ].filter(tab => tab.show);
+    ].filter((tab) => tab.show);
   }, [user, stats, hideEmptyTabs, loggedUser?.group, formatDate]);
-  const [selectedKey, setSelectedKey] = useState<string>(tabs[0]?.key || "info");
+  const [selectedKey, setSelectedKey] = useState<string>(
+    tabs[0]?.key || "info",
+  );
 
   // helpers: mapear clases por color (pill + estilos al estar seleccionado)
 
   const pillClass = (color: string) =>
-    color === "primary" ? "bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400" :
-      color === "success" ? "bg-green-100 dark:bg-green-950 text-green-600 dark:text-green-400" :
-        color === "warning" ? "bg-amber-100 dark:bg-amber-950 text-amber-600 dark:text-amber-400" :
-          color === "secondary" ? "bg-purple-100 dark:bg-purple-950 text-purple-600 dark:text-purple-400" :
-            color === "danger" ? "bg-red-100 dark:bg-red-950 text-red-600 dark:text-red-400" :
-              "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400";
-
+    color === "primary"
+      ? "bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400"
+      : color === "success"
+        ? "bg-green-100 dark:bg-green-950 text-green-600 dark:text-green-400"
+        : color === "warning"
+          ? "bg-amber-100 dark:bg-amber-950 text-amber-600 dark:text-amber-400"
+          : color === "secondary"
+            ? "bg-purple-100 dark:bg-purple-950 text-purple-600 dark:text-purple-400"
+            : color === "danger"
+              ? "bg-red-100 dark:bg-red-950 text-red-600 dark:text-red-400"
+              : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400";
 
   // función para renderizar el título con icono + texto + badge
-
 
   // Estados de carga y error
   if (loading) {
@@ -122,7 +135,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ hideEmptyTabs = false }) => {
         <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 lg:p-8 shadow-xl border border-gray-200 dark:border-gray-800 w-full max-w-md">
           <div className="flex flex-col items-center gap-4">
             <div className="p-4 bg-blue-50 dark:bg-blue-950/50 rounded-full">
-              <Spinner size="lg" className="text-blue-600 dark:text-blue-400" />
+              <Spinner className="text-blue-600 dark:text-blue-400" size="lg" />
             </div>
             <div className="text-center">
               <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-1">
@@ -167,23 +180,21 @@ const UserProfile: React.FC<UserProfileProps> = ({ hideEmptyTabs = false }) => {
             {/* Select para <1024px */}
             <div className="block lg:hidden mb-4">
               <HSelect
-                label="Sección"
-                aria-label="Seleccionar sección"
-                variant="bordered"
-                selectedKeys={[selectedKey]}
                 disallowEmptySelection
-                onSelectionChange={(keys) => {
-                  const key = String(Array.from(keys)[0]);
-                  setSelectedKey(key);
-                }}
+                aria-label="Seleccionar sección"
+                label="Sección"
                 renderValue={(items) => {
                   // trigger con icono + color + badge
                   const key = (items?.[0]?.key as string) || selectedKey;
-                  const t = tabs.find(x => x.key === key);
+                  const t = tabs.find((x) => x.key === key);
+
                   if (!t) return null;
+
                   return (
                     <div className="flex items-center gap-2">
-                      <div className={`p-1.5 rounded-lg ${pillClass(t.color)}`}>{t.icon}</div>
+                      <div className={`p-1.5 rounded-lg ${pillClass(t.color)}`}>
+                        {t.icon}
+                      </div>
                       <span className="font-medium">{t.title}</span>
                       {t.count !== null && (
                         <Badge color={t.color} size="sm" variant="flat">
@@ -193,12 +204,17 @@ const UserProfile: React.FC<UserProfileProps> = ({ hideEmptyTabs = false }) => {
                     </div>
                   );
                 }}
+                selectedKeys={[selectedKey]}
+                variant="bordered"
+                onSelectionChange={(keys) => {
+                  const key = String(Array.from(keys)[0]);
+
+                  setSelectedKey(key);
+                }}
               >
                 {tabs.map((t) => (
                   <SelectItem
                     key={t.key}
-                    textValue={t.title} // a11y cuando hay contenido no plano
-                    startContent={<div className={`p-1.5 rounded-lg ${pillClass(t.color)}`}>{t.icon}</div>}
                     endContent={
                       t.count !== null ? (
                         <Badge color={t.color} size="sm" variant="flat">
@@ -206,6 +222,12 @@ const UserProfile: React.FC<UserProfileProps> = ({ hideEmptyTabs = false }) => {
                         </Badge>
                       ) : null
                     }
+                    startContent={
+                      <div className={`p-1.5 rounded-lg ${pillClass(t.color)}`}>
+                        {t.icon}
+                      </div>
+                    }
+                    textValue={t.title} // a11y cuando hay contenido no plano
                   >
                     {t.title}
                   </SelectItem>
@@ -217,9 +239,6 @@ const UserProfile: React.FC<UserProfileProps> = ({ hideEmptyTabs = false }) => {
             <div className="hidden lg:block">
               <Tabs
                 aria-label="Perfil de usuario"
-                variant="light"
-                selectedKey={selectedKey}
-                onSelectionChange={(key) => setSelectedKey(String(key))}
                 classNames={{
                   base: "w-full",
                   tabList:
@@ -227,6 +246,9 @@ const UserProfile: React.FC<UserProfileProps> = ({ hideEmptyTabs = false }) => {
                   panel: "w-full p-0",
                   tab: "data-[hover]:bg-gray-100 dark:data-[hover]:bg-gray-800 px-4 py-3",
                 }}
+                selectedKey={selectedKey}
+                variant="light"
+                onSelectionChange={(key) => setSelectedKey(String(key))}
               >
                 {tabs.map((tab) => (
                   <Tab
@@ -234,12 +256,13 @@ const UserProfile: React.FC<UserProfileProps> = ({ hideEmptyTabs = false }) => {
                     title={
                       <div className="flex items-center gap-2">
                         <div
-                          className={`p-1.5 rounded-lg ${tab.color === "primary" ? "bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400"
-
-                            : tab.color === "secondary" ? "bg-purple-100 dark:bg-purple-950 text-purple-600 dark:text-purple-400"
-
-                              : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
-                            }`}
+                          className={`p-1.5 rounded-lg ${
+                            tab.color === "primary"
+                              ? "bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400"
+                              : tab.color === "secondary"
+                                ? "bg-purple-100 dark:bg-purple-950 text-purple-600 dark:text-purple-400"
+                                : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
+                          }`}
                         >
                           {tab.icon}
                         </div>
@@ -268,7 +291,6 @@ const UserProfile: React.FC<UserProfileProps> = ({ hideEmptyTabs = false }) => {
                 </CardBody>
               </Card>
             </div>
-
           </div>
         </div>
       </div>

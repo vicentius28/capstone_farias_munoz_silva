@@ -3,7 +3,10 @@ import { Button } from "@heroui/button";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 
 import { Respuesta } from "@/features/evaluacion/types/asignar/evaluacion";
-import { AreaEvaluacion, Competencia } from "@/features/evaluacion/types/evaluacion";
+import {
+  AreaEvaluacion,
+  Competencia,
+} from "@/features/evaluacion/types/evaluacion";
 
 interface PaginationProps {
   estructura: any;
@@ -33,13 +36,17 @@ export default function Pagination({
 
     // Corrección: contar indicadores únicos del área que tienen respuesta
     const indicadoresRespondidosArea = area.competencias.reduce((acc, comp) => {
-      return acc + comp.indicadores.filter((ind) => {
-        const respuesta = respuestas.find((r) => r.indicador === ind.id);
-        return respuesta && respuesta.puntaje > 0;
-      }).length;
+      return (
+        acc +
+        comp.indicadores.filter((ind) => {
+          const respuesta = respuestas.find((r) => r.indicador === ind.id);
+
+          return respuesta && respuesta.puntaje > 0;
+        }).length
+      );
     }, 0);
 
-    return totalIndicadoresArea > 0 
+    return totalIndicadoresArea > 0
       ? Math.round((indicadoresRespondidosArea / totalIndicadoresArea) * 100)
       : 0;
   };
@@ -48,7 +55,8 @@ export default function Pagination({
   const areaActualCompleta = calcularProgresoArea(areaActual) === 100;
 
   // Determinar si se puede avanzar
-  const puedeAvanzar = !guardando && areaActualCompleta && paginaActual < totalPaginas - 1;
+  const puedeAvanzar =
+    !guardando && areaActualCompleta && paginaActual < totalPaginas - 1;
 
   const avanzar = () => {
     if (puedeAvanzar) {
@@ -86,9 +94,10 @@ export default function Pagination({
               <Button
                 className={`
                   group relative overflow-hidden rounded-lg sm:rounded-xl transition-all duration-300 flex-shrink-0
-                  ${paginaActual === 0 || guardando
-                    ? "bg-default-300 text-default-800 cursor-not-allowed"
-                    : "bg-gradient-to-r from-primary-500 to-primary-700 text-default hover:from-primary-600 hover:to-primary-700 hover:shadow-lg hover:shadow-primary-500/25 hover:-translate-y-0.5"
+                  ${
+                    paginaActual === 0 || guardando
+                      ? "bg-default-300 text-default-800 cursor-not-allowed"
+                      : "bg-gradient-to-r from-primary-500 to-primary-700 text-default hover:from-primary-600 hover:to-primary-700 hover:shadow-lg hover:shadow-primary-500/25 hover:-translate-y-0.5"
                   }
                 `}
                 isDisabled={paginaActual === 0 || guardando}
@@ -97,7 +106,9 @@ export default function Pagination({
               >
                 <div className="flex items-center gap-1 sm:gap-2 px-1 sm:px-2">
                   <ChevronLeftIcon className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <span className="hidden sm:inline font-medium text-sm">Anterior</span>
+                  <span className="hidden sm:inline font-medium text-sm">
+                    Anterior
+                  </span>
                 </div>
                 {paginaActual > 0 && !guardando && (
                   <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
@@ -116,28 +127,37 @@ export default function Pagination({
 
                 {/* Indicadores de página con estado de completado */}
                 <div className="flex gap-1 sm:gap-1.5">
-                  {Array.from({ length: Math.min(totalPaginas, 5) }, (_, index) => {
-                    const pageIndex = totalPaginas <= 5 ? index :
-                      paginaActual < 3 ? index :
-                        paginaActual > totalPaginas - 3 ? totalPaginas - 5 + index :
-                          paginaActual - 2 + index;
+                  {Array.from(
+                    { length: Math.min(totalPaginas, 5) },
+                    (_, index) => {
+                      const pageIndex =
+                        totalPaginas <= 5
+                          ? index
+                          : paginaActual < 3
+                            ? index
+                            : paginaActual > totalPaginas - 3
+                              ? totalPaginas - 5 + index
+                              : paginaActual - 2 + index;
 
-                    const areaProgreso = calcularProgresoArea(estructura.areas[pageIndex]);
-                    const areaCompleta = areaProgreso === 100;
+                      const areaProgreso = calcularProgresoArea(
+                        estructura.areas[pageIndex],
+                      );
+                      const areaCompleta = areaProgreso === 100;
 
-                    return (
-                      <div
-                        key={pageIndex}
-                        className={`w-1 h-1 sm:w-1.5 sm:h-1.5 lg:w-2 lg:h-2 rounded-full transition-all duration-300 ${
-                          pageIndex === paginaActual
-                            ? "bg-primary-600 scale-125"
-                            : areaCompleta
-                              ? "bg-success-500 scale-100"
-                              : "bg-default-400 scale-100"
-                        }`}
-                      />
-                    );
-                  })}
+                      return (
+                        <div
+                          key={pageIndex}
+                          className={`w-1 h-1 sm:w-1.5 sm:h-1.5 lg:w-2 lg:h-2 rounded-full transition-all duration-300 ${
+                            pageIndex === paginaActual
+                              ? "bg-primary-600 scale-125"
+                              : areaCompleta
+                                ? "bg-success-500 scale-100"
+                                : "bg-default-400 scale-100"
+                          }`}
+                        />
+                      );
+                    },
+                  )}
                 </div>
               </div>
 
@@ -145,23 +165,24 @@ export default function Pagination({
               <Button
                 className={`
                   group relative overflow-hidden rounded-lg sm:rounded-xl transition-all duration-300 flex-shrink-0
-                  ${!puedeAvanzar
-                    ? "bg-default-300 text-default-800 cursor-not-allowed"
-                    : "bg-gradient-to-r from-primary-500 to-primary-600 text-white hover:from-primary-600 hover:to-primary-700 hover:shadow-lg hover:shadow-primary-500/25 hover:-translate-y-0.5"
+                  ${
+                    !puedeAvanzar
+                      ? "bg-default-300 text-default-800 cursor-not-allowed"
+                      : "bg-gradient-to-r from-primary-500 to-primary-600 text-white hover:from-primary-600 hover:to-primary-700 hover:shadow-lg hover:shadow-primary-500/25 hover:-translate-y-0.5"
                   }
                 `}
                 isDisabled={!puedeAvanzar}
                 size="sm"
-                onPress={avanzar}
                 title={
-                  guardando 
+                  guardando
                     ? "Espera a que se guarden los cambios"
-                    : !areaActualCompleta 
+                    : !areaActualCompleta
                       ? "Completa el área actual para continuar"
                       : paginaActual === totalPaginas - 1
                         ? "Última área"
                         : "Siguiente área"
                 }
+                onPress={avanzar}
               >
                 <div className="flex items-center gap-1 sm:gap-2 px-1 sm:px-2">
                   <span className="hidden sm:inline font-medium text-sm">

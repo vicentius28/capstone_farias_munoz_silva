@@ -53,7 +53,7 @@ export interface EvaluacionBase {
   completado?: boolean;
   firmado?: boolean; // Mantener para compatibilidad
   // Nuevos campos del backend
-  estado_firma?: 'pendiente' | 'firmado' | 'firmado_obs';
+  estado_firma?: "pendiente" | "firmado" | "firmado_obs";
   motivo_denegacion?: string | null;
   firmado_obs?: boolean; // Campo calculado del backend
   ponderada?: boolean;
@@ -95,7 +95,6 @@ export interface EvaluacionJefe extends EvaluacionBase {
     last_name: string;
     email?: string;
     jefe?: string;
-
   };
   tipo_evaluacion?: TipoEvaluacion;
   puntaje_total_obtenido?: number;
@@ -156,13 +155,18 @@ export interface IndicadorDetalle {
 // Interface para logro por área
 // Tipos para el nuevo flujo de estados
 export type EstadoEvaluacion =
-  | 'pendiente'
-  | 'retroalimentar'
-  | 'firmar'
-  | 'finalizado';
+  | "pendiente"
+  | "retroalimentar"
+  | "firmar"
+  | "finalizado";
 
 export interface AccionEvaluacion {
-  tipo: 'marcar_reunion' | 'completar_retroalimentacion' | 'cerrar_para_firma' | 'firmar' | 'firmar_obs';
+  tipo:
+    | "marcar_reunion"
+    | "completar_retroalimentacion"
+    | "cerrar_para_firma"
+    | "firmar"
+    | "firmar_obs";
   evaluacion_id: number;
   datos?: {
     fecha_reunion?: string;
@@ -182,4 +186,3 @@ export interface LogroPorArea {
   puntajeMaximo: number;
   porcentaje: number;
 }
-

@@ -55,7 +55,9 @@ const FormularioTipoEvaluacion = () => {
               )
             }
             value={nombreTipoEvaluacion}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNombre(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setNombre(e.target.value)
+            }
             onToggleAutoevaluacion={onToggleAutoevaluacion}
           />
 
@@ -64,10 +66,13 @@ const FormularioTipoEvaluacion = () => {
             competenciaHandlers={competenciaHandlers}
             indicadorHandlers={indicadorHandlers}
             isEditing={true}
-            updatePonderacion={updatePonderacion}
             nivelHandlers={nivelHandlers}
+            updatePonderacion={updatePonderacion}
             onAddArea={addArea}
-            onAreaChange={(i: number, e: React.ChangeEvent<HTMLInputElement>) => {
+            onAreaChange={(
+              i: number,
+              e: React.ChangeEvent<HTMLInputElement>,
+            ) => {
               const newAreas = [...areas];
 
               newAreas[i].n_area = e.target.value;

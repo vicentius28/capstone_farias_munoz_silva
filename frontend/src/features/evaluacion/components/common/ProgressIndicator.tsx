@@ -17,7 +17,10 @@ export default function ProgressIndicator({
     <div className="fixed top-1/2 right-2 sm:right-4 lg:right-6 -translate-y-1/2 z-40 group">
       <div className="relative flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-white/90 backdrop-blur-sm rounded-full shadow-lg border border-primary-100/50 hover:shadow-xl transition-all duration-300 hover:scale-105">
         {/* Círculo de progreso */}
-        <svg className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 -rotate-90" viewBox="0 0 100 100">
+        <svg
+          className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 -rotate-90"
+          viewBox="0 0 100 100"
+        >
           <circle
             className="text-default-100"
             cx="50"
@@ -36,7 +39,7 @@ export default function ProgressIndicator({
                   : progresoArea < 70
                     ? "text-warning-400"
                     : "text-success-400",
-              guardando && "animate-pulse"
+              guardando && "animate-pulse",
             )}
             cx="50"
             cy="50"

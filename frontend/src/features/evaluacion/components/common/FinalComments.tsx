@@ -35,10 +35,11 @@ export default function FinalComments({
   const isTextDestacarValid = textDestacar.trim().length >= 20;
   const isTextMejorarValid = textMejorar.trim().length >= 20;
   const isFormValid = isTextDestacarValid && isTextMejorarValid;
-  
+
   // ✅ SEPARAR LÓGICA: BOTÓN DESHABILITADO SI ESTÁ GUARDANDO O FINALIZANDO
-  const isButtonDisabled = guardando || isLoading || (mostrarTextarea && !isFormValid);
-  
+  const isButtonDisabled =
+    guardando || isLoading || (mostrarTextarea && !isFormValid);
+
   // ✅ CAMPOS SOLO DESHABILITADOS DURANTE FINALIZACIÓN, NO DURANTE GUARDADO AUTOMÁTICO
   const areFieldsDisabled = isLoading;
 
@@ -57,28 +58,37 @@ export default function FinalComments({
                   <div className="w-1 h-1 bg-success-500 dark:bg-success-400 rounded-full mr-1.5" />
                   ¿Qué aspectos destacarías?
                 </div>
-                <span className={`text-xs ${textDestacar.length > 500 ? 'text-danger-500 dark:text-danger-400' :
-                  textDestacar.length >= 20 ? 'text-success-500 dark:text-success-400' : 'text-warning-500 dark:text-warning-400'
-                  }`}>
+                <span
+                  className={`text-xs ${
+                    textDestacar.length > 500
+                      ? "text-danger-500 dark:text-danger-400"
+                      : textDestacar.length >= 20
+                        ? "text-success-500 dark:text-success-400"
+                        : "text-warning-500 dark:text-warning-400"
+                  }`}
+                >
                   {textDestacar.length}/500
                 </span>
               </label>
               <Textarea
-                className={`w-full text-xs ${textDestacar.length >= 20 ? 'border-success-100 dark:border-success-300/30 focus:border-success-400 dark:focus:border-success-400 bg-success-50/10 dark:bg-success-100/5' :
-                  'border-warning-100 dark:border-warning-300/30 focus:border-warning-400 dark:focus:border-warning-400 bg-warning-50/10 dark:bg-warning-100/5'
-                  }`}
+                className={`w-full text-xs ${
+                  textDestacar.length >= 20
+                    ? "border-success-100 dark:border-success-300/30 focus:border-success-400 dark:focus:border-success-400 bg-success-50/10 dark:bg-success-100/5"
+                    : "border-warning-100 dark:border-warning-300/30 focus:border-warning-400 dark:focus:border-warning-400 bg-warning-50/10 dark:bg-warning-100/5"
+                }`}
+                isDisabled={areFieldsDisabled}
+                maxLength={500}
                 placeholder="Escribe aquí los aspectos positivos... (mínimo 20 caracteres)"
                 rows={2}
                 value={textDestacar}
-                maxLength={500}
                 onChange={(e) => setTextDestacar(e.target.value)}
-                isDisabled={areFieldsDisabled}
               />
-              {textDestacar.trim().length < 20 && textDestacar.trim().length > 0 && (
-                <p className="text-xs text-warning-600 dark:text-warning-400 mt-1">
-                  Mínimo 20 caracteres requeridos
-                </p>
-              )}
+              {textDestacar.trim().length < 20 &&
+                textDestacar.trim().length > 0 && (
+                  <p className="text-xs text-warning-600 dark:text-warning-400 mt-1">
+                    Mínimo 20 caracteres requeridos
+                  </p>
+                )}
             </div>
             <div className="bg-default-50 dark:bg-default-100/30 p-2 rounded-md shadow-sm border border-primary-50 dark:border-primary-200/30">
               <label className="text-xs font-medium mb-1 text-warning-600 dark:text-warning-400 flex items-center justify-between">
@@ -86,28 +96,37 @@ export default function FinalComments({
                   <div className="w-1 h-1 bg-warning-500 dark:bg-warning-400 rounded-full mr-1.5" />
                   ¿Qué aspectos se podrían mejorar?
                 </div>
-                <span className={`text-xs ${textMejorar.length > 500 ? 'text-danger-500 dark:text-danger-400' :
-                  textMejorar.length >= 20 ? 'text-success-500 dark:text-success-400' : 'text-warning-500 dark:text-warning-400'
-                  }`}>
+                <span
+                  className={`text-xs ${
+                    textMejorar.length > 500
+                      ? "text-danger-500 dark:text-danger-400"
+                      : textMejorar.length >= 20
+                        ? "text-success-500 dark:text-success-400"
+                        : "text-warning-500 dark:text-warning-400"
+                  }`}
+                >
                   {textMejorar.length}/500
                 </span>
               </label>
               <Textarea
-                className={`w-full text-xs ${textMejorar.length >= 20 ? 'border-success-100 dark:border-success-300/30 focus:border-success-400 dark:focus:border-success-400 bg-success-50/10 dark:bg-success-100/5' :
-                  'border-warning-100 dark:border-warning-300/30 focus:border-warning-400 dark:focus:border-warning-400 bg-warning-50/10 dark:bg-warning-100/5'
-                  }`}
+                className={`w-full text-xs ${
+                  textMejorar.length >= 20
+                    ? "border-success-100 dark:border-success-300/30 focus:border-success-400 dark:focus:border-success-400 bg-success-50/10 dark:bg-success-100/5"
+                    : "border-warning-100 dark:border-warning-300/30 focus:border-warning-400 dark:focus:border-warning-400 bg-warning-50/10 dark:bg-warning-100/5"
+                }`}
+                isDisabled={areFieldsDisabled}
+                maxLength={500}
                 placeholder="Escribe aquí los aspectos a mejorar... (mínimo 20 caracteres)"
                 rows={2}
                 value={textMejorar}
-                maxLength={500}
                 onChange={(e) => setTextMejorar(e.target.value)}
-                isDisabled={areFieldsDisabled}
               />
-              {textMejorar.trim().length < 20 && textMejorar.trim().length > 0 && (
-                <p className="text-xs text-warning-600 dark:text-warning-400 mt-1">
-                  Mínimo 20 caracteres requeridos
-                </p>
-              )}
+              {textMejorar.trim().length < 20 &&
+                textMejorar.trim().length > 0 && (
+                  <p className="text-xs text-warning-600 dark:text-warning-400 mt-1">
+                    Mínimo 20 caracteres requeridos
+                  </p>
+                )}
             </div>
             <Button
               className="w-full mt-2 font-medium py-2 shadow-sm hover:shadow transition-all duration-200 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed"
@@ -115,23 +134,27 @@ export default function FinalComments({
               isDisabled={isButtonDisabled}
               isLoading={isLoading}
               size="md"
+              spinner={<Spinner color="white" size="sm" />}
               onPress={handleFinalizar}
-              spinner={<Spinner size="sm" color="white" />}
             >
-              {isLoading ? "Finalizando..." : `Finalizar ${tipoEvaluacion === "autoevaluacion" ? "Autoevaluación" : "Evaluación"}`}
+              {isLoading
+                ? "Finalizando..."
+                : `Finalizar ${tipoEvaluacion === "autoevaluacion" ? "Autoevaluación" : "Evaluación"}`}
             </Button>
           </div>
         ) : (
           <Button
             className="w-full mt-3 text-sm"
             color="primary"
-            size="md"
             isDisabled={isButtonDisabled}
             isLoading={isLoading}
+            size="md"
+            spinner={<Spinner color="white" size="sm" />}
             onPress={handleFinalizar}
-            spinner={<Spinner size="sm" color="white" />}
           >
-            {isLoading ? "Finalizando..." : `Finalizar ${tipoEvaluacion === "autoevaluacion" ? "Autoevaluación" : "Evaluación"}`}
+            {isLoading
+              ? "Finalizando..."
+              : `Finalizar ${tipoEvaluacion === "autoevaluacion" ? "Autoevaluación" : "Evaluación"}`}
           </Button>
         )}
       </div>

@@ -47,19 +47,24 @@ const ModalDetalleAsignacion: React.FC<ModalDetalleAsignacionProps> = ({
                     Tipo de Evaluación:
                   </span>
                   <Chip
-                    color={asignacionSeleccionada.tipo_evaluacion?.auto ? "secondary" : "primary"}
+                    color={
+                      asignacionSeleccionada.tipo_evaluacion?.auto
+                        ? "secondary"
+                        : "primary"
+                    }
                     variant="flat"
                   >
-                    {asignacionSeleccionada.tipo_evaluacion?.auto ? "🙋 Autoevaluación" : "📝 Evaluación"}
+                    {asignacionSeleccionada.tipo_evaluacion?.auto
+                      ? "🙋 Autoevaluación"
+                      : "📝 Evaluación"}
                   </Chip>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="font-medium text-default-700">
-                    Nombre:
-                  </span>
+                  <span className="font-medium text-default-700">Nombre:</span>
                   <span className="text-default-600">
-                    {asignacionSeleccionada.tipo_evaluacion?.n_tipo_evaluacion || "No especificado"}
+                    {asignacionSeleccionada.tipo_evaluacion
+                      ?.n_tipo_evaluacion || "No especificado"}
                   </span>
                 </div>
 
@@ -73,9 +78,7 @@ const ModalDetalleAsignacion: React.FC<ModalDetalleAsignacionProps> = ({
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="font-medium text-default-700">
-                    Estado:
-                  </span>
+                  <span className="font-medium text-default-700">Estado:</span>
                   <Chip color="success" variant="flat">
                     Asignada
                   </Chip>
@@ -88,13 +91,19 @@ const ModalDetalleAsignacion: React.FC<ModalDetalleAsignacionProps> = ({
             <Card className="bg-default-50">
               <CardBody className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="font-medium text-default-700">Usuarios Asignados:</span>
+                  <span className="font-medium text-default-700">
+                    Usuarios Asignados:
+                  </span>
 
                   {asignacionSeleccionada.tipo_evaluacion?.auto ? (
                     <Chip color="primary" variant="flat">
-                      {(asignacionSeleccionada.personas_asignadas ??
-                        asignacionSeleccionada.personas ??
-                        []).length}{" "}
+                      {
+                        (
+                          asignacionSeleccionada.personas_asignadas ??
+                          asignacionSeleccionada.personas ??
+                          []
+                        ).length
+                      }{" "}
                       personas
                     </Chip>
                   ) : (
@@ -105,87 +114,97 @@ const ModalDetalleAsignacion: React.FC<ModalDetalleAsignacionProps> = ({
                 </div>
 
                 {/* AUTOEVALUACIÓN: solo lista de personas */}
-                {asignacionSeleccionada.tipo_evaluacion?.auto ? (
-                  (() => {
-                    const usuarios =
-                      asignacionSeleccionada.personas_asignadas ??
-                      asignacionSeleccionada.personas ??
-                      [];
+                {asignacionSeleccionada.tipo_evaluacion?.auto
+                  ? (() => {
+                      const usuarios =
+                        asignacionSeleccionada.personas_asignadas ??
+                        asignacionSeleccionada.personas ??
+                        [];
 
-                    if (!usuarios.length) {
-                      return (
-                        <div className="text-center py-4 text-default-400">
-                          <p className="text-sm">No hay usuarios asignados</p>
-                        </div>
-                      );
-                    }
-
-                    return (
-                      <div className="grid grid-cols-1 gap-2 max-h-56 overflow-y-auto">
-                        {usuarios.map((u, i) => (
-                          <div
-                            key={u.id ?? i}
-                            className="flex items-center justify-between p-2 bg-white rounded-lg border border-default-200"
-                          >
-                            <div className="flex flex-col">
-                              <span className="text-sm font-medium text-default-800">
-                                {u.first_name} {u.last_name}
-                              </span>
-                              <div className="flex items-center gap-2 text-xs text-default-500">
-                                {u.empresa?.empresa && <span>🏢 {u.empresa.empresa}</span>}
-                                {u.ciclo?.ciclo && <span>🔄 {u.ciclo.ciclo}</span>}
-                              </div>
-                            </div>
+                      if (!usuarios.length) {
+                        return (
+                          <div className="text-center py-4 text-default-400">
+                            <p className="text-sm">No hay usuarios asignados</p>
                           </div>
-                        ))}
-                      </div>
-                    );
-                  })()
-                ) : (
-                  // JEFATURA: lista persona + su evaluador
-                  (() => {
-                    const detalles = asignacionSeleccionada.detalles ?? [];
+                        );
+                      }
 
-                    if (!detalles.length) {
                       return (
-                        <div className="text-center py-4 text-default-400">
-                          <p className="text-sm">No hay usuarios asignados</p>
-                        </div>
-                      );
-                    }
-
-                    return (
-                      <div className="grid grid-cols-1 gap-2 max-h-72 overflow-y-auto">
-                        {detalles.map((d, i) => (
-                          <div
-                            key={d.persona?.id ?? i}
-                            className="p-3 bg-white rounded-lg border border-default-200"
-                          >
-                            <div className="flex items-center justify-between">
+                        <div className="grid grid-cols-1 gap-2 max-h-56 overflow-y-auto">
+                          {usuarios.map((u, i) => (
+                            <div
+                              key={u.id ?? i}
+                              className="flex items-center justify-between p-2 bg-white rounded-lg border border-default-200"
+                            >
                               <div className="flex flex-col">
                                 <span className="text-sm font-medium text-default-800">
-                                  {d.persona?.first_name} {d.persona?.last_name}
+                                  {u.first_name} {u.last_name}
                                 </span>
                                 <div className="flex items-center gap-2 text-xs text-default-500">
-                                  {d.persona?.empresa?.empresa && (
-                                    <span>🏢 {d.persona.empresa.empresa}</span>
+                                  {u.empresa?.empresa && (
+                                    <span>🏢 {u.empresa.empresa}</span>
                                   )}
-                                  {d.persona?.ciclo?.ciclo && (
-                                    <span>🔄 {d.persona.ciclo.ciclo}</span>
+                                  {u.ciclo?.ciclo && (
+                                    <span>🔄 {u.ciclo.ciclo}</span>
                                   )}
                                 </div>
                               </div>
-
-                              <Chip color="secondary" variant="flat" className="ml-2">
-                                👤 Jefe: {d.evaluador?.first_name} {d.evaluador?.last_name}
-                              </Chip>
                             </div>
+                          ))}
+                        </div>
+                      );
+                    })()
+                  : // JEFATURA: lista persona + su evaluador
+                    (() => {
+                      const detalles = asignacionSeleccionada.detalles ?? [];
+
+                      if (!detalles.length) {
+                        return (
+                          <div className="text-center py-4 text-default-400">
+                            <p className="text-sm">No hay usuarios asignados</p>
                           </div>
-                        ))}
-                      </div>
-                    );
-                  })()
-                )}
+                        );
+                      }
+
+                      return (
+                        <div className="grid grid-cols-1 gap-2 max-h-72 overflow-y-auto">
+                          {detalles.map((d, i) => (
+                            <div
+                              key={d.persona?.id ?? i}
+                              className="p-3 bg-white rounded-lg border border-default-200"
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex flex-col">
+                                  <span className="text-sm font-medium text-default-800">
+                                    {d.persona?.first_name}{" "}
+                                    {d.persona?.last_name}
+                                  </span>
+                                  <div className="flex items-center gap-2 text-xs text-default-500">
+                                    {d.persona?.empresa?.empresa && (
+                                      <span>
+                                        🏢 {d.persona.empresa.empresa}
+                                      </span>
+                                    )}
+                                    {d.persona?.ciclo?.ciclo && (
+                                      <span>🔄 {d.persona.ciclo.ciclo}</span>
+                                    )}
+                                  </div>
+                                </div>
+
+                                <Chip
+                                  className="ml-2"
+                                  color="secondary"
+                                  variant="flat"
+                                >
+                                  👤 Jefe: {d.evaluador?.first_name}{" "}
+                                  {d.evaluador?.last_name}
+                                </Chip>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })()}
               </CardBody>
             </Card>
           </div>

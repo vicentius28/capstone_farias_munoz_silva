@@ -10,7 +10,6 @@ export interface AsignacionEvaluacion {
   detalles?: DetalleAsignacion[];
 }
 
-
 export interface UsuarioLite {
   id: number;
   first_name: string;
@@ -52,5 +51,3 @@ export interface Usuario {
 }
 
 export type Respuesta = { indicador: number; puntaje: number };
-
-

@@ -18,12 +18,14 @@ const SimpleTabs = memo(function SimpleTabs({
         {tabs.map((t) => (
           <button
             key={t.key}
-            onClick={() => onChange(t.key)}
-            className={`flex-1 rounded-xl px-6 py-4 text-sm font-medium transition-all duration-300 ${
-              active === t.key ? "scale-105 bg-white text-gray-900 shadow-lg" : "text-gray-600 hover:bg-white/50 hover:text-gray-800"
-            }`}
-            aria-pressed={active === t.key}
             aria-controls={`panel-${t.key}`}
+            aria-pressed={active === t.key}
+            className={`flex-1 rounded-xl px-6 py-4 text-sm font-medium transition-all duration-300 ${
+              active === t.key
+                ? "scale-105 bg-white text-gray-900 shadow-lg"
+                : "text-gray-600 hover:bg-white/50 hover:text-gray-800"
+            }`}
+            onClick={() => onChange(t.key)}
           >
             {t.title}
           </button>
@@ -31,7 +33,7 @@ const SimpleTabs = memo(function SimpleTabs({
       </div>
       <div className="pb-8">
         {tabs.map((t) => (
-          <div key={t.key} id={`panel-${t.key}`} hidden={active !== t.key}>
+          <div key={t.key} hidden={active !== t.key} id={`panel-${t.key}`}>
             {t.content}
           </div>
         ))}

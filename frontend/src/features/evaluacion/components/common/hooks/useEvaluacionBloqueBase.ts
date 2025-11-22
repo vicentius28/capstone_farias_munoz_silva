@@ -82,6 +82,7 @@ export const useEvaluacionBloqueBase = ({
 
     if (!mostrarTextarea) {
       setMostrarTextarea(true); // muestra el textarea antes de enviar
+
       return;
     }
 
@@ -94,6 +95,7 @@ export const useEvaluacionBloqueBase = ({
         color: "warning",
         variant: "solid",
       });
+
       return;
     }
 
@@ -166,10 +168,14 @@ export const useEvaluacionBloqueBase = ({
 
   // Corrección: contar indicadores únicos del área que tienen respuesta
   const indicadoresRespondidosArea = area.competencias.reduce((acc, comp) => {
-    return acc + comp.indicadores.filter((ind) => {
-      const respuesta = respuestas.find((r) => r.indicador === ind.id);
-      return respuesta && respuesta.puntaje > 0;
-    }).length;
+    return (
+      acc +
+      comp.indicadores.filter((ind) => {
+        const respuesta = respuestas.find((r) => r.indicador === ind.id);
+
+        return respuesta && respuesta.puntaje > 0;
+      }).length
+    );
   }, 0);
 
   const progresoArea = Math.round(

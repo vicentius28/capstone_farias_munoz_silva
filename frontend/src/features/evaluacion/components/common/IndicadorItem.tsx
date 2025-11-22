@@ -28,7 +28,6 @@ interface IndicadorItemProps {
   renderRadioNivel: (props: RadioNivelProps) => JSX.Element;
 }
 
-
 export default function IndicadorItem({
   indicador,
   obtenerPuntaje,
@@ -42,12 +41,14 @@ export default function IndicadorItem({
   return (
     <article className="group relative default/95 hover:default transition-all duration-300 hover:shadow-lg hover:shadow-black/5">
       {/* Status indicator bar - Thinner for small screens */}
-      <div className={clsx(
-        "absolute left-0 top-0 bottom-0 w-1 xs:w-1.5 transition-all duration-300",
-        isCompleted 
-          ? "bg-gradient-to-b from-emerald-400 to-emerald-600" 
-          : "bg-gradient-to-b from-amber-400 to-amber-600"
-      )} />
+      <div
+        className={clsx(
+          "absolute left-0 top-0 bottom-0 w-1 xs:w-1.5 transition-all duration-300",
+          isCompleted
+            ? "bg-gradient-to-b from-emerald-400 to-emerald-600"
+            : "bg-gradient-to-b from-amber-400 to-amber-600",
+        )}
+      />
 
       <div className="pl-3 xs:pl-4 sm:pl-6 pr-2 xs:pr-3 sm:pr-4 py-3 xs:py-4 sm:py-6">
         {/* Header section - Optimized for ultra small screens */}
@@ -65,36 +66,32 @@ export default function IndicadorItem({
               <h3 className="text-sm xs:text-base sm:text-lg font-semibold text-slate-800 leading-tight mb-1 xs:mb-2 break-words">
                 {indicador.indicador}
               </h3>
-              
+
               {indicador.definicion && (
                 <div className="flex items-start gap-1 xs:gap-2">
                   <InfoPopover content={indicador.definicion} />
                   <p className="text-xs xs:text-sm text-slate-600 leading-relaxed break-words">
-                    {indicador.definicion.length > 80 
-                      ? `${indicador.definicion.substring(0, 80)}...` 
-                      : indicador.definicion
-                    }
+                    {indicador.definicion.length > 80
+                      ? `${indicador.definicion.substring(0, 80)}...`
+                      : indicador.definicion}
                   </p>
                 </div>
               )}
             </div>
           </div>
-
-
         </header>
 
         {/* Radio options section - Optimized spacing */}
         <section className="space-y-1 xs:space-y-2 sm:space-y-3">
           <RadioGroup
-            value={puntajeActual.toString()}
-            onValueChange={(value) => manejarCambioPuntaje(indicador.id, parseInt(value))}
             className="gap-1 xs:gap-2 sm:gap-3"
+            value={puntajeActual.toString()}
+            onValueChange={(value) =>
+              manejarCambioPuntaje(indicador.id, parseInt(value))
+            }
           >
             {indicador.nvlindicadores.map((nivel) => (
-              <div 
-                key={nivel.nvl} 
-                className="w-full"
-              >
+              <div key={nivel.nvl} className="w-full">
                 {renderRadioNivel({
                   radioKey: `${indicador.id}-${nivel.nvl}`,
                   value: nivel.puntaje.toString(),

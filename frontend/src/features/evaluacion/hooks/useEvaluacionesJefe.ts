@@ -1,15 +1,17 @@
-import { useEffect, useMemo, useRef, useState, useCallback } from "react";
-import { addToast } from "@heroui/toast";
-import {
-  obtenerEvaluacionesJefe,
-  obtenerMisEvaluacionesJefatura
-} from "@/features/evaluacion/services/evaluacion";
 import type {
   EvaluacionJefe,
-  EstadoEvaluacion
+  EstadoEvaluacion,
 } from "@/features/evaluacion/types/evaluacion";
 
-type FiltroEstado = EstadoEvaluacion | 'todas';
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { addToast } from "@heroui/toast";
+
+import {
+  obtenerEvaluacionesJefe,
+  obtenerMisEvaluacionesJefatura,
+} from "@/features/evaluacion/services/evaluacion";
+
+type FiltroEstado = EstadoEvaluacion | "todas";
 
 interface UseEvaluacionesJefeOptions {
   filtroEstado?: FiltroEstado;
@@ -38,23 +40,24 @@ interface UseEvaluacionesJefeReturn {
 function getEstadoEvaluacion(evaluacion: EvaluacionJefe): EstadoEvaluacion {
   // Priorizar el nuevo campo estado_firma si existe
   if (evaluacion.estado_firma) {
-    if (evaluacion.estado_firma === 'firmado') return 'finalizado';
+    if (evaluacion.estado_firma === "firmado") return "finalizado";
   }
-  
+
   // Fallback al campo firmado para compatibilidad
-  if (evaluacion.firmado) return 'finalizado';
-  if (evaluacion.cerrado_para_firma) return 'firmar';
-  if (evaluacion.retroalimentacion_completada) return 'retroalimentar';
-  return 'pendiente';
+  if (evaluacion.firmado) return "finalizado";
+  if (evaluacion.cerrado_para_firma) return "firmar";
+  if (evaluacion.retroalimentacion_completada) return "retroalimentar";
+
+  return "pendiente";
 }
 
 export function useEvaluacionesJefe(
-  options: UseEvaluacionesJefeOptions = {}
+  options: UseEvaluacionesJefeOptions = {},
 ): UseEvaluacionesJefeReturn {
   const {
-    filtroEstado = 'todas',
+    filtroEstado = "todas",
     soloMisEvaluaciones = false,
-    debug = false
+    debug = false,
   } = options;
 
   const [evaluaciones, setEvaluaciones] = useState<EvaluacionJefe[]>([]);
@@ -67,6 +70,7 @@ export function useEvaluacionesJefe(
   const fetchEvaluaciones = useCallback(async () => {
     if (hasFetchedRef.current) {
       if (debug) console.info("[EvaluacionesJefe] fetch omitido (misma key)");
+
       return;
     }
     hasFetchedRef.current = true;
@@ -75,6 +79,7 @@ export function useEvaluacionesJefe(
     setError(null);
 
     const t0 = performance.now();
+
     try {
       const data = soloMisEvaluaciones
         ? await obtenerMisEvaluacionesJefatura()
@@ -86,9 +91,12 @@ export function useEvaluacionesJefe(
       if (debug) {
         console.groupCollapsed(
           "%c[EvaluacionesJefe] fetch OK",
-          "color:#16a34a;font-weight:bold;"
+          "color:#16a34a;font-weight:bold;",
         );
-        console.log("tipo:", soloMisEvaluaciones ? "mis evaluaciones" : "todas");
+        console.log(
+          "tipo:",
+          soloMisEvaluaciones ? "mis evaluaciones" : "todas",
+        );
         console.log("total:", data.length, "sample:", data.slice(0, 2));
         console.log(`took ${(performance.now() - t0).toFixed(1)} ms`);
         console.groupEnd();
@@ -113,6 +121,7 @@ export function useEvaluacionesJefe(
   useEffect(() => {
     mountedRef.current = true;
     fetchEvaluaciones();
+
     return () => {
       mountedRef.current = false;
     };
@@ -125,9 +134,10 @@ export function useEvaluacionesJefe(
 
   // Filtrar evaluaciones por estado
   const evaluacionesFiltradas = useMemo(() => {
-    if (filtroEstado === 'todas') return evaluaciones;
+    if (filtroEstado === "todas") return evaluaciones;
+
     return evaluaciones.filter(
-      (evaluacion) => getEstadoEvaluacion(evaluacion) === filtroEstado
+      (evaluacion) => getEstadoEvaluacion(evaluacion) === filtroEstado,
     );
   }, [evaluaciones, filtroEstado]);
 
@@ -145,17 +155,18 @@ export function useEvaluacionesJefe(
 
     evaluaciones.forEach((evaluacion) => {
       const estado = getEstadoEvaluacion(evaluacion);
+
       switch (estado) {
-        case 'pendiente':
+        case "pendiente":
           counts.pendientes++;
           break;
-        case 'retroalimentar':
+        case "retroalimentar":
           counts.conRetroalimentacion++;
           break;
-        case 'firmar':
+        case "firmar":
           counts.cerradasParaFirma++;
           break;
-        case 'finalizado':
+        case "finalizado":
           counts.firmadas++;
           break;
       }

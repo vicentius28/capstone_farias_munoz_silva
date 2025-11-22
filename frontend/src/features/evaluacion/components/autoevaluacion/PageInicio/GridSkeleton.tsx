@@ -1,11 +1,18 @@
 // features/evaluacion/autoevaluacion/components/GridSkeleton.tsx
 import { memo } from "react";
 
-const GridSkeleton = memo(function GridSkeleton({ items = 6 }: { items?: number }) {
+const GridSkeleton = memo(function GridSkeleton({
+  items = 6,
+}: {
+  items?: number;
+}) {
   return (
     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {Array.from({ length: items }).map((_, i) => (
-        <div key={i} className="animate-pulse rounded-3xl border border-white/40 bg-white/80 p-6 backdrop-blur-sm">
+        <div
+          key={i}
+          className="animate-pulse rounded-3xl border border-white/40 bg-white/80 p-6 backdrop-blur-sm"
+        >
           <div className="mb-4 flex items-start justify-between">
             <div className="flex-1">
               <div className="mb-2 h-5 w-3/4 rounded-lg bg-gray-200" />

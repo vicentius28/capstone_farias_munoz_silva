@@ -23,13 +23,13 @@
 // }
 
 // // Reusable Progress Circle Component - Optimized for small screens
-// function ProgressCircle({ 
-//   progress, 
-//   isCompleted, 
-//   size = "sm" 
-// }: { 
-//   progress: number; 
-//   isCompleted: boolean; 
+// function ProgressCircle({
+//   progress,
+//   isCompleted,
+//   size = "sm"
+// }: {
+//   progress: number;
+//   isCompleted: boolean;
 //   size?: "sm" | "md" | "lg";
 // }) {
 //   const sizeClasses = {
@@ -89,18 +89,18 @@
 // }
 
 // // Reusable Status Badge Component - Optimized for small screens
-// function StatusBadge({ 
-//   isCompleted, 
-//   className = "" 
-// }: { 
-//   isCompleted: boolean; 
+// function StatusBadge({
+//   isCompleted,
+//   className = ""
+// }: {
+//   isCompleted: boolean;
 //   className?: string;
 // }) {
 //   return (
 //     <div className={clsx(
 //       "inline-flex items-center gap-1 xs:gap-1.5 px-2 py-1 xs:px-2.5 xs:py-1 rounded-full text-xs font-medium transition-all duration-200",
-//       isCompleted 
-//         ? "bg-emerald-100 text-emerald-700 border border-emerald-200" 
+//       isCompleted
+//         ? "bg-emerald-100 text-emerald-700 border border-emerald-200"
 //         : "bg-amber-100 text-amber-700 border border-amber-200",
 //       className
 //     )}>
@@ -119,15 +119,14 @@
 // // Get competencia title with progress info
 // export function getCompetenciaTitle(competencia: Competencia, respuestas: Respuesta[]) {
 //   const total = competencia.indicadores.length;
-//   const respondidos = competencia.indicadores.filter(indicador => 
+//   const respondidos = competencia.indicadores.filter(indicador =>
 //     respuestas.some(respuesta => respuesta.indicador === indicador.id)
 //   ).length;
-  
+
 //   return `${competencia.name} (${respondidos}/${total})`;
 // }
 
 // // Competencia Header Component - Optimized for ultra small screens
-
 
 // export default function CompetenciaAccordionItem({
 //   competencia,

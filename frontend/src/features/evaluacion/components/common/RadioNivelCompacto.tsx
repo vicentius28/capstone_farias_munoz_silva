@@ -41,7 +41,7 @@ export default function RadioNivelCompacto({
               bg-white`}
           />
         </div>
-        
+
         {/* Puntos en la esquina superior derecha */}
         <div className="text-sm font-bold text-default-600 group-data-[selected=true]:text-green-600">
           • {puntaje} pts
@@ -50,7 +50,7 @@ export default function RadioNivelCompacto({
 
       {/* Título del nivel */}
       <div className="text-xl font-bold text-default-900 mb-2 group-data-[selected=true]:text-green-700">
-        {nombre.toUpperCase()} 
+        {nombre.toUpperCase()}
       </div>
 
       {/* Descripción */}

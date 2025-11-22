@@ -5,8 +5,8 @@ import { Card, CardBody, CardHeader } from "@heroui/card";
 import { AnimatePresence, motion } from "framer-motion";
 import { useLocation, useNavigate } from "react-router-dom";
 import { addToast } from "@heroui/toast";
-
 import { Button } from "@heroui/button";
+
 import { ThemeSwitch } from "@/shared/components/ui/theme-switch";
 
 // ⬇ Lazy load de componentes secundarios
@@ -21,17 +21,24 @@ const Footer = React.lazy(() => import("@/shared/components/layout/footer"));
 const showErrorToast = (type: string) => {
   const messages: Record<
     string,
-    { title: string; description: string; color: "danger" | "warning"; timeout: number }
+    {
+      title: string;
+      description: string;
+      color: "danger" | "warning";
+      timeout: number;
+    }
   > = {
     invalid_domain: {
       title: "Acceso Denegado",
-      description: "Cuenta no registrada y correo electrónico no pertenece a un dominio autorizado.",
+      description:
+        "Cuenta no registrada y correo electrónico no pertenece a un dominio autorizado.",
       color: "danger",
       timeout: 5000,
     },
     no_registered: {
       title: "Cuenta no registrada",
-      description: "Tu correo no está registrado en nuestra plataforma. Contacta con Recursos Humanos.",
+      description:
+        "Tu correo no está registrado en nuestra plataforma. Contacta con Recursos Humanos.",
       color: "warning",
       timeout: 4000,
     },
@@ -44,6 +51,7 @@ const showErrorToast = (type: string) => {
   };
 
   const msg = messages[type] || messages.default;
+
   addToast({ ...msg, shouldShowTimeoutProgress: true });
 };
 
@@ -63,17 +71,17 @@ const EnhancedBubbles = () => {
       const depth = i / 6;
       const colors = isDark
         ? [
-            "rgba(59,130,246,0.16)",  // blue-500
-            "rgba(99,102,241,0.14)",  // indigo-500
-            "rgba(14,165,233,0.14)",  // sky-500
-            "rgba(56,189,248,0.14)",  // cyan-400
-            "rgba(37,99,235,0.14)",   // blue-600
+            "rgba(59,130,246,0.16)", // blue-500
+            "rgba(99,102,241,0.14)", // indigo-500
+            "rgba(14,165,233,0.14)", // sky-500
+            "rgba(56,189,248,0.14)", // cyan-400
+            "rgba(37,99,235,0.14)", // blue-600
           ]
         : [
-            "rgba(59,130,246,0.25)",  // blue-500
-            "rgba(99,102,241,0.20)",  // indigo-500
-            "rgba(14,165,233,0.18)",  // sky-500
-            "rgba(56,189,248,0.18)",  // cyan-400
+            "rgba(59,130,246,0.25)", // blue-500
+            "rgba(99,102,241,0.20)", // indigo-500
+            "rgba(14,165,233,0.18)", // sky-500
+            "rgba(56,189,248,0.18)", // cyan-400
             "rgba(147,197,253,0.15)", // blue-300
           ];
 
@@ -81,12 +89,18 @@ const EnhancedBubbles = () => {
         <motion.div
           key={i}
           animate={{
-            x: [i % 2 === 0 ? -120 : screenWidth + 120, i % 2 === 0 ? screenWidth + 120 : -120],
+            x: [
+              i % 2 === 0 ? -120 : screenWidth + 120,
+              i % 2 === 0 ? screenWidth + 120 : -120,
+            ],
             y: [Math.random() * screenHeight, Math.random() * screenHeight],
             scale: [1, 1.1, 1],
           }}
           className="absolute rounded-full pointer-events-none"
-          initial={{ x: i % 2 === 0 ? -120 : screenWidth + 120, y: Math.random() * screenHeight }}
+          initial={{
+            x: i % 2 === 0 ? -120 : screenWidth + 120,
+            y: Math.random() * screenHeight,
+          }}
           style={{
             width: size,
             height: size,
@@ -96,7 +110,12 @@ const EnhancedBubbles = () => {
             mixBlendMode: isDark ? "screen" : "normal",
             filter: "blur(0.6px)",
           }}
-          transition={{ duration: 14 - depth * 4, repeat: Infinity, repeatType: "mirror", ease: "easeInOut" }}
+          transition={{
+            duration: 14 - depth * 4,
+            repeat: Infinity,
+            repeatType: "mirror",
+            ease: "easeInOut",
+          }}
         />
       );
     });
@@ -106,7 +125,6 @@ const EnhancedBubbles = () => {
 
   return <AnimatePresence>{bubbles}</AnimatePresence>;
 };
-
 
 function Welcome() {
   const location = useLocation();
@@ -121,7 +139,12 @@ function Welcome() {
     if (loggedOut && !sessionStorage.getItem("logged_out_handled")) {
       localStorage.clear();
       sessionStorage.clear();
-      addToast({ title: "Sesión cerrada", description: "Has cerrado sesión exitosamente.", color: "success", timeout: 3000 });
+      addToast({
+        title: "Sesión cerrada",
+        description: "Has cerrado sesión exitosamente.",
+        color: "success",
+        timeout: 3000,
+      });
       sessionStorage.setItem("logged_out_handled", "true");
       setTimeout(() => navigate("/login", { replace: true }), 100);
     } else {
@@ -145,26 +168,29 @@ function Welcome() {
         <EnhancedBubbles />
         <div
           className="absolute inset-0 opacity-[0.07] pointer-events-none"
-          style={{ backgroundImage: "radial-gradient(#000 1px, transparent 1px)", backgroundSize: "12px 12px" }}
+          style={{
+            backgroundImage: "radial-gradient(#000 1px, transparent 1px)",
+            backgroundSize: "12px 12px",
+          }}
         />
       </div>
       {/* Layout principal y tarjeta */}
       <div className="min-h-screen flex flex-col">
         <main className="flex-1 flex items-center justify-center px-6 py-10">
           <motion.div
-            initial={{ scale: 0.97, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.15 }}
             className="w-full max-w-[620px]"
+            initial={{ scale: 0.97, opacity: 0 }}
+            transition={{ duration: 0.6, delay: 0.15 }}
           >
             <Card className="rounded-3xl backdrop-blur-xl bg-white/90 dark:bg-[#111827]/90 shadow-2xl border border-white/60 dark:border-white/10 ring-1 ring-black/5 dark:ring-white/5">
               <CardHeader className="px-8 pt-8">
                 <div className="w-full flex flex-col items-center justify-center text-center gap-3">
                   <img
-                    src="/CED.png"
                     alt="Logo Evalink"
                     className="w-14 h-14 object-contain rounded-xl mx-auto"
                     draggable={false}
+                    src="/CED.png"
                   />
                   <h1 className="text-3xl font-extrabold tracking-tight">
                     <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 dark:from-blue-400 dark:via-indigo-400 dark:to-cyan-300">
@@ -187,7 +213,9 @@ function Welcome() {
                   fallback={
                     <div className="flex items-center justify-center py-4 gap-2">
                       <div className="w-4 h-4 border-2 border-rose-500 border-t-transparent rounded-full animate-spin" />
-                      <span className="text-sm text-slate-600 dark:text-slate-300">Cargando...</span>
+                      <span className="text-sm text-slate-600 dark:text-slate-300">
+                        Cargando...
+                      </span>
                     </div>
                   }
                 >
@@ -201,10 +229,10 @@ function Welcome() {
                     Al iniciar sesión, aceptas nuestros{" "}
                     <Button
                       className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 underline font-medium transition-colors"
-                      type="button"
-                      onClick={() => setShowTerms(true)}
-                      variant="light"
                       color="primary"
+                      type="button"
+                      variant="light"
+                      onClick={() => setShowTerms(true)}
                     >
                       Términos y Condiciones
                     </Button>
@@ -214,7 +242,9 @@ function Welcome() {
                 {/* Cambiar tema: pill centrado */}
                 <div className="mt-8">
                   <div className="mx-auto w-fit flex items-center gap-2 rounded-full bg-blue-50 dark:bg-zinc-800/60 px-3 py-1.5 shadow-sm">
-                    <span className="text-xs font-medium text-blue-700 dark:text-slate-200">Tema</span>
+                    <span className="text-xs font-medium text-blue-700 dark:text-slate-200">
+                      Tema
+                    </span>
                     <div className="scale-90 sm:scale-75">
                       <ThemeSwitch />
                     </div>

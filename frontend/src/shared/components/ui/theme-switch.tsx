@@ -2,10 +2,10 @@ import { FC, useState, useEffect } from "react";
 import { VisuallyHidden } from "@react-aria/visually-hidden";
 import { SwitchProps, useSwitch } from "@heroui/switch";
 import clsx from "clsx";
-import { useTheme } from "@/hooks/use-theme";
-
 
 import { MoonFilledIcon, SunFilledIcon } from "../Icons/icons";
+
+import { useTheme } from "@/hooks/use-theme";
 
 export interface ThemeSwitchProps {
   className?: string;
@@ -81,7 +81,11 @@ export const ThemeSwitch: FC<ThemeSwitchProps> = ({
               "opacity-0 group-data-[selected=true]:opacity-100",
             )}
           >
-            <SunFilledIcon size={14} strokeWidth={1.75} className="text-gray-700" />
+            <SunFilledIcon
+              className="text-gray-700"
+              size={14}
+              strokeWidth={1.75}
+            />
           </span>
           <span
             className={clsx(
@@ -90,7 +94,11 @@ export const ThemeSwitch: FC<ThemeSwitchProps> = ({
               "opacity-100 group-data-[selected=true]:opacity-0",
             )}
           >
-            <MoonFilledIcon size={14} strokeWidth={1.75} className="text-gray-700" />
+            <MoonFilledIcon
+              className="text-gray-700"
+              size={14}
+              strokeWidth={1.75}
+            />
           </span>
         </span>
       </div>

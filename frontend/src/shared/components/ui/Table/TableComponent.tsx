@@ -43,7 +43,7 @@ const TableComponent: React.FC<Props> = ({
   page,
   setPage,
 }) => {
-  const rowsPerPage = 4;
+  const rowsPerPage = 12;
 
   useEffect(() => {
     sessionStorage.setItem("lastUserTablePage", page.toString());
@@ -80,14 +80,16 @@ const TableComponent: React.FC<Props> = ({
     <Table
       isStriped
       aria-label="Tabla de usuarios"
-      selectionMode="none"
-      selectedKeys={new Set()}            // <-- asegura 0 seleccionados
-      onRowAction={undefined}             // <-- por si arriba lo inyectan
+      bottomContent={
+        <PaginationFooter page={page} pages={totalPages} onChange={setPage} />
+      }
       classNames={{
         td: "relative overflow-visible before:!content-none before:!bg-transparent before:!opacity-0",
         tr: "data-[hover=true]:bg-transparent data-[selected=true]:before:!bg-transparent",
       }}
-      bottomContent={<PaginationFooter page={page} pages={totalPages} onChange={setPage} />}
+      selectedKeys={new Set()} // <-- asegura 0 seleccionados
+      selectionMode="none"
+      onRowAction={undefined} // <-- por si arriba lo inyectan
     >
       <TableHeader>
         {columns.map((col) => (
@@ -101,7 +103,7 @@ const TableComponent: React.FC<Props> = ({
         {paginatedData.length === 0 ? (
           <TableRow>
             <TableCell className="text-center py-4" colSpan={columns.length}>
-              No se encontraron resultados para "{searchTerm}"
+              No se encontraron resultados para: {searchTerm}
             </TableCell>
           </TableRow>
         ) : (
@@ -114,7 +116,6 @@ const TableComponent: React.FC<Props> = ({
 
             return (
               <TableRow key={item.id} unselectable="off">
-
                 {columns.map((col) => (
                   <TableCell key={col.key} className="text-left">
                     {col.key === "user" ? (
@@ -156,20 +157,22 @@ const TableComponent: React.FC<Props> = ({
                         {item.completado ? "✅ Completado" : "🕒 Pendiente"}
                       </span>
                     ) : col.key === "accion" && buttonText && onButtonClick ? (
-
                       <Button
+                        className="relative z-10"
                         color={item.completado ? "success" : "secondary"}
                         variant="ghost"
-                        className="relative z-10"
                         onPress={(e) => {
                           // @ts-ignore (HeroUI PressEvent a veces no trae stopPropagation tipado)
                           e?.stopPropagation?.();
                           onButtonClick?.(item.id);
                         }}
                       >
-                        {getButtonText ? getButtonText(item.id) : (item.completado ? "VER RESUMEN" : buttonText)}
+                        {getButtonText
+                          ? getButtonText(item.id)
+                          : item.completado
+                            ? "VER RESUMEN"
+                            : buttonText}
                       </Button>
-
                     ) : (
                       <span className="text-default-500">
                         Usuario inválido error

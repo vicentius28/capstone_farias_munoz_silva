@@ -21,7 +21,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
     if (wasFocusedRef.current && inputRef.current) {
       const input = inputRef.current;
       const cursorPosition = input.value.length;
-      
+
       // Usar setTimeout para asegurar que el DOM esté actualizado
       setTimeout(() => {
         input.focus();
@@ -56,15 +56,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
     <div className="relative w-full max-w-md">
       <div className="relative flex items-center">
         <SearchIcon className="absolute left-3 w-4 h-4 text-default-400 z-10" />
-        
+
         <input
           ref={inputRef}
-          type="text"
-          value={value}
-          onChange={handleChange}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
-          placeholder={placeholder}
           className="
             w-full
             pl-10 pr-10
@@ -87,15 +81,21 @@ const SearchBar: React.FC<SearchBarProps> = ({
             focus:border-primary/50
             focus:ring-0
           "
+          placeholder={placeholder}
+          type="text"
+          value={value}
+          onBlur={handleBlur}
+          onChange={handleChange}
+          onFocus={handleFocus}
         />
-        
+
         {value && (
           <Button
             isIconOnly
+            className="absolute right-2 text-default-400 hover:text-default-600 z-10"
             size="sm"
             variant="light"
             onPress={handleClear}
-            className="absolute right-2 text-default-400 hover:text-default-600 z-10"
           >
             <X className="w-4 h-4" />
           </Button>

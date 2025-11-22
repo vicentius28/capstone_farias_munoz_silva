@@ -59,7 +59,6 @@ export function useEditarTipoEvaluacion() {
     setIsPonderada(checked);
   };
 
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 

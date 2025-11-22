@@ -3,14 +3,28 @@ import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardHeader, CardBody } from "@heroui/card";
 import { Tabs, Tab } from "@heroui/tabs";
+import {
+  Table,
+  TableHeader,
+  TableColumn,
+  TableBody,
+  TableRow,
+  TableCell,
+} from "@heroui/table";
+import { Select, SelectItem } from "@heroui/select";
 import { Chip } from "@heroui/chip";
 import { Divider } from "@heroui/divider";
+
 import "@/features/evaluacion/styles/animations.css";
-import { EvaluacionGrid, GridSkeleton } from "@/features/evaluacion/components/autoevaluacion/PageInicio";
-import { useAutoevaluaciones } from "@/features/evaluacion/hooks/useAutoevaluaciones";
 import axios from "axios";
 import { addToast } from "@heroui/toast";
 import { Button } from "@heroui/button";
+
+import { useAutoevaluaciones } from "@/features/evaluacion/hooks/useAutoevaluaciones";
+import {
+  EvaluacionGrid,
+  GridSkeleton,
+} from "@/features/evaluacion/components/autoevaluacion/PageInicio";
 
 // Tipos para mejor tipado
 interface Estadisticas {
@@ -27,58 +41,77 @@ interface StatCardProps {
   subtitle: string;
   description: string;
   icon: React.ReactNode;
-  color: 'blue' | 'amber' | 'green' | 'purple';
+  color: "blue" | "amber" | "green" | "purple";
   percentage?: number;
 }
 
 // Componente reutilizable para tarjetas de estadísticas
-const StatCard = ({ value, subtitle, description, icon, color, percentage }: StatCardProps) => {
+const StatCard = ({
+  value,
+  subtitle,
+  description,
+  icon,
+  color,
+  percentage,
+}: StatCardProps) => {
   const colorClasses = {
     blue: {
-      bg: 'from-blue-50 to-blue-100 dark:from-blue-950/50 dark:to-blue-900/50',
-      iconBg: 'bg-blue-500',
-      textPrimary: 'text-blue-700 dark:text-blue-300',
-      textSecondary: 'text-blue-600 dark:text-blue-400',
-      textTertiary: 'text-blue-500 dark:text-blue-500'
+      bg: "from-blue-50 to-blue-100 dark:from-blue-950/50 dark:to-blue-900/50",
+      iconBg: "bg-blue-500",
+      textPrimary: "text-blue-700 dark:text-blue-300",
+      textSecondary: "text-blue-600 dark:text-blue-400",
+      textTertiary: "text-blue-500 dark:text-blue-500",
     },
     amber: {
-      bg: 'from-amber-50 to-orange-100 dark:from-amber-950/50 dark:to-orange-900/50',
-      iconBg: 'bg-amber-500',
-      textPrimary: 'text-amber-700 dark:text-amber-300',
-      textSecondary: 'text-amber-600 dark:text-amber-400',
-      textTertiary: 'text-amber-500 dark:text-amber-500'
+      bg: "from-amber-50 to-orange-100 dark:from-amber-950/50 dark:to-orange-900/50",
+      iconBg: "bg-amber-500",
+      textPrimary: "text-amber-700 dark:text-amber-300",
+      textSecondary: "text-amber-600 dark:text-amber-400",
+      textTertiary: "text-amber-500 dark:text-amber-500",
     },
     green: {
-      bg: 'from-green-50 to-emerald-100 dark:from-green-950/50 dark:to-emerald-900/50',
-      iconBg: 'bg-green-500',
-      textPrimary: 'text-green-700 dark:text-green-300',
-      textSecondary: 'text-green-600 dark:text-green-400',
-      textTertiary: 'text-green-500 dark:text-green-500'
+      bg: "from-green-50 to-emerald-100 dark:from-green-950/50 dark:to-emerald-900/50",
+      iconBg: "bg-green-500",
+      textPrimary: "text-green-700 dark:text-green-300",
+      textSecondary: "text-green-600 dark:text-green-400",
+      textTertiary: "text-green-500 dark:text-green-500",
     },
     purple: {
-      bg: 'from-purple-50 to-violet-100 dark:from-purple-950/50 dark:to-violet-900/50',
-      iconBg: 'bg-purple-500',
-      textPrimary: 'text-purple-700 dark:text-purple-300',
-      textSecondary: 'text-purple-600 dark:text-purple-400',
-      textTertiary: 'text-purple-500 dark:text-purple-500'
-    }
+      bg: "from-purple-50 to-violet-100 dark:from-purple-950/50 dark:to-violet-900/50",
+      iconBg: "bg-purple-500",
+      textPrimary: "text-purple-700 dark:text-purple-300",
+      textSecondary: "text-purple-600 dark:text-purple-400",
+      textTertiary: "text-purple-500 dark:text-purple-500",
+    },
   };
 
   const classes = colorClasses[color];
 
   return (
-    <Card className={`bg-gradient-to-br ${classes.bg} border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105`}>
+    <Card
+      className={`bg-gradient-to-br ${classes.bg} border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105`}
+    >
       <CardBody className="p-6">
         <div className="flex items-start justify-between mb-4">
-          <div className={`inline-flex items-center justify-center w-12 h-12 ${classes.iconBg} rounded-xl shadow-lg`}>
+          <div
+            className={`inline-flex items-center justify-center w-12 h-12 ${classes.iconBg} rounded-xl shadow-lg`}
+          >
             {icon}
           </div>
           {percentage !== undefined && (
             <Chip
-              color={color === 'blue' ? 'primary' : color === 'amber' ? 'warning' : color === 'green' ? 'success' : 'secondary'}
-              variant="flat"
-              size="sm"
               className="font-bold"
+              color={
+                color === "blue"
+                  ? "primary"
+                  : color === "amber"
+                    ? "warning"
+                    : color === "green"
+                      ? "success"
+                      : "secondary"
+              }
+              size="sm"
+              variant="flat"
             >
               {percentage}%
             </Chip>
@@ -86,15 +119,15 @@ const StatCard = ({ value, subtitle, description, icon, color, percentage }: Sta
         </div>
 
         <div className="space-y-2">
-          <h3 className={`text-3xl font-bold ${classes.textPrimary}`}>
-            {value}
-          </h3>
-          <p className={`font-semibold ${classes.textSecondary}`}>
-            {subtitle}
-          </p>
-          <p className={`text-sm ${classes.textTertiary}`}>
-            {description}
-          </p>
+          <div className="flex items-center justify-start gap-3">
+            <h3 className={`text-2xl font-bold ${classes.textPrimary}`}>
+              {value}
+            </h3>
+            <p className={`font-semibold ${classes.textSecondary}`}>
+              {subtitle}
+            </p>
+          </div>
+          <p className={`text-sm ${classes.textTertiary}`}>{description}</p>
         </div>
       </CardBody>
     </Card>
@@ -104,33 +137,139 @@ const StatCard = ({ value, subtitle, description, icon, color, percentage }: Sta
 // Iconos como componentes para mejor rendimiento
 const Icons = {
   clipboard: (
-    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    <svg
+      className="w-6 h-6 text-white"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+      />
     </svg>
   ),
   clock: (
-    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+    <svg
+      className="w-6 h-6 text-white"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+      />
     </svg>
   ),
   check: (
-    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+    <svg
+      className="w-6 h-6 text-white"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+      />
     </svg>
   ),
   target: (
-    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+    <svg
+      className="w-6 h-6 text-white"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+      />
     </svg>
-  )
+  ),
 };
 
 export default function AutoevaluacionInicioPage() {
   const navigate = useNavigate();
   const [tab, setTab] = useState<"pendientes" | "finalizadas">("pendientes");
 
-  const { pendientes, finalizadas, loading, error, showLoadingUI } = useAutoevaluaciones();
-  const all = useMemo(() => [...pendientes, ...finalizadas], [pendientes, finalizadas]);
+  const { pendientes, finalizadas, loading, error, showLoadingUI } =
+    useAutoevaluaciones();
+  const all = useMemo(
+    () => [...pendientes, ...finalizadas],
+    [pendientes, finalizadas],
+  );
+
+  const [yearFilter, setYearFilter] = useState<string>("all");
+  const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
+  const years = useMemo(() => {
+    const extractYear = (v: any) => {
+      const s = String(v?.fecha_evaluacion ?? v?.periodo ?? "");
+      const m = s.match(/(\d{4})/);
+
+      return m ? m[1] : null;
+    };
+    const setYears = new Set<string>();
+
+    all.forEach((ev: any) => {
+      const y = extractYear(ev);
+
+      if (y) setYears.add(y);
+    });
+
+    return Array.from(setYears).sort((a, b) => Number(b) - Number(a));
+  }, [all]);
+
+  const yearItems = useMemo(
+    () => [
+      { key: "all", label: "Todos" },
+      ...years.map((y) => ({ key: y, label: y })),
+    ],
+    [years],
+  );
+
+  const sortByPeriodDesc = (arr: any[]) => {
+    return [...arr].sort((a, b) =>
+      String(b?.fecha_evaluacion ?? "").localeCompare(
+        String(a?.fecha_evaluacion ?? ""),
+      ),
+    );
+  };
+
+  const filteredPendientes = useMemo(() => {
+    const base =
+      yearFilter === "all"
+        ? pendientes
+        : pendientes.filter((ev: any) =>
+            String(ev?.fecha_evaluacion ?? ev?.periodo ?? "").includes(
+              yearFilter,
+            ),
+          );
+
+    return sortByPeriodDesc(base);
+  }, [pendientes, yearFilter]);
+
+  const filteredFinalizadas = useMemo(() => {
+    const base =
+      yearFilter === "all"
+        ? finalizadas
+        : finalizadas.filter((ev: any) =>
+            String(ev?.fecha_evaluacion ?? ev?.periodo ?? "").includes(
+              yearFilter,
+            ),
+          );
+
+    return sortByPeriodDesc(base);
+  }, [finalizadas, yearFilter]);
 
   // Estadísticas calculadas con promedio de logro
   const estadisticas = useMemo((): Estadisticas => {
@@ -138,21 +277,23 @@ export default function AutoevaluacionInicioPage() {
     const completadas = finalizadas.length;
     const progresoGeneral = total > 0 ? (completadas / total) * 100 : 0;
 
-    const promedioLogro = finalizadas.length > 0
-      ? finalizadas.reduce((acc: number, item: any) => {
-        const logro = item?.logro_obtenido || 0; // ✅ Ya usa logro_obtenido del backend
-        return acc + logro;
-      }, 0) / finalizadas.length
-      : 0;
+    const promedioLogro =
+      finalizadas.length > 0
+        ? finalizadas.reduce((acc: number, item: any) => {
+            const logro = item?.logro_obtenido || 0; // ✅ Ya usa logro_obtenido del backend
 
-    console.log('Promedio de logro calculado:', promedioLogro);
+            return acc + logro;
+          }, 0) / finalizadas.length
+        : 0;
+
+    console.log("Promedio de logro calculado:", promedioLogro);
 
     return {
       total,
       completadas,
       pendientes: pendientes.length,
       progresoGeneral,
-      promedioLogro
+      promedioLogro,
     };
   }, [pendientes, finalizadas]);
 
@@ -163,6 +304,7 @@ export default function AutoevaluacionInicioPage() {
         navigate("/autoevaluacion/inicio/formulario", {
           state: { id, from: "/autoevaluacion/inicio" },
         });
+
         return;
       }
 
@@ -173,15 +315,19 @@ export default function AutoevaluacionInicioPage() {
 
         // Fallback a la API si es necesario (opcional)
         if (typeof isPonderada !== "boolean") {
-          const { data } = await axios.get(`/evaluacion/api/autoevaluaciones/${id}/`, {
-            params: { _t: Date.now() },
-          });
+          const { data } = await axios.get(
+            `/evaluacion/api/autoevaluaciones/${id}/`,
+            {
+              params: { _t: Date.now() },
+            },
+          );
+
           isPonderada = !!(data?.ponderada ?? data?.tipo_evaluacion?.ponderada);
         }
 
         // ✅ Navegar al detalle de autoevaluación finalizada
         navigate("/autoevaluacion/inicio/detalle", {
-          state: { id, from: "/autoevaluacion/inicio" }
+          state: { id, from: "/autoevaluacion/inicio" },
         });
       } catch (error) {
         addToast({
@@ -192,10 +338,8 @@ export default function AutoevaluacionInicioPage() {
         });
       }
     },
-    [navigate, all]
+    [navigate, all],
   );
-
-
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-900 dark:via-blue-950/30 dark:to-indigo-950/50">
@@ -206,7 +350,7 @@ export default function AutoevaluacionInicioPage() {
             className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 animate-pulse"
             style={{
               animation: "shimmer 2s infinite linear",
-              backgroundSize: "200% 100%"
+              backgroundSize: "200% 100%",
             }}
           />
         </div>
@@ -222,8 +366,18 @@ export default function AutoevaluacionInicioPage() {
         {/* Header simplificado */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl mb-6 shadow-xl shadow-blue-500/25">
-            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            <svg
+              className="w-8 h-8 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+              />
             </svg>
           </div>
 
@@ -241,40 +395,39 @@ export default function AutoevaluacionInicioPage() {
           <div className="mb-8">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
               <StatCard
+                color="blue"
+                description="Total de Autoevaluaciones asignadas"
+                icon={Icons.clipboard}
+                subtitle="Autoevaluaciones"
                 title="Total"
                 value={estadisticas.total}
-                subtitle="evaluaciones"
-                description="Total de evaluaciones asignadas"
-                icon={Icons.clipboard}
-                color="blue"
               />
 
               <StatCard
+                color="amber"
+                description="Autoevaluaciones que requieren tu atención"
+                icon={Icons.clock}
+                subtitle="por completar"
                 title="Pendientes"
                 value={estadisticas.pendientes}
-                subtitle="por completar"
-                description="Evaluaciones que requieren tu atención"
-                icon={Icons.clock}
-                color="amber"
               />
 
               <StatCard
+                color="green"
+                description="Autoevaluaciones ya completadas"
+                icon={Icons.check}
+                subtitle="finalizadas"
                 title="Completadas"
                 value={estadisticas.completadas}
-                subtitle="finalizadas"
-                description="Evaluaciones ya completadas"
-                icon={Icons.check}
-                color="green"
               />
 
               <StatCard
-                title="Progreso"
-                value={Math.round(estadisticas.progresoGeneral)}
-                subtitle="% completado"
+                color="purple"
                 description="Porcentaje de avance general"
                 icon={Icons.target}
-                color="purple"
-                percentage={estadisticas.progresoGeneral}
+                subtitle="% completado"
+                title="Progreso"
+                value={Math.round(estadisticas.progresoGeneral)}
               />
             </div>
           </div>
@@ -291,23 +444,31 @@ export default function AutoevaluacionInicioPage() {
                   Gestión de Evaluaciones
                 </h2>
                 {estadisticas.pendientes > 0 && (
-                  <Chip color="warning" variant="flat" className="animate-pulse font-semibold">
-                    {estadisticas.pendientes} pendiente{estadisticas.pendientes !== 1 ? 's' : ''}
+                  <Chip
+                    className="animate-pulse font-semibold"
+                    color="warning"
+                    variant="flat"
+                  >
+                    {estadisticas.pendientes} pendiente
+                    {estadisticas.pendientes !== 1 ? "s" : ""}
                   </Chip>
                 )}
               </div>
 
               {/* Tabs mejorados */}
               <Tabs
-                selectedKey={tab}
-                onSelectionChange={(key) => setTab(key as typeof tab)}
-                variant="underlined"
                 classNames={{
-                  tabList: "gap-6 w-full relative rounded-xl bg-slate-50/50 dark:bg-slate-700/50 p-1",
-                  cursor: "w-full bg-white dark:bg-slate-600 shadow-md rounded-lg",
+                  tabList:
+                    "gap-6 w-full relative rounded-xl bg-slate-50/50 dark:bg-slate-700/50 p-1",
+                  cursor:
+                    "w-full bg-white dark:bg-slate-600 shadow-md rounded-lg",
                   tab: "max-w-fit px-6 py-3 h-12",
-                  tabContent: "group-data-[selected=true]:text-slate-800 dark:group-data-[selected=true]:text-white font-semibold"
+                  tabContent:
+                    "group-data-[selected=true]:text-slate-800 dark:group-data-[selected=true]:text-white font-semibold",
                 }}
+                selectedKey={tab}
+                variant="underlined"
+                onSelectionChange={(key) => setTab(key as typeof tab)}
               >
                 <Tab
                   key="pendientes"
@@ -316,7 +477,12 @@ export default function AutoevaluacionInicioPage() {
                       <span>📋</span>
                       <span>Pendientes</span>
                       {estadisticas.pendientes > 0 && (
-                        <Chip size="sm" color="warning" variant="flat" className="font-bold">
+                        <Chip
+                          className="font-bold"
+                          color="warning"
+                          size="sm"
+                          variant="flat"
+                        >
                           {estadisticas.pendientes}
                         </Chip>
                       )}
@@ -330,7 +496,12 @@ export default function AutoevaluacionInicioPage() {
                       <span>✅</span>
                       <span>Finalizadas</span>
                       {estadisticas.completadas > 0 && (
-                        <Chip size="sm" color="success" variant="flat" className="font-bold">
+                        <Chip
+                          className="font-bold"
+                          color="success"
+                          size="sm"
+                          variant="flat"
+                        >
                           {estadisticas.completadas}
                         </Chip>
                       )}
@@ -342,19 +513,135 @@ export default function AutoevaluacionInicioPage() {
           </CardHeader>
 
           <CardBody className="pt-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-6">
+              <div className="flex items-center gap-3">
+                <Select
+                  className="w-full md:w-[240px]"
+                  classNames={{
+                    trigger: "h-11",
+                    label: "text-default-600",
+                    value: "text-sm",
+                  }}
+                  items={yearItems}
+                  label="Año"
+                  labelPlacement="outside-left"
+                  selectedKeys={[yearFilter]}
+                  size="md"
+                  onSelectionChange={(keys) => {
+                    const key = Array.from(keys as Set<React.Key>)[0] as
+                      | string
+                      | undefined;
+
+                    setYearFilter(key ?? "all");
+                  }}
+                >
+                  {(item) => (
+                    <SelectItem key={item.key}>{item.label}</SelectItem>
+                  )}
+                </Select>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="text-xs text-default-500">
+                  {yearFilter === "all"
+                    ? `Mostrando ${all.length} evaluaciones`
+                    : `Año ${yearFilter}: ${filteredPendientes.length + filteredFinalizadas.length} evaluaciones`}
+                </div>
+                <div className="hidden md:flex items-center gap-2">
+                  <Button
+                    color={viewMode === "cards" ? "primary" : "default"}
+                    size="sm"
+                    variant={viewMode === "cards" ? "solid" : "flat"}
+                    onPress={() => setViewMode("cards")}
+                  >
+                    Tarjetas
+                  </Button>
+                  <Button
+                    color={viewMode === "table" ? "primary" : "default"}
+                    size="sm"
+                    variant={viewMode === "table" ? "solid" : "flat"}
+                    onPress={() => setViewMode("table")}
+                  >
+                    Tabla
+                  </Button>
+                </div>
+              </div>
+            </div>
             <div className="min-h-[400px]">
-              {tab === "pendientes" ? (
-                showLoadingUI ? (
+              {viewMode === "cards" ? (
+                tab === "pendientes" ? (
+                  showLoadingUI ? (
+                    <GridSkeleton />
+                  ) : (
+                    <EvaluacionGrid
+                      finalizada={false}
+                      items={filteredPendientes}
+                      onOpen={openEvaluacion}
+                    />
+                  )
+                ) : showLoadingUI ? (
                   <GridSkeleton />
                 ) : (
-                  <EvaluacionGrid items={pendientes} finalizada={false} onOpen={openEvaluacion} />
+                  <EvaluacionGrid
+                    finalizada={true}
+                    items={filteredFinalizadas}
+                    onOpen={openEvaluacion}
+                  />
                 )
               ) : (
-                showLoadingUI ? (
-                  <GridSkeleton />
-                ) : (
-                  <EvaluacionGrid items={finalizadas} finalizada={true} onOpen={openEvaluacion} />
-                )
+                <Table
+                  isStriped
+                  aria-label="Listado de autoevaluaciones"
+                  classNames={{ wrapper: "min-h-[400px]" }}
+                  selectedKeys={new Set()}
+                  selectionMode="none"
+                >
+                  <TableHeader>
+                    <TableColumn>Evaluación</TableColumn>
+                    <TableColumn>Período</TableColumn>
+                    <TableColumn>Estado</TableColumn>
+                    <TableColumn>Acción</TableColumn>
+                  </TableHeader>
+                  <TableBody>
+                    {(tab === "pendientes"
+                      ? filteredPendientes
+                      : filteredFinalizadas
+                    ).map((ev: any) => (
+                      <TableRow key={String(ev.id)}>
+                        <TableCell>
+                          {ev?.tipo_evaluacion?.n_tipo_evaluacion ??
+                            "Autoevaluación"}
+                        </TableCell>
+                        <TableCell>
+                          {ev?.fecha_evaluacion ?? ev?.periodo ?? ""}
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            color={tab === "pendientes" ? "warning" : "success"}
+                            size="sm"
+                            variant="flat"
+                          >
+                            {tab === "pendientes" ? "Pendiente" : "Finalizada"}
+                          </Chip>
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            color={tab === "pendientes" ? "warning" : "success"}
+                            size="sm"
+                            variant="flat"
+                            onPress={() =>
+                              openEvaluacion(
+                                String(ev.id).split("/")[0],
+                                tab !== "pendientes",
+                              )
+                            }
+                          >
+                            {tab === "pendientes" ? "Continuar" : "Ver"}
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               )}
             </div>
 
@@ -376,18 +663,30 @@ export default function AutoevaluacionInicioPage() {
                   <CardBody className="p-6">
                     <div className="flex items-center gap-3 mb-3">
                       <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
-                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                        <svg
+                          className="w-4 h-4 text-white"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                          />
                         </svg>
                       </div>
                       <h3 className="font-semibold text-red-800 dark:text-red-200">
                         Error al cargar
                       </h3>
                     </div>
-                    <p className="text-sm text-red-600 dark:text-red-300">{error}</p>
+                    <p className="text-sm text-red-600 dark:text-red-300">
+                      {error}
+                    </p>
                     <Button
-                      size="sm"
                       color="danger"
+                      size="sm"
                       variant="flat"
                       onPress={() => window.location.reload()}
                     >
@@ -402,7 +701,6 @@ export default function AutoevaluacionInicioPage() {
       </div>
 
       {/* Estilos para animaciones personalizadas */}
-
     </div>
   );
 }

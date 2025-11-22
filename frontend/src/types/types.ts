@@ -30,8 +30,6 @@ export interface Empresa {
   name: string;
 }
 
-
-
 export interface Competencia {
   id: number;
   aeva: number;

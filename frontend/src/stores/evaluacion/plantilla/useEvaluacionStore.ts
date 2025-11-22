@@ -1,5 +1,7 @@
-import { create } from "zustand";
 import type { AreaEvaluacion } from "@/features/evaluacion/types/evaluacion";
+
+import { create } from "zustand";
+
 import { defaultArea } from "@/features/evaluacion/utils/defaultArea";
 import { cloneNiveles } from "@/features/evaluacion/constants/defaults";
 import { buildDemoAutoevaluacion } from "@/features/evaluacion/services/autofill";
@@ -315,6 +317,7 @@ const useEvaluacionStore = create<EvaluacionState>((set) => ({
   autorellenarAutoevaluacion: () =>
     set(() => {
       const { nombreTipoEvaluacion, areas } = buildDemoAutoevaluacion();
+
       return {
         nombreTipoEvaluacion,
         areas,

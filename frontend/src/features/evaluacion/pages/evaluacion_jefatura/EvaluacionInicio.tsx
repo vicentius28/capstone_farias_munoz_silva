@@ -3,9 +3,17 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardHeader, CardBody } from "@heroui/card";
 import { Skeleton } from "@heroui/skeleton";
 import { Chip } from "@heroui/chip";
-import { Progress } from "@heroui/progress";
 import { Divider } from "@heroui/divider";
 import { Button } from "@heroui/button";
+import { Select, SelectItem } from "@heroui/select";
+import {
+  Table,
+  TableHeader,
+  TableColumn,
+  TableBody,
+  TableRow,
+  TableCell,
+} from "@heroui/table";
 import { addToast } from "@heroui/toast";
 import {
   CalendarDaysIcon,
@@ -41,6 +49,12 @@ export default function EvaluacionInicioPage() {
   const [asignaciones, setAsignaciones] = useState<EvalAsignacion[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const [yearFilter, setYearFilter] = useState<string>("all");
+  const [tipoFilter, setTipoFilter] = useState<string>("all");
+  const [estadoFilter, setEstadoFilter] = useState<
+    "all" | "pendiente" | "retroalimentacion" | "reunion" | "firmada"
+  >("all");
+  const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
 
   const fechaFormateada = useCallback(
     (ym: string) =>
@@ -50,6 +64,16 @@ export default function EvaluacionInicioPage() {
       }),
     [],
   );
+
+  const normalizePeriodo = useCallback((s?: string | null) => {
+    if (!s) return "";
+    const str = String(s);
+    const m = str.match(/(\d{4})-(\d{2})/);
+
+    if (m) return `${m[1]}-${m[2]}`;
+
+    return str.length >= 7 ? str.slice(0, 7) : str;
+  }, []);
 
   // Estadísticas globales calculadas
   const estadisticasGlobales = useMemo(() => {
@@ -62,6 +86,7 @@ export default function EvaluacionInicioPage() {
         acc.conRetroalimentacion += item.total_con_retroalimentacion || 0;
         acc.cerradasFirma += item.total_cerradas_firma || 0;
         acc.firmadas += item.total_firmadas || 0;
+
         return acc;
       },
       {
@@ -71,21 +96,114 @@ export default function EvaluacionInicioPage() {
         conReunion: 0,
         conRetroalimentacion: 0,
         cerradasFirma: 0,
-        firmadas: 0
-      }
+        firmadas: 0,
+      },
     );
 
-    const progresoGlobal = totales.total > 0 ? (totales.completadas / totales.total) * 100 : 0;
-    const progresoFinal = totales.total > 0 ? (totales.firmadas / totales.total) * 100 : 0;
+    const progresoGlobal =
+      totales.total > 0 ? (totales.completadas / totales.total) * 100 : 0;
+    const progresoFinal =
+      totales.total > 0 ? (totales.firmadas / totales.total) * 100 : 0;
 
     return {
       ...totales,
       progresoGlobal,
       progresoFinal,
       tiposEvaluacion: asignaciones.length,
-      evaluacionesAtrasadas: asignaciones.filter(a => (a.total_pendientes || 0) > 0).length,
+      evaluacionesAtrasadas: asignaciones.filter(
+        (a) => (a.total_pendientes || 0) > 0,
+      ).length,
     };
   }, [asignaciones]);
+
+  const years = useMemo(() => {
+    const setYears = new Set<string>();
+
+    asignaciones.forEach((a) => {
+      const s = String(a?.fecha_evaluacion ?? "");
+      const m = s.match(/(\d{4})/);
+
+      if (m) setYears.add(m[1]);
+    });
+
+    return Array.from(setYears).sort((a, b) => Number(b) - Number(a));
+  }, [asignaciones]);
+
+  const yearItems = useMemo(
+    () => [
+      { key: "all", label: "Todos" },
+      ...years.map((y) => ({ key: y, label: y })),
+    ],
+    [years],
+  );
+
+  const tipoItems = useMemo(() => {
+    const map = new Map<string, string>();
+
+    asignaciones.forEach((a) => {
+      const id = a?.tipo_evaluacion?.id;
+      const name = a?.tipo_evaluacion?.n_tipo_evaluacion ?? "Evaluación";
+
+      if (id !== undefined && id !== null) map.set(String(id), name);
+    });
+    const arr = Array.from(map.entries())
+      .map(([key, label]) => ({ key, label }))
+      .sort((x, y) => x.label.localeCompare(y.label));
+
+    return [{ key: "all", label: "Todos" }, ...arr];
+  }, [asignaciones]);
+
+  const getGrupoEstado = useCallback((item: EvalAsignacion) => {
+    const firmadas = item.total_firmadas ?? 0;
+    const cerradasFirma = item.total_cerradas_firma ?? 0;
+    const retro =
+      (item.total_con_retroalimentacion ?? 0) + (item.total_completadas ?? 0);
+
+    if (firmadas > 0) return "firmada";
+    if (cerradasFirma > 0) return "reunion";
+    if (retro > 0) return "retroalimentacion";
+
+    return "pendiente";
+  }, []);
+
+  const asignacionesFiltradas = useMemo(() => {
+    let arr = asignaciones;
+
+    if (yearFilter !== "all")
+      arr = arr.filter((i) =>
+        String(i.fecha_evaluacion ?? "").includes(yearFilter),
+      );
+    if (tipoFilter !== "all")
+      arr = arr.filter(
+        (i) => String(i?.tipo_evaluacion?.id ?? "") === tipoFilter,
+      );
+    if (estadoFilter !== "all") {
+      arr = arr.filter((i) => {
+        switch (estadoFilter) {
+          case "firmada":
+            return (i.total_firmadas ?? 0) > 0;
+          case "reunion":
+            return (i.total_cerradas_firma ?? 0) > 0;
+          case "retroalimentacion":
+            return (
+              (i.total_con_retroalimentacion ?? 0) +
+                (i.total_completadas ?? 0) >
+              0
+            );
+          case "pendiente":
+            return (i.total_pendientes ?? 0) + (i.total_con_reunion ?? 0) > 0;
+          default:
+            return true;
+        }
+      });
+    }
+
+    return [...arr].sort((a, b) =>
+      String(b?.fecha_evaluacion ?? "").localeCompare(
+        String(a?.fecha_evaluacion ?? ""),
+      ),
+    );
+  }, [asignaciones, yearFilter, tipoFilter, estadoFilter, getGrupoEstado]);
 
   useEffect(() => {
     (async () => {
@@ -100,18 +218,20 @@ export default function EvaluacionInicioPage() {
         const evals = evalsRes.data || [];
 
         // Actualizar la lógica de cálculo de estadísticas
-        const stats: Record<string, {
-          total: number;
-          completadas: number;
-          pendientes: number;
-          conReunion: number;
-          conRetroalimentacion: number;
-          cerradasFirma: number;
-          firmadas: number;
-        }> = {};
+        const stats: Record<
+          string,
+          {
+            total: number;
+            completadas: number;
+            pendientes: number;
+            conReunion: number;
+            conRetroalimentacion: number;
+            cerradasFirma: number;
+            firmadas: number;
+          }
+        > = {};
 
-        for (const e of evals) {
-          const key = `${e?.tipo_evaluacion?.id}|${e?.fecha_evaluacion}`;
+        const ensureBucket = (key: string) => {
           if (!stats[key]) {
             stats[key] = {
               total: 0,
@@ -120,37 +240,66 @@ export default function EvaluacionInicioPage() {
               conReunion: 0,
               conRetroalimentacion: 0,
               cerradasFirma: 0,
-              firmadas: 0
+              firmadas: 0,
             };
           }
+        };
 
-          stats[key].total += 1;
+        for (const e of evals) {
+          const keyId = `${e?.tipo_evaluacion?.id}|${normalizePeriodo(e?.fecha_evaluacion)}`;
+          const keyName = `${(e?.tipo_evaluacion?.n_tipo_evaluacion ?? "").toLowerCase()}|${normalizePeriodo(e?.fecha_evaluacion)}`;
 
-          // Consider both firmado and denegado as completed processes
-          if (e?.estado_firma === 'firmado' || e?.estado_firma === 'firmado_obs') {
-            stats[key].firmadas += 1;
-          } else if (e?.cerrado_para_firma) {
-            stats[key].cerradasFirma += 1;
-          } else if (e?.retroalimentacion_completada) {
-            stats[key].conRetroalimentacion += 1;
-          } else if (e?.reunion_realizada) {
-            stats[key].conReunion += 1;
-          } else if (e?.completado) {
-            stats[key].completadas += 1;
+          ensureBucket(keyId);
+          ensureBucket(keyName);
+
+          stats[keyId].total += 1;
+          stats[keyName].total += 1;
+
+          const firmada = !!(
+            e?.firmado ||
+            e?.firmado_obs ||
+            e?.estado_firma === "firmado" ||
+            e?.estado_firma === "firmado_obs"
+          );
+          const cerradaParaFirma = !!e?.cerrado_para_firma;
+          const retro = !!(
+            e?.retroalimentacion || e?.retroalimentacion_completada
+          );
+          const reunion = !!(e?.reunion_realizada || e?.reunion);
+          const completada = !!e?.completado;
+
+          if (firmada) {
+            stats[keyId].firmadas += 1;
+            stats[keyName].firmadas += 1;
+          } else if (cerradaParaFirma) {
+            stats[keyId].cerradasFirma += 1;
+            stats[keyName].cerradasFirma += 1;
+          } else if (retro) {
+            stats[keyId].conRetroalimentacion += 1;
+            stats[keyName].conRetroalimentacion += 1;
+          } else if (reunion) {
+            stats[keyId].conReunion += 1;
+            stats[keyName].conReunion += 1;
+          } else if (completada) {
+            stats[keyId].completadas += 1;
+            stats[keyName].completadas += 1;
           } else {
-            stats[key].pendientes += 1;
+            stats[keyId].pendientes += 1;
+            stats[keyName].pendientes += 1;
           }
         }
 
         // Actualizar el mapeo de cards
         const enriched = cards.map((c: any) => {
-          const key = `${c?.tipo_evaluacion?.id}|${c?.fecha_evaluacion}`;
-          const s = stats[key];
+          const keyId = `${c?.tipo_evaluacion?.id}|${normalizePeriodo(c?.fecha_evaluacion)}`;
+          const keyName = `${(c?.tipo_evaluacion?.n_tipo_evaluacion ?? "").toLowerCase()}|${normalizePeriodo(c?.fecha_evaluacion)}`;
+          const s = stats[keyId] ?? stats[keyName];
+
           return {
             ...c,
-            total_asignadas: s?.total ?? (c.personas?.length ?? 0),
+            total_asignadas: s?.total ?? c.personas?.length ?? 0,
             total_completadas: s?.completadas ?? 0,
-            total_pendientes: s?.pendientes ?? (c.personas?.length ?? 0),
+            total_pendientes: s?.pendientes ?? c.personas?.length ?? 0,
             total_con_reunion: s?.conReunion ?? 0,
             total_con_retroalimentacion: s?.conRetroalimentacion ?? 0,
             total_cerradas_firma: s?.cerradasFirma ?? 0,
@@ -226,25 +375,212 @@ export default function EvaluacionInicioPage() {
                 <h2 className="text-2xl font-bold text-slate-800 dark:text-white">
                   Evaluaciones por Período
                 </h2>
-                <Chip
-                  color="primary"
-                  variant="flat"
-                  className="font-semibold"
-                >
-                  {asignaciones.length} período{asignaciones.length !== 1 ? 's' : ''}
+                <Chip className="font-semibold" color="primary" variant="flat">
+                  {asignacionesFiltradas.length} período
+                  {asignacionesFiltradas.length !== 1 ? "s" : ""}
                 </Chip>
               </div>
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <Select
+                    className="w-full md:w-[200px]"
+                    classNames={{
+                      trigger: "h-11",
+                      label: "text-default-600",
+                      value: "text-sm",
+                    }}
+                    items={yearItems}
+                    label="Año"
+                    labelPlacement="outside-left"
+                    selectedKeys={[yearFilter]}
+                    size="md"
+                    onSelectionChange={(keys) => {
+                      const key = Array.from(keys as Set<React.Key>)[0] as
+                        | string
+                        | undefined;
 
-              <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
-                {asignaciones.map((item) => (
-                  <EvaluationCard
-                    key={item.id}
-                    item={item}
-                    fechaFormateada={fechaFormateada}
-                    onOpen={() => openTabla(item)}
-                  />
-                ))}
+                      setYearFilter(key ?? "all");
+                    }}
+                  >
+                    {(item) => (
+                      <SelectItem key={item.key}>{item.label}</SelectItem>
+                    )}
+                  </Select>
+                  <Select
+                    className="w-full md:w-[260px]"
+                    classNames={{
+                      trigger: "h-11",
+                      label: "text-default-600",
+                      value: "text-sm",
+                    }}
+                    items={tipoItems}
+                    label="Tipo"
+                    labelPlacement="outside-left"
+                    selectedKeys={[tipoFilter]}
+                    size="md"
+                    onSelectionChange={(keys) => {
+                      const key = Array.from(keys as Set<React.Key>)[0] as
+                        | string
+                        | undefined;
+
+                      setTipoFilter(key ?? "all");
+                    }}
+                  >
+                    {(item) => (
+                      <SelectItem key={item.key}>{item.label}</SelectItem>
+                    )}
+                  </Select>
+                  <Select
+                    className="w-full md:w-[220px]"
+                    classNames={{
+                      trigger: "h-11",
+                      label: "text-default-600",
+                      value: "text-sm",
+                    }}
+                    items={[
+                      { key: "all", label: "Todos" },
+                      { key: "pendiente", label: "Pendiente" },
+                      { key: "retroalimentacion", label: "Retroalimentación" },
+                      { key: "reunion", label: "Reunión Finalizada" },
+                      { key: "firmada", label: "Firmada" },
+                    ]}
+                    label="Estado"
+                    labelPlacement="outside-left"
+                    selectedKeys={[estadoFilter]}
+                    size="md"
+                    onSelectionChange={(keys) => {
+                      const key = Array.from(keys as Set<React.Key>)[0] as
+                        | string
+                        | undefined;
+
+                      setEstadoFilter(
+                        (key as
+                          | "all"
+                          | "pendiente"
+                          | "retroalimentacion"
+                          | "reunion"
+                          | "firmada") ?? "all",
+                      );
+                    }}
+                  >
+                    {(item) => (
+                      <SelectItem key={item.key}>{item.label}</SelectItem>
+                    )}
+                  </Select>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    color={viewMode === "cards" ? "primary" : "default"}
+                    size="sm"
+                    variant={viewMode === "cards" ? "solid" : "flat"}
+                    onPress={() => setViewMode("cards")}
+                  >
+                    Tarjetas
+                  </Button>
+                  <Button
+                    color={viewMode === "table" ? "primary" : "default"}
+                    size="sm"
+                    variant={viewMode === "table" ? "solid" : "flat"}
+                    onPress={() => setViewMode("table")}
+                  >
+                    Tabla
+                  </Button>
+                </div>
               </div>
+
+              {viewMode === "cards" ? (
+                <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
+                  {asignacionesFiltradas.map((item) => (
+                    <EvaluationCard
+                      key={item.id}
+                      fechaFormateada={fechaFormateada}
+                      item={item}
+                      onOpen={() => openTabla(item)}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <Table
+                  isStriped
+                  aria-label="Listado de evaluaciones agrupadas"
+                  classNames={{ wrapper: "min-h-[420px]" }}
+                  selectedKeys={new Set()}
+                  selectionMode="none"
+                >
+                  <TableHeader>
+                    <TableColumn>Evaluación</TableColumn>
+                    <TableColumn>Período</TableColumn>
+                    <TableColumn>Asignadas</TableColumn>
+                    <TableColumn>Pendientes</TableColumn>
+                    <TableColumn>Completadas</TableColumn>
+                    <TableColumn>Firmadas</TableColumn>
+                    <TableColumn>Estado</TableColumn>
+                    <TableColumn>Acción</TableColumn>
+                  </TableHeader>
+                  <TableBody>
+                    {asignacionesFiltradas.map((item) => (
+                      <TableRow key={String(item.id)}>
+                        <TableCell>
+                          {item?.tipo_evaluacion?.n_tipo_evaluacion ??
+                            "Evaluación"}
+                        </TableCell>
+                        <TableCell>{item?.fecha_evaluacion ?? ""}</TableCell>
+                        <TableCell>
+                          {item.total_asignadas ?? item.personas?.length ?? 0}
+                        </TableCell>
+                        <TableCell>
+                          {(item.total_pendientes_firma ?? 0) +
+                            (item.total_con_reunion ?? 0) +
+                            (item.total_con_retroalimentacion ?? 0) +
+                            (item.total_cerradas_firma ?? 0) +
+                            (item.total_pendientes ?? 0)}
+                        </TableCell>
+                        <TableCell>{item.total_completadas ?? 0}</TableCell>
+                        <TableCell>{item.total_firmadas ?? 0}</TableCell>
+                        <TableCell>
+                          <Chip
+                            color={
+                              getGrupoEstado(item) === "firmada"
+                                ? "success"
+                                : getGrupoEstado(item) === "reunion"
+                                  ? "primary"
+                                  : getGrupoEstado(item) === "retroalimentacion"
+                                    ? "secondary"
+                                    : "warning"
+                            }
+                            size="sm"
+                            variant="flat"
+                          >
+                            {getGrupoEstado(item) === "firmada"
+                              ? "Firmada"
+                              : getGrupoEstado(item) === "reunion"
+                                ? "Reunión Finalizada"
+                                : getGrupoEstado(item) === "retroalimentacion"
+                                  ? "Retroalimentación"
+                                  : "Pendiente"}
+                          </Chip>
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            color={
+                              getGrupoEstado(item) === "firmada"
+                                ? "success"
+                                : "primary"
+                            }
+                            size="sm"
+                            variant="flat"
+                            onPress={() => openTabla(item)}
+                          >
+                            {getGrupoEstado(item) === "firmada"
+                              ? "Ver"
+                              : "Continuar"}
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
             </div>
           </>
         )}
@@ -270,49 +606,49 @@ interface EvaluationTimelineProps {
 function EvaluationTimeline({ stats }: EvaluationTimelineProps) {
   const timelineSteps = [
     {
-      id: 'pendientes',
-      title: 'Pendientes',
-      description: 'Debes completar las evaluaciones pendientes',
+      id: "pendientes",
+      title: "Pendientes",
+      description: "Debes completar las evaluaciones pendientes",
       count: stats.pendientes,
       icon: <ClockIcon className="w-5 h-5" />,
-      color: 'bg-amber-500',
-      textColor: 'text-amber-600',
-      bgColor: 'bg-amber-50 dark:bg-amber-900/20',
-      isActive: stats.pendientes > 0
+      color: "bg-amber-500",
+      textColor: "text-amber-600",
+      bgColor: "bg-amber-50 dark:bg-amber-900/20",
+      isActive: stats.pendientes > 0,
     },
     {
-      id: 'completadas',
-      title: 'Retroalimentación',
-      description: 'Falta realizar Retroalimentación',
+      id: "completadas",
+      title: "Retroalimentación",
+      description: "Falta realizar Retroalimentación",
       count: stats.completadas,
       icon: <CheckCircleIcon className="w-5 h-5" />,
-      color: 'bg-blue-500',
-      textColor: 'text-blue-600',
-      bgColor: 'bg-blue-50 dark:bg-blue-900/20',
-      isActive: stats.completadas > 0
+      color: "bg-blue-500",
+      textColor: "text-blue-600",
+      bgColor: "bg-blue-50 dark:bg-blue-900/20",
+      isActive: stats.completadas > 0,
     },
     {
-      id: 'cerradas',
-      title: 'Reunión Finalizada',
-      description: 'Falta firma del trabajador',
+      id: "cerradas",
+      title: "Reunión Finalizada",
+      description: "Falta Aceptación del trabajador",
       count: stats.cerradasFirma,
       icon: <PencilSquareIcon className="w-5 h-5" />,
-      color: 'bg-orange-500',
-      textColor: 'text-orange-600',
-      bgColor: 'bg-orange-50 dark:bg-orange-900/20',
-      isActive: stats.cerradasFirma > 0
+      color: "bg-orange-500",
+      textColor: "text-orange-600",
+      bgColor: "bg-orange-50 dark:bg-orange-900/20",
+      isActive: stats.cerradasFirma > 0,
     },
     {
-      id: 'firmadas',
-      title: 'Firmadas',
-      description: 'Proceso completado',
+      id: "firmadas",
+      title: "Aceptadas",
+      description: "Proceso completado",
       count: stats.firmadas,
       icon: <HandRaisedIcon className="w-5 h-5" />,
-      color: 'bg-green-500',
-      textColor: 'text-green-600',
-      bgColor: 'bg-green-50 dark:bg-green-900/20',
-      isActive: stats.firmadas > 0
-    }
+      color: "bg-green-500",
+      textColor: "text-green-600",
+      bgColor: "bg-green-50 dark:bg-green-900/20",
+      isActive: stats.firmadas > 0,
+    },
   ];
 
   return (
@@ -332,7 +668,7 @@ function EvaluationTimeline({ stats }: EvaluationTimelineProps) {
           </div>
         </div>
       </CardHeader>
-      <CardBody className="pt-0">
+      <CardBody className="pt-2">
         <div className="relative">
           {/* Línea de conexión */}
           <div className="absolute top-8 left-8 right-8 h-0.5 bg-gradient-to-r from-slate-200 via-slate-300 to-slate-200 dark:from-slate-600 dark:via-slate-500 dark:to-slate-600" />
@@ -342,23 +678,31 @@ function EvaluationTimeline({ stats }: EvaluationTimelineProps) {
             {timelineSteps.map((step) => (
               <div key={step.id} className="relative">
                 {/* Círculo del step */}
-                <div className={`relative z-10 w-16 h-16 mx-auto mb-4 rounded-full ${step.color} shadow-lg flex items-center justify-center transition-all duration-300 ${step.isActive ? 'scale-110 shadow-xl' : 'opacity-60'
-                  }`}>
-                  <div className="text-white">
-                    {step.icon}
-                  </div>
+                <div
+                  className={`relative z-10 w-16 h-16 mx-auto mb-4 rounded-full ${step.color} shadow-lg flex items-center justify-center transition-all duration-300 ${
+                    step.isActive ? "scale-110 shadow-xl" : "opacity-60"
+                  }`}
+                >
+                  <div className="text-white">{step.icon}</div>
                   {step.isActive && (
                     <div className="absolute -inset-1 bg-gradient-to-r from-current to-current rounded-full opacity-20 animate-pulse" />
                   )}
                 </div>
 
                 {/* Contenido del step */}
-                <div className={`text-center p-3 rounded-xl ${step.bgColor} transition-all duration-300 ${step.isActive ? 'shadow-md' : 'opacity-60'
-                  }`}>
-                  <div className={`text-2xl font-bold ${step.textColor} dark:text-slate-200`}>
+                <div
+                  className={`text-center p-3 rounded-xl ${step.bgColor} transition-all duration-300 ${
+                    step.isActive ? "shadow-md" : "opacity-60"
+                  }`}
+                >
+                  <div
+                    className={`text-2xl font-bold ${step.textColor} dark:text-slate-200`}
+                  >
                     {step.count}
                   </div>
-                  <div className={`text-sm font-semibold ${step.textColor} dark:text-slate-300 mb-1`}>
+                  <div
+                    className={`text-sm font-semibold ${step.textColor} dark:text-slate-300 mb-1`}
+                  >
                     {step.title}
                   </div>
                   <div className="text-xs text-slate-500 dark:text-slate-400">
@@ -487,50 +831,57 @@ type EvaluationCardProps = {
   onOpen: () => void;
 };
 
-function EvaluationCard({ item, fechaFormateada, onOpen }: EvaluationCardProps) {
+function EvaluationCard({
+  item,
+  fechaFormateada,
+  onOpen,
+}: EvaluationCardProps) {
   const titulo = item.tipo_evaluacion?.n_tipo_evaluacion ?? "Evaluación";
   const total = item.total_asignadas ?? item.personas?.length ?? 0;
-  const pendientes = (item.total_pendientes_firma ?? 0) + (item.total_con_reunion ?? 0) + (item.total_con_retroalimentacion ?? 0)
-    + (item.total_cerradas_firma ?? 0) + (item.total_pendientes || 0);
+  const pendientes =
+    (item.total_pendientes ?? 0) + (item.total_con_reunion ?? 0);
   const completadas = item.total_completadas ?? 0;
   const firmadas = item.total_firmadas ?? 0;
+  const retroCount =
+    (item.total_con_retroalimentacion ?? 0) + (item.total_completadas ?? 0);
+  const reunionCount = item.total_cerradas_firma ?? 0;
   const progreso = total > 0 ? (completadas / total) * 100 : 0;
   const progresoFinal = total > 0 ? (firmadas / total) * 100 : 0;
 
   const getStatusColor = () => {
-    if (progresoFinal === 100) return "success";
-    if (progreso === 100) return "primary";
-    if (progreso > 70) return "warning";
-    if (progreso > 30) return "warning";
-    return "danger";
+    if (firmadas > 0) return "success";
+    if (reunionCount > 0) return "primary";
+    if (retroCount > 0) return "secondary";
+
+    return "warning";
   };
 
   const getStatusText = () => {
-    if (progresoFinal === 100) return "Finalizado";
-    if (progreso === 100) return "Completado";
-    if (progreso > 70) return "Casi completo";
-    if (progreso > 30) return "En progreso";
-    if (progreso > 0) return "Iniciado";
+    if (firmadas > 0) return "Aceptada";
+    if (reunionCount > 0) return "Reunión Finalizada";
+    if (retroCount > 0) return "Retroalimentación";
+
     return "Pendiente";
   };
 
   return (
     <Card
       isPressable
-      onPress={onOpen}
       className="group relative border-0 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-2xl hover:bg-white transition-all duration-300 cursor-pointer overflow-hidden dark:bg-slate-800/80 dark:hover:bg-slate-800"
+      onPress={onOpen}
     >
       {/* Barra de estado superior */}
       <div className="absolute top-0 left-0 right-0 h-1 bg-default-100 dark:bg-slate-700">
         <div
-          className={`h-full transition-all duration-700 ${progresoFinal === 100
-            ? "bg-gradient-to-r from-success-400 to-success-600"
-            : progreso === 100
-              ? "bg-gradient-to-r from-primary-400 to-primary-600"
-              : progreso > 70
-                ? "bg-gradient-to-r from-warning-400 to-warning-600"
-                : "bg-gradient-to-r from-danger-400 to-danger-600"
-            }`}
+          className={`h-full transition-all duration-700 ${
+            progresoFinal === 100
+              ? "bg-gradient-to-r from-success-400 to-success-600"
+              : progreso === 100
+                ? "bg-gradient-to-r from-primary-400 to-primary-600"
+                : progreso > 70
+                  ? "bg-gradient-to-r from-warning-400 to-warning-600"
+                  : "bg-gradient-to-r from-danger-400 to-danger-600"
+          }`}
           style={{ width: `${Math.max(progreso, progresoFinal)}%` }}
         />
       </div>
@@ -555,10 +906,10 @@ function EvaluationCard({ item, fechaFormateada, onOpen }: EvaluationCardProps) 
               </div>
 
               <Chip
-                size="sm"
-                color={getStatusColor()}
-                variant="flat"
                 className="font-semibold"
+                color={getStatusColor()}
+                size="sm"
+                variant="flat"
               >
                 {getStatusText()}
               </Chip>
@@ -575,47 +926,61 @@ function EvaluationCard({ item, fechaFormateada, onOpen }: EvaluationCardProps) 
       </CardHeader>
 
       <CardBody className="px-6 pb-6 pt-0">
-        {/* Estadísticas actualizadas */}
-        <div className="grid grid-cols-3 gap-2 mb-4">
-          <div className="text-center p-2 rounded-lg bg-slate-50 dark:bg-slate-700 transition-colors">
-            <div className="text-lg font-bold text-slate-700 dark:text-slate-200">{total}</div>
-            <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">Total</div>
-          </div>
-          <div className="text-center p-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 transition-colors">
-            <div className="text-lg font-bold text-amber-700 dark:text-amber-300">{pendientes}</div>
-            <div className="text-xs text-amber-600 dark:text-amber-400 font-medium">Pendientes</div>
-          </div>
-          <div className="text-center p-2 rounded-lg bg-green-50 dark:bg-green-900/20 transition-colors">
-            <div className="text-lg font-bold text-green-700 dark:text-green-300">{firmadas}</div>
-            <div className="text-xs text-green-600 dark:text-green-400 font-medium">Firmadas</div>
+        <div className="flex items-center justify-between mb-3">
+          <div className="text-sm text-default-600">
+            Total: <span className="font-bold">{total}</span>
           </div>
         </div>
 
-        {/* Progreso dual */}
-        <div className="space-y-3">
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-medium text-slate-600 dark:text-slate-300">Evaluación</span>
-              <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{Math.round(progreso)}%</span>
-            </div>
-            <Progress
-              value={progreso}
-              color={progreso === 100 ? "success" : progreso > 70 ? "primary" : "warning"}
-              className="h-2"
-            />
-          </div>
+        <div className="flex flex-wrap gap-2">
+          {[
+            {
+              label: "Pendientes",
+              count: pendientes,
+              color: "warning" as const,
+            },
+            {
+              label: "Retroalimentación",
+              count: retroCount,
+              color: "secondary" as const,
+            },
+            {
+              label: "Reunión Finalizada",
+              count: reunionCount,
+              color: "primary" as const,
+            },
+            { label: "Aceptada", count: firmadas, color: "success" as const },
+          ]
+            .filter((c) => c.count > 0)
+            .map((c) => (
+              <Chip key={c.label} color={c.color} size="sm" variant="flat">
+                <span className="font-bold mr-1">{c.count}</span>
+                {c.label}
+              </Chip>
+            ))}
 
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-medium text-slate-600 dark:text-slate-300">Finalizado</span>
-              <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{Math.round(progresoFinal)}%</span>
-            </div>
-            <Progress
-              value={progresoFinal}
-              color={progresoFinal === 100 ? "success" : progresoFinal > 70 ? "primary" : "danger"}
-              className="h-2"
-            />
-          </div>
+          {[
+            {
+              label: "Pendientes",
+              count: pendientes,
+              color: "warning" as const,
+            },
+            {
+              label: "Retroalimentación",
+              count: retroCount,
+              color: "secondary" as const,
+            },
+            {
+              label: "Reunión Finalizada",
+              count: reunionCount,
+              color: "primary" as const,
+            },
+            { label: "Aceptada", count: firmadas, color: "success" as const },
+          ].every((c) => c.count === 0) && (
+            <Chip color="default" size="sm" variant="flat">
+              Sin avances
+            </Chip>
+          )}
         </div>
       </CardBody>
     </Card>
@@ -628,7 +993,7 @@ function Header() {
   const navigate = useNavigate();
 
   const navigateToAutoevaluaciones = () => {
-    navigate('/evaluacion-jefatura/autoevaluaciones-subordinados');
+    navigate("/evaluacion-jefatura/autoevaluaciones-subordinados");
   };
 
   return (
@@ -643,20 +1008,21 @@ function Header() {
       </h1>
 
       <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed mb-8">
-        Gestiona y supervisa las evaluaciones de desempeño asignadas a tu equipo con herramientas avanzadas de seguimiento
+        Gestiona y supervisa las evaluaciones de desempeño asignadas a tu equipo
+        con herramientas avanzadas de seguimiento
       </p>
 
       {/* Botón de navegación a autoevaluaciones de subordinados */}
       <div className="flex justify-center">
         <Button
+          className="font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
           color="primary"
-          variant="flat"
           size="lg"
           startContent={<UserGroupIcon className="w-5 h-5" />}
+          variant="flat"
           onPress={navigateToAutoevaluaciones}
-          className="font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
         >
-          Ver Autoevaluaciones de Subordinados
+          Ver Autoevaluaciones de mis trabajadores
         </Button>
       </div>
     </div>
@@ -722,7 +1088,10 @@ function SkeletonGrid() {
             <CardBody className="px-6 pb-6 pt-0">
               <div className="grid grid-cols-3 gap-3 mb-4">
                 {Array.from({ length: 3 }).map((_, j) => (
-                  <div key={j} className="text-center p-3 rounded-xl bg-slate-50 space-y-2">
+                  <div
+                    key={j}
+                    className="text-center p-3 rounded-xl bg-slate-50 space-y-2"
+                  >
                     <Skeleton className="h-5 w-8 mx-auto rounded" />
                     <Skeleton className="h-3 w-12 mx-auto rounded" />
                   </div>
@@ -762,7 +1131,8 @@ function EmptyState() {
           </h3>
 
           <p className="text-slate-600 dark:text-slate-300 leading-relaxed mb-6">
-            Las evaluaciones de desempeño aparecerán automáticamente cuando el área de Recursos Humanos las asigne a tu equipo de trabajo.
+            Las evaluaciones de desempeño aparecerán automáticamente cuando el
+            área de Recursos Humanos las asigne a tu equipo de trabajo.
           </p>
 
           <div className="flex items-center justify-center gap-2 text-sm text-slate-500 dark:text-slate-400">

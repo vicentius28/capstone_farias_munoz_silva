@@ -1,6 +1,8 @@
 // features/evaluacion/autoevaluacion/components/EvaluacionGrid.tsx
-import { memo } from "react";
 import type { Evaluacion } from "@/features/evaluacion/types/evaluacion";
+
+import { memo } from "react";
+
 import EmptyState from "./EmptyState";
 import EvaluacionCard from "./EvaluacionCard";
 
@@ -10,11 +12,17 @@ type Props = {
   onOpen: (id: number | string, finalizada: boolean) => void; // 👈 relaja el tipo
 };
 
-const EvaluacionGrid = memo(function EvaluacionGrid({ items, finalizada, onOpen }: Props) {
+const EvaluacionGrid = memo(function EvaluacionGrid({
+  items,
+  finalizada,
+  onOpen,
+}: Props) {
   if (!items.length) {
     return (
       <EmptyState>
-        {finalizada ? "✨ Aún no tienes autoevaluaciones finalizadas." : "💤 No hay autoevaluaciones pendientes."}
+        {finalizada
+          ? "✨ Aún no tienes autoevaluaciones finalizadas."
+          : "💤 No hay autoevaluaciones pendientes."}
       </EmptyState>
     );
   }
@@ -24,11 +32,16 @@ const EvaluacionGrid = memo(function EvaluacionGrid({ items, finalizada, onOpen 
       {items.map((ev, i) => {
         // 👇 normaliza el id: si viene "5/1" toma "5"
         const idNorm = String(ev.id).split("/")[0];
+
         return (
-          <div key={`${ev.id}-${i}`} className="animate-fadeInUp" style={{ animationDelay: `${i * 0.08}s` }}>
+          <div
+            key={`${ev.id}-${i}`}
+            className="animate-fadeInUp"
+            style={{ animationDelay: `${i * 0.08}s` }}
+          >
             <EvaluacionCard
-              item={ev}
               finalizada={finalizada}
+              item={ev}
               onOpen={() => onOpen(idNorm, finalizada)} // 👈 pasa el id limpio
             />
           </div>

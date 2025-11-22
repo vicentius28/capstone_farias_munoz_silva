@@ -27,20 +27,20 @@ export default function EvaluacionPaginada({
   return (
     <Pagination
       estructura={estructura}
+      guardando={guardando}
       renderBloque={(areaActual: AreaEvaluacion) => (
         <EvaluacionBloque
           actualizarPuntaje={actualizarPuntaje}
           area={areaActual}
-          evaluacionId={evaluacionId}
           estructura={estructura}
+          evaluacionId={evaluacionId}
           respuestas={respuestas}
           // ✅ PASAR ESTADO DE GUARDANDO
           guardando={guardando}
         />
       )}
-      titulo="Evaluación"
       respuestas={respuestas}
-      guardando={guardando}
+      titulo="Evaluación"
     />
   );
 }

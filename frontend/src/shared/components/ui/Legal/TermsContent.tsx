@@ -8,10 +8,9 @@ export default function TermsContent() {
       </p>
 
       <p>
-        El acceso y uso de la plataforma{" "}
-        <strong>Evalink</strong> está condicionado a la
-        aceptación de estos Términos y Condiciones. Al ingresar, el usuario
-        declara haberlos leído y aceptado.
+        El acceso y uso de la plataforma <strong>Evalink</strong> está
+        condicionado a la aceptación de estos Términos y Condiciones. Al
+        ingresar, el usuario declara haberlos leído y aceptado.
       </p>
 
       <p>
@@ -37,9 +36,7 @@ export default function TermsContent() {
         desarrollador o sus licenciatarios.
       </p>
 
-      <p className="text-xs text-gray-400 text-center pt-2">
-        © 2025 Evalink
-      </p>
+      <p className="text-xs text-gray-400 text-center pt-2">© 2025 Evalink</p>
     </div>
   );
 }

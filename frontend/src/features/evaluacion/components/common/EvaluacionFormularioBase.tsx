@@ -29,7 +29,9 @@ export default function EvaluacionFormularioBase({
       <div className="flex items-center justify-center min-h-screen">
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 border-3 border-primary-200 border-t-primary-600 rounded-full animate-spin" />
-          <p className="text-sm text-default-600 font-medium">Cargando evaluación...</p>
+          <p className="text-sm text-default-600 font-medium">
+            Cargando evaluación...
+          </p>
         </div>
       </div>
     );

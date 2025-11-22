@@ -6,7 +6,7 @@ export interface Asociacion {
   url?: string;
   icono?: string;
   thumbnail?: string;
-  archivo: string | null;   // 👈 importante
+  archivo: string | null; // 👈 importante
   has_file: false;
   empresas?: {
     id: number;
@@ -16,8 +16,6 @@ export interface Asociacion {
   created_at?: string;
   updated_at?: string;
 }
-
-
 
 export interface BeneficiosResponse {
   emp: Asociacion[];

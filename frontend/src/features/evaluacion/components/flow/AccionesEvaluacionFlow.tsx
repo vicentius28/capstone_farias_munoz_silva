@@ -1,3 +1,5 @@
+import type { EvaluacionJefe } from "@/features/evaluacion/types/evaluacion";
+
 import { useState } from "react";
 import {
   Button,
@@ -12,11 +14,11 @@ import {
   Dropdown,
   DropdownTrigger,
   DropdownMenu,
-  DropdownItem
+  DropdownItem,
 } from "@heroui/react";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
+
 import { useEvaluacionFlowActions } from "@/features/evaluacion/hooks";
-import type { EvaluacionJefe } from "@/features/evaluacion/types/evaluacion";
 
 interface AccionesEvaluacionFlowProps {
   evaluacion: EvaluacionJefe;
@@ -32,25 +34,31 @@ function getAccionesDisponibles(evaluacion: EvaluacionJefe) {
       key: "marcar_reunion",
       label: "Marcar Reunión Realizada",
       icon: "🤝",
-      color: "secondary" as const
+      color: "secondary" as const,
     });
   }
 
-  if (evaluacion.reunion_realizada && !evaluacion.retroalimentacion_completada) {
+  if (
+    evaluacion.reunion_realizada &&
+    !evaluacion.retroalimentacion_completada
+  ) {
     acciones.push({
       key: "completar_retroalimentacion",
       label: "Completar Retroalimentación",
       icon: "💬",
-      color: "success" as const
+      color: "success" as const,
     });
   }
 
-  if (evaluacion.retroalimentacion_completada && !evaluacion.cerrado_para_firma) {
+  if (
+    evaluacion.retroalimentacion_completada &&
+    !evaluacion.cerrado_para_firma
+  ) {
     acciones.push({
       key: "cerrar_para_firma",
       label: "Cerrar para Firma",
       icon: "🔒",
-      color: "warning" as const
+      color: "warning" as const,
     });
   }
 
@@ -60,24 +68,25 @@ function getAccionesDisponibles(evaluacion: EvaluacionJefe) {
 export function AccionesEvaluacionFlow({
   evaluacion,
   onSuccess,
-  size = "md"
+  size = "md",
 }: AccionesEvaluacionFlowProps) {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [accionSeleccionada, setAccionSeleccionada] = useState<string | null>(null);
+  const [accionSeleccionada, setAccionSeleccionada] = useState<string | null>(
+    null,
+  );
   const [fechaReunion, setFechaReunion] = useState(
-    new Date().toISOString().split('T')[0]
+    new Date().toISOString().split("T")[0],
   );
   const [retroalimentacion, setRetroalimentacion] = useState(
-    evaluacion.retroalimentacion || ""
+    evaluacion.retroalimentacion || "",
   );
 
-  const { loading, marcarReunion, completarRetro, cerrarParaFirmar } = useEvaluacionFlowActions(
-    (evaluacionActualizada) => {
+  const { loading, marcarReunion, completarRetro, cerrarParaFirmar } =
+    useEvaluacionFlowActions((evaluacionActualizada) => {
       onSuccess?.(evaluacionActualizada!);
       onClose();
       setAccionSeleccionada(null);
-    }
-  );
+    });
 
   const acciones = getAccionesDisponibles(evaluacion);
 
@@ -108,13 +117,14 @@ export function AccionesEvaluacionFlow({
 
   if (acciones.length === 1) {
     const accion = acciones[0];
+
     return (
       <>
         <Button
           color={accion.color}
           size={size}
-          onPress={() => handleOpenModal(accion.key)}
           startContent={<span>{accion.icon}</span>}
+          onPress={() => handleOpenModal(accion.key)}
         >
           {accion.label}
         </Button>
@@ -129,8 +139,8 @@ export function AccionesEvaluacionFlow({
         <DropdownTrigger>
           <Button
             color="primary"
-            size={size}
             endContent={<ChevronDownIcon className="w-4 h-4" />}
+            size={size}
           >
             Acciones
           </Button>
@@ -152,11 +162,12 @@ export function AccionesEvaluacionFlow({
   );
 
   function renderModal() {
-    const accion = acciones.find(a => a.key === accionSeleccionada);
+    const accion = acciones.find((a) => a.key === accionSeleccionada);
+
     if (!accion) return null;
 
     return (
-      <Modal isOpen={isOpen} onClose={onClose} size="lg">
+      <Modal isOpen={isOpen} size="lg" onClose={onClose}>
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">
             <span className="flex items-center gap-2">
@@ -170,15 +181,16 @@ export function AccionesEvaluacionFlow({
                 <p className="text-sm text-gray-600">
                   Confirma que se realizó la reunión con{" "}
                   <strong>
-                    {evaluacion.persona?.first_name} {evaluacion.persona?.last_name}
+                    {evaluacion.persona?.first_name}{" "}
+                    {evaluacion.persona?.last_name}
                   </strong>
                 </p>
                 <Input
-                  type="date"
+                  isRequired
                   label="Fecha de la reunión"
+                  type="date"
                   value={fechaReunion}
                   onChange={(e) => setFechaReunion(e.target.value)}
-                  isRequired
                 />
               </div>
             )}
@@ -188,16 +200,17 @@ export function AccionesEvaluacionFlow({
                 <p className="text-sm text-gray-600">
                   Completa la retroalimentación para{" "}
                   <strong>
-                    {evaluacion.persona?.first_name} {evaluacion.persona?.last_name}
+                    {evaluacion.persona?.first_name}{" "}
+                    {evaluacion.persona?.last_name}
                   </strong>
                 </p>
                 <Textarea
+                  isRequired
                   label="Retroalimentación"
+                  minRows={4}
                   placeholder="Escribe aquí los comentarios y retroalimentación..."
                   value={retroalimentacion}
                   onChange={(e) => setRetroalimentacion(e.target.value)}
-                  minRows={4}
-                  isRequired
                 />
               </div>
             )}
@@ -205,12 +218,14 @@ export function AccionesEvaluacionFlow({
             {accionSeleccionada === "cerrar_para_firma" && (
               <div className="space-y-4">
                 <p className="text-sm text-gray-600">
-                  ¿Estás seguro de que quieres cerrar esta evaluación para firma?
+                  ¿Estás seguro de que quieres cerrar esta evaluación para
+                  aceptación?
                 </p>
                 <p className="text-xs text-gray-500">
                   Una vez cerrada, la evaluación estará lista para que{" "}
                   <strong>
-                    {evaluacion.persona?.first_name} {evaluacion.persona?.last_name}
+                    {evaluacion.persona?.first_name}{" "}
+                    {evaluacion.persona?.last_name}
                   </strong>{" "}
                   la firme y finalice el proceso.
                 </p>
@@ -223,8 +238,8 @@ export function AccionesEvaluacionFlow({
             </Button>
             <Button
               color={accion.color}
-              onPress={handleAccion}
               isLoading={loading}
+              onPress={handleAccion}
             >
               Confirmar
             </Button>

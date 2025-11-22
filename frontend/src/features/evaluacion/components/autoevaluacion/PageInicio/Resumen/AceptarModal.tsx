@@ -1,5 +1,11 @@
 import { Button } from "@heroui/button";
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@heroui/modal";
+import {
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+} from "@heroui/modal";
 
 type Props = {
   open: boolean;
@@ -8,14 +14,19 @@ type Props = {
   loading?: boolean;
 };
 
-export default function AceptarModal({ open, onClose, onConfirm, loading }: Props) {
+export default function AceptarModal({
+  open,
+  onClose,
+  onConfirm,
+  loading,
+}: Props) {
   return (
     <Modal
+      hideCloseButton
+      backdrop="blur"
+      isDismissable={false}
       isOpen={open}
       size="md"
-      backdrop="blur"
-      hideCloseButton
-      isDismissable={false}
       onOpenChange={(isOpen) => (isOpen ? undefined : onClose())}
     >
       <ModalContent>
@@ -27,17 +38,18 @@ export default function AceptarModal({ open, onClose, onConfirm, loading }: Prop
             ¿Confirmas que deseas aceptar y firmar esta evaluación?
           </p>
           <p className="text-xs text-default-500">
-            Esta acción registrará tu firma. Si necesitas dejar una observación, usa “Firmar con Observaciones”.
+            Esta acción registrará tu firma. Si necesitas dejar una observación,
+            usa “Firmar con Observaciones”.
           </p>
         </ModalBody>
         <ModalFooter>
-          <Button variant="flat" onPress={onClose} isDisabled={!!loading}>
+          <Button isDisabled={!!loading} variant="flat" onPress={onClose}>
             Cancelar
           </Button>
           <Button
             className="rounded-xl bg-success text-success-foreground"
-            onPress={onConfirm}
             isLoading={!!loading}
+            onPress={onConfirm}
           >
             Confirmar firma
           </Button>

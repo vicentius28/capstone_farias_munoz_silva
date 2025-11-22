@@ -72,9 +72,9 @@ const FormularioEditarAsignacionEvaluacion = () => {
         <div className="flex items-center justify-between gap-4">
           <SelectTipoEvaluacion
             isDisabled={!modoEdicion}
+            isLoading={tiposLoading}
             selectedId={tipoEvaluacion?.id ?? null}
             tipos={tipos}
-            isLoading={tiposLoading}
             onSelect={setTipoEvaluacion}
           />
 

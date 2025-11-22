@@ -52,7 +52,8 @@ const useUsers = () => {
             : typeof user.empresa === "object" &&
               user.empresa !== null &&
               "name" in user.empresa &&
-              user.empresa.name.toLowerCase().includes(term))
+              user.empresa.name.toLowerCase().includes(term));
+
         return match;
       });
 

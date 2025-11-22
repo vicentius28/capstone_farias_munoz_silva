@@ -27,6 +27,7 @@ export default function AutoevaluacionPaginada({
   return (
     <Pagination
       estructura={estructura}
+      guardando={guardando}
       renderBloque={(areaActual: AreaEvaluacion) => (
         <AutoevaluacionBloque
           actualizarPuntaje={actualizarPuntaje}
@@ -38,9 +39,8 @@ export default function AutoevaluacionPaginada({
           guardando={guardando}
         />
       )}
-      titulo="Autoevaluación"
       respuestas={respuestas}
-      guardando={guardando}
+      titulo="Autoevaluación"
     />
   );
 }

@@ -1,4 +1,10 @@
-import { Briefcase, Building2, Calendar, User as UserIcon, Mail } from "lucide-react";
+import {
+  Briefcase,
+  Building2,
+  Calendar,
+  User as UserIcon,
+  Mail,
+} from "lucide-react";
 import { Image } from "@heroui/image";
 import { Card, CardBody } from "@heroui/card";
 import { Chip } from "@heroui/chip";
@@ -36,8 +42,6 @@ const UserInfoCard: React.FC<Props> = ({ user, image, formatDate }) => {
 
   const { years, months } = calcularTiempoServicio(user.date_joined);
 
-
-
   return (
     <div className="w-full max-w-5xl mx-auto space-y-4">
       {/* Card Principal */}
@@ -47,7 +51,6 @@ const UserInfoCard: React.FC<Props> = ({ user, image, formatDate }) => {
       >
         <CardBody className="p-4 sm:p-6">
           <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-center sm:items-start">
-
             {/* Avatar Section Simplificado */}
             <div className="flex-shrink-0">
               <div className=" max-w-80 rounded-xl overflow-hidden border-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800">
@@ -56,7 +59,6 @@ const UserInfoCard: React.FC<Props> = ({ user, image, formatDate }) => {
                   <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-800">
                     <UserIcon className="w-30 h-30 sm:w-40 sm:h-40 lg:w-65 lg:h-65 text-gray-400 dark:text-gray-500" />
                   </div>
-
                 ) : (
                   // Imagen sin efectos
                   <div className="relative w-full h-full ">
@@ -68,14 +70,14 @@ const UserInfoCard: React.FC<Props> = ({ user, image, formatDate }) => {
                     <Image
                       alt={`Foto de perfil de ${user.first_name} ${user.last_name}`}
                       className="w-full h-full object-contain"
+                      loading="lazy"
+                      radius="none"
                       src={image}
-                      onLoad={() => setImageLoading(false)}
                       onError={() => {
                         setImageError(true);
                         setImageLoading(false);
                       }}
-                      loading="lazy"
-                      radius="none"
+                      onLoad={() => setImageLoading(false)}
                     />
                   </div>
                 )}
@@ -84,7 +86,6 @@ const UserInfoCard: React.FC<Props> = ({ user, image, formatDate }) => {
 
             {/* Info Section Mejorada */}
             <div className="flex-1 text-center sm:text-left space-y-3 min-w-0">
-
               {/* Header con información principal */}
               <div className="space-y-2">
                 <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100 leading-tight">
@@ -93,12 +94,18 @@ const UserInfoCard: React.FC<Props> = ({ user, image, formatDate }) => {
 
                 {/* Email si existe */}
                 <div className="flex flex-wrap gap-2 mb-2 lg:mb-3">
-                  <Chip size="sm" variant="flat" color="primary">
+                  <Chip color="primary" size="sm" variant="flat">
                     {user.rut}
                   </Chip>
                   {user.email && (
-                    <Chip size="sm" variant="flat" startContent={<Mail className="w-3 h-3" />}>
-                      <span className="truncate max-w-[120px] sm:max-w-none">{user.email}</span>
+                    <Chip
+                      size="sm"
+                      startContent={<Mail className="w-3 h-3" />}
+                      variant="flat"
+                    >
+                      <span className="truncate max-w-[120px] sm:max-w-none">
+                        {user.email}
+                      </span>
                     </Chip>
                   )}
                 </div>
@@ -108,11 +115,11 @@ const UserInfoCard: React.FC<Props> = ({ user, image, formatDate }) => {
               <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
                 {user.cargo && (
                   <Chip
+                    className="text-xs"
                     color="primary"
-                    variant="flat"
                     size="sm"
                     startContent={<Briefcase className="w-3 h-3" />}
-                    className="text-xs"
+                    variant="flat"
                   >
                     {user.cargo}
                   </Chip>
@@ -121,7 +128,6 @@ const UserInfoCard: React.FC<Props> = ({ user, image, formatDate }) => {
 
               {/* Info Grid Compacta */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-3 mt-4">
-
                 {/* Empresa */}
                 <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
                   <div className="flex items-center gap-2">
@@ -141,8 +147,6 @@ const UserInfoCard: React.FC<Props> = ({ user, image, formatDate }) => {
                   </div>
                 </div>
 
-
-
                 {/* Fecha de ingreso */}
                 <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-3 sm:col-span-2 lg:col-span-1">
                   <div className="flex items-center gap-2">
@@ -159,15 +163,12 @@ const UserInfoCard: React.FC<Props> = ({ user, image, formatDate }) => {
                       <p className="text-xs font-semibold text-gray-900 dark:text-gray-100 truncate">
                         {years > 0
                           ? `${years} año${years > 1 ? "s" : ""}, ${months} mes${months !== 1 ? "es" : ""}`
-                          : `${months} mes${months !== 1 ? "es" : ""}`
-                        } de servicio
+                          : `${months} mes${months !== 1 ? "es" : ""}`}{" "}
+                        de servicio
                       </p>
                     </div>
                   </div>
-
                 </div>
-
-
               </div>
             </div>
           </div>

@@ -1,8 +1,19 @@
 // features/evaluacion/hooks/useEvaluacionesMixtas.ts
-import { useEffect, useMemo, useState, useDeferredValue, useCallback } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  useDeferredValue,
+  useCallback,
+} from "react";
+
 import { fetchAsignarEvaluacion } from "@/features/evaluacion/services/asignar/evaluacion";
 import { AsignacionEvaluacion } from "@/features/evaluacion/types/asignar/evaluacion";
-import { flattenDetalles, filtrarDetalles, paginar } from "@/features/evaluacion/utils/evaluacionMixta";
+import {
+  flattenDetalles,
+  filtrarDetalles,
+  paginar,
+} from "@/features/evaluacion/utils/evaluacionMixta";
 
 export type Vista = "tarjetas" | "tabla";
 
@@ -36,7 +47,10 @@ export function useEvaluacionesMixtas(itemsPorPagina = 6) {
       try {
         setLoading(true);
         const data = await fetchAsignarEvaluacion();
-        const conJefatura = data.filter(a => a.detalles && a.detalles.length > 0);
+        const conJefatura = data.filter(
+          (a) => a.detalles && a.detalles.length > 0,
+        );
+
         setAsignaciones(conJefatura);
       } catch (e) {
         console.error(e);
@@ -62,7 +76,9 @@ export function useEvaluacionesMixtas(itemsPorPagina = 6) {
     }
 
     const tipos = Array.from(tiposMap.values());
-    const años = Array.from(añosSet).sort((a, b) => b - a).map(n => ({ id: n.toString(), nombre: n.toString() }));
+    const años = Array.from(añosSet)
+      .sort((a, b) => b - a)
+      .map((n) => ({ id: n.toString(), nombre: n.toString() }));
 
     return { tipos, años };
   }, [asignaciones]);
@@ -74,6 +90,7 @@ export function useEvaluacionesMixtas(itemsPorPagina = 6) {
       ...filtros,
       busqueda: deferredBusqueda, // suaviza tipeo
     });
+
     return paginar(filtrados, paginaActual, itemsPorPagina);
   }, [asignaciones, filtros, paginaActual, itemsPorPagina, deferredBusqueda]);
 
@@ -85,13 +102,20 @@ export function useEvaluacionesMixtas(itemsPorPagina = 6) {
 
   return {
     // estado
-    asignaciones, loading, error,
-    filtros, setFiltros,
-    paginaActual, setPaginaActual,
-    vistaActual, setVistaActual,
+    asignaciones,
+    loading,
+    error,
+    filtros,
+    setFiltros,
+    paginaActual,
+    setPaginaActual,
+    vistaActual,
+    setVistaActual,
     opcionesFiltros,
     // data
-    items, total, totalPaginas,
+    items,
+    total,
+    totalPaginas,
     // acciones
     limpiarFiltros,
   };
