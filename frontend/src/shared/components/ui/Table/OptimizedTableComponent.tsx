@@ -109,7 +109,7 @@ const OptimizedTableComponent: React.FC<Props> = ({
 
   const filteredData = useMemo(() => {
     if (!Array.isArray(data)) {
-      console.warn("Data is not an array:", data);
+      if (import.meta.env.DEV) console.warn("Data is not an array:", data);
 
       return [];
     }
@@ -240,26 +240,28 @@ const OptimizedTableComponent: React.FC<Props> = ({
     const photoPath = item.foto_thumbnail || item.foto;
 
     if (!photoPath) {
-      console.log(
-        "No photo path found for user:",
-        item.id,
-        item.first_name,
-        item.last_name,
-      );
+      if (import.meta.env.DEV)
+        console.log(
+          "No photo path found for user:",
+          item.id,
+          item.first_name,
+          item.last_name,
+        );
 
       return undefined;
     }
 
     const photoUrl = buildFileUrl(photoPath);
 
-    console.log(
-      "Photo URL built for user:",
-      item.id,
-      "Path:",
-      photoPath,
-      "URL:",
-      photoUrl,
-    );
+    if (import.meta.env.DEV)
+      console.log(
+        "Photo URL built for user:",
+        item.id,
+        "Path:",
+        photoPath,
+        "URL:",
+        photoUrl,
+      );
 
     return photoUrl;
   }, []);
@@ -593,17 +595,19 @@ const OptimizedTableComponent: React.FC<Props> = ({
                             size="md"
                             src={foto}
                             onImageError={(error) => {
-                              console.error(
-                                "Error loading avatar for user:",
-                                item.id,
-                                error,
-                              );
+                              if (import.meta.env.DEV)
+                                console.error(
+                                  "Error loading avatar for user:",
+                                  item.id,
+                                  error,
+                                );
                             }}
                             onImageLoad={() => {
-                              console.log(
-                                "Avatar loaded successfully for user:",
-                                item.id,
-                              );
+                              if (import.meta.env.DEV)
+                                console.log(
+                                  "Avatar loaded successfully for user:",
+                                  item.id,
+                                );
                             }}
                           />
                           <div className="flex flex-col min-w-0">

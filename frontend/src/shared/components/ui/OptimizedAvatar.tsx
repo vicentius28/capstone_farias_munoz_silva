@@ -3,6 +3,7 @@ import { User as HeroUser } from "@heroui/user";
 import { Avatar } from "@heroui/avatar";
 import { UserIcon } from "lucide-react";
 import { Skeleton } from "@heroui/skeleton";
+import useImageCache from "@/hooks/useImageCache";
 
 // Tipos más específicos y constantes
 type AvatarSize = "sm" | "md" | "lg";
@@ -44,11 +45,12 @@ const OptimizedAvatar = memo<OptimizedAvatarProps>(function OptimizedAvatar({
   const [imageSrc, setImageSrc] = useState<string | undefined>(undefined);
   const [imageError, setImageError] = useState(false);
   const [isImageLoading, setIsImageLoading] = useState(false);
+  const { cacheImage, getCachedImage } = useImageCache();
 
   // Validar y normalizar la URL - SIMPLIFICADO
   const normalizedSrc = useMemo(() => {
     if (!src || typeof src !== "string") {
-      console.log("OptimizedAvatar: No src provided or invalid type:", src);
+      if (import.meta.env.DEV) console.log("OptimizedAvatar: No src provided or invalid type:", src);
 
       return undefined;
     }
@@ -56,19 +58,29 @@ const OptimizedAvatar = memo<OptimizedAvatarProps>(function OptimizedAvatar({
     const trimmedSrc = src.trim();
 
     if (!trimmedSrc) {
-      console.log("OptimizedAvatar: Empty src after trim");
+      if (import.meta.env.DEV) console.log("OptimizedAvatar: Empty src after trim");
 
       return undefined;
     }
 
-    console.log("OptimizedAvatar: Using normalized src:", trimmedSrc);
+    if (import.meta.env.DEV) console.log("OptimizedAvatar: Using normalized src:", trimmedSrc);
 
     return trimmedSrc;
   }, [src]);
 
+  const isCorsProne = useMemo(() => {
+    if (!normalizedSrc) return false;
+    return (
+      normalizedSrc.includes("storage.googleapis.com") ||
+      normalizedSrc.includes("googleusercontent.com") ||
+      normalizedSrc.includes("drive.google.com") ||
+      normalizedSrc.includes("lh3.googleusercontent.com")
+    );
+  }, [normalizedSrc]);
+
   // Manejar errores de imagen
   const handleImageError = useCallback(() => {
-    console.warn(`OptimizedAvatar: Image failed to load: ${normalizedSrc}`);
+    if (import.meta.env.DEV) console.warn(`OptimizedAvatar: Image failed to load: ${normalizedSrc}`);
     setImageError(true);
     setImageSrc(undefined);
     setIsImageLoading(false);
@@ -82,65 +94,62 @@ const OptimizedAvatar = memo<OptimizedAvatarProps>(function OptimizedAvatar({
 
   // Manejar carga exitosa
   const handleImageLoad = useCallback(() => {
-    console.log("OptimizedAvatar: Image loaded successfully:", normalizedSrc);
+    if (import.meta.env.DEV) console.log("OptimizedAvatar: Image loaded successfully:", normalizedSrc);
     setImageError(false);
     setIsImageLoading(false);
     onImageLoad?.();
   }, [normalizedSrc, onImageLoad]);
 
-  // Efecto para cargar imagen - SIMPLIFICADO
+  // Efecto para cargar imagen con caché
   useEffect(() => {
-    // Reset estados
     setImageError(false);
     setIsImageLoading(false);
     setImageSrc(undefined);
 
     if (!normalizedSrc) {
-      console.log("OptimizedAvatar: No normalized src, showing fallback");
+      if (import.meta.env.DEV) console.log("OptimizedAvatar: No normalized src, showing fallback");
       setImageError(true);
 
       return;
     }
 
-    console.log("OptimizedAvatar: Starting image load for:", normalizedSrc);
+    // Si es una URL propensa a CORS, no intentar cachear: usar src directo
+    if (isCorsProne) {
+      setImageSrc(normalizedSrc);
+      setIsImageLoading(false);
+      return;
+    }
+
+    if (import.meta.env.DEV) console.log("OptimizedAvatar: Starting cached image load for:", normalizedSrc);
     setIsImageLoading(true);
 
-    // Crear imagen para probar carga - SIN crossOrigin para evitar CORS
-    const img = new Image();
+    const cached = getCachedImage(normalizedSrc);
 
-    img.onload = () => {
-      console.log(
-        "OptimizedAvatar: Image onload triggered for:",
-        normalizedSrc,
-      );
-      setImageSrc(normalizedSrc);
+    if (cached) {
+      setImageSrc(cached);
       handleImageLoad();
-    };
 
-    img.onerror = (event) => {
-      console.error(
-        "OptimizedAvatar: Image onerror triggered for:",
-        normalizedSrc,
-        event,
-      );
-      handleImageError();
-    };
+      return;
+    }
 
-    // Timeout para evitar cargas infinitas
-    const timeoutId = setTimeout(() => {
-      console.warn("OptimizedAvatar: Image load timeout for:", normalizedSrc);
-      handleImageError();
-    }, 10000);
+    let cancelled = false;
 
-    img.src = normalizedSrc;
+    cacheImage(normalizedSrc)
+      .then((dataUrl) => {
+        if (cancelled) return;
+        setImageSrc(dataUrl);
+        handleImageLoad();
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        if (import.meta.env.DEV) console.error("OptimizedAvatar: cacheImage error", err);
+        handleImageError();
+      });
 
-    // Cleanup
     return () => {
-      clearTimeout(timeoutId);
-      img.onload = null;
-      img.onerror = null;
+      cancelled = true;
     };
-  }, [normalizedSrc, handleImageError, handleImageLoad]);
+  }, [normalizedSrc, isCorsProne, getCachedImage, cacheImage, handleImageError, handleImageLoad]);
 
   // Props del avatar
   const avatarProps = useMemo(

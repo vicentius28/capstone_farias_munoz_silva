@@ -36,15 +36,15 @@ const useUsersCache = () => {
 
   // Función mejorada para obtener usuarios
   const fetchUsers = useCallback(async (searchQuery?: string) => {
-    console.log("🔍 Fetching users with query:", searchQuery);
+    if (import.meta.env.DEV) console.log("🔍 Fetching users with query:", searchQuery);
 
     try {
       // Si hay búsqueda, usar el backend; si no, usar caché
       if (searchQuery && searchQuery.trim()) {
-        console.log("📡 Fetching from backend with search query");
+        if (import.meta.env.DEV) console.log("📡 Fetching from backend with search query");
         const users = await fetchAllUsers(searchQuery.trim());
 
-        console.log("✅ Search results:", users.length, "users");
+        if (import.meta.env.DEV) console.log("✅ Search results:", users.length, "users");
 
         return users;
       } else {
@@ -57,11 +57,12 @@ const useUsersCache = () => {
           memoryCache.version === CACHE_CONFIG.CURRENT_VERSION &&
           now - memoryCache.timestamp < CACHE_CONFIG.MEMORY_TTL
         ) {
-          console.log(
-            "💾 Using memory cache:",
-            memoryCache.users.length,
-            "users",
-          );
+          if (import.meta.env.DEV)
+            console.log(
+              "💾 Using memory cache:",
+              memoryCache.users.length,
+              "users",
+            );
 
           return memoryCache.users;
         }
@@ -84,11 +85,12 @@ const useUsersCache = () => {
             if (now - timestamp < CACHE_CONFIG.STORAGE_TTL) {
               const users = JSON.parse(cachedData);
 
-              console.log(
-                "💽 Using localStorage cache:",
-                users.length,
-                "users",
-              );
+              if (import.meta.env.DEV)
+                console.log(
+                  "💽 Using localStorage cache:",
+                  users.length,
+                  "users",
+                );
               // Actualizar caché en memoria
               memoryCache = {
                 users,
@@ -108,14 +110,14 @@ const useUsersCache = () => {
         }
 
         // Obtener datos frescos del servidor
-        console.log("📡 Fetching fresh data from server");
+        if (import.meta.env.DEV) console.log("📡 Fetching fresh data from server");
         const users = await fetchAllUsers();
 
-        console.log("✅ Fresh data received:", users.length, "users");
+        if (import.meta.env.DEV) console.log("✅ Fresh data received:", users.length, "users");
 
         // Validar que los datos sean válidos
         if (!Array.isArray(users)) {
-          console.error("❌ Invalid data format received:", users);
+          if (import.meta.env.DEV) console.error("❌ Invalid data format received:", users);
           throw new Error("Formato de datos inválido recibido del servidor");
         }
 
@@ -135,15 +137,15 @@ const useUsersCache = () => {
             CACHE_CONFIG.VERSION_KEY,
             CACHE_CONFIG.CURRENT_VERSION,
           );
-          console.log("💾 Cache updated successfully");
+          if (import.meta.env.DEV) console.log("💾 Cache updated successfully");
         } catch (error) {
-          console.warn("⚠️ Error al guardar en localStorage:", error);
+          if (import.meta.env.DEV) console.warn("⚠️ Error al guardar en localStorage:", error);
         }
 
         return users;
       }
     } catch (error) {
-      console.error("❌ Error al obtener usuarios:", error);
+      if (import.meta.env.DEV) console.error("❌ Error al obtener usuarios:", error);
       throw error;
     }
   }, []);
@@ -160,7 +162,7 @@ const useUsersCache = () => {
       try {
         setLoading(true);
         setError(null);
-        console.log("🔄 Performing search for:", searchTerm);
+        if (import.meta.env.DEV) console.log("🔄 Performing search for:", searchTerm);
 
         const results = await fetchUsers(searchTerm);
 
@@ -174,7 +176,7 @@ const useUsersCache = () => {
         // Si no hay término de búsqueda, también actualizar allUsers
         if (!searchTerm.trim()) {
           setAllUsers(results);
-          console.log("📊 Total users loaded:", results.length);
+          if (import.meta.env.DEV) console.log("📊 Total users loaded:", results.length);
         }
       } catch (error: any) {
         if (error.name !== "AbortError") {
@@ -184,11 +186,11 @@ const useUsersCache = () => {
             "Error al buscar usuarios";
 
           setError(errorMessage);
-          console.error("❌ Error en búsqueda:", error);
+          if (import.meta.env.DEV) console.error("❌ Error en búsqueda:", error);
 
           // En caso de error, intentar usar datos del caché como fallback
           if (!searchTerm.trim() && memoryCache) {
-            console.log("🔄 Using cache as fallback");
+            if (import.meta.env.DEV) console.log("🔄 Using cache as fallback");
             setFilteredUsers(memoryCache.users);
             setAllUsers(memoryCache.users);
           }
@@ -222,13 +224,13 @@ const useUsersCache = () => {
     if (isInitializedRef.current) return;
     isInitializedRef.current = true;
 
-    console.log("🚀 Initializing users cache");
+    if (import.meta.env.DEV) console.log("🚀 Initializing users cache");
     performSearch(""); // Cargar usuarios iniciales
   }, [performSearch]);
 
   // Función para refrescar datos
   const refreshUsers = useCallback(async () => {
-    console.log("🔄 Refreshing users data");
+    if (import.meta.env.DEV) console.log("🔄 Refreshing users data");
     // Limpiar cachés
     memoryCache = null;
     localStorage.removeItem(CACHE_CONFIG.STORAGE_KEY);
@@ -275,7 +277,7 @@ const useUsersCache = () => {
         return now - timestamp < CACHE_CONFIG.STORAGE_TTL;
       }
     } catch (error) {
-      console.warn("Error al verificar caché:", error);
+      if (import.meta.env.DEV) console.warn("Error al verificar caché:", error);
     }
 
     return false;

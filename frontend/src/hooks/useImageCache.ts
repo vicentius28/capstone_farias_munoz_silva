@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 // Configuración del caché de imágenes
 const IMAGE_CACHE_CONFIG = {
   MAX_CACHE_SIZE: 50, // Máximo 50 imágenes en caché
-  CACHE_DURATION: 30 * 60 * 1000, // 30 minutos
+  CACHE_DURATION: 6 * 60 * 60 * 1000, // 6 horas
   STORAGE_KEY: "image_cache_data",
   TIMESTAMP_KEY: "image_cache_timestamp",
   CORS_FAILED_KEY: "cors_failed_urls",
@@ -107,14 +107,14 @@ const useImageCache = () => {
         JSON.stringify(validCorsFailedUrls),
       );
     } catch (error) {
-      console.warn("Error saving image cache to localStorage:", error);
+      if (import.meta.env.DEV) console.warn("Error saving image cache to localStorage:", error);
       // Si localStorage está lleno, intentar limpiar
       try {
         localStorage.removeItem(IMAGE_CACHE_CONFIG.STORAGE_KEY);
         localStorage.removeItem(IMAGE_CACHE_CONFIG.TIMESTAMP_KEY);
         localStorage.removeItem(IMAGE_CACHE_CONFIG.CORS_FAILED_KEY);
       } catch (cleanupError) {
-        console.warn("Error cleaning localStorage:", cleanupError);
+        if (import.meta.env.DEV) console.warn("Error cleaning localStorage:", cleanupError);
       }
     }
   }, []);
@@ -163,11 +163,11 @@ const useImageCache = () => {
             }
           });
         } catch (corsError) {
-          console.warn("Error loading CORS failed URLs:", corsError);
+          if (import.meta.env.DEV) console.warn("Error loading CORS failed URLs:", corsError);
         }
       }
     } catch (error) {
-      console.warn("Error loading image cache from localStorage:", error);
+      if (import.meta.env.DEV) console.warn("Error loading image cache from localStorage:", error);
     }
   }, []);
 
@@ -359,12 +359,13 @@ const useImageCache = () => {
             markCorsFailure(url);
             const corsEntry = corsFailedUrls.get(url);
 
-            console.warn(
-              `CORS error for image ${url}, retry ${corsEntry?.retryCount}/${IMAGE_CACHE_CONFIG.MAX_RETRIES}`,
-            );
+            if (import.meta.env.DEV)
+              console.warn(
+                `CORS error for image ${url}, retry ${corsEntry?.retryCount}/${IMAGE_CACHE_CONFIG.MAX_RETRIES}`,
+              );
           }
         } else {
-          console.warn(`Error caching image ${url}:`, error);
+          if (import.meta.env.DEV) console.warn(`Error caching image ${url}:`, error);
         }
         throw error;
       } finally {
