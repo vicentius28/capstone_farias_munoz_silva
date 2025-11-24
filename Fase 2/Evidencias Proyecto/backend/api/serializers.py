@@ -5,7 +5,11 @@ class UserSerializers(serializers.ModelSerializer):
     empresa = EmpresaSerializer()
     class Meta:
         model = User
-        fields = '__all__'
+        fields = [
+            'id', 'username', 'first_name', 'last_name', 'email', 'rut',
+            'is_active', 'is_superuser', 'date_joined', 'birthday',
+            'genero', 'cargo', 'ciclo', 'empresa', 'jefe', 'foto',
+        ]
         some_field  = {'password':{'write_only':True}}
         
         

@@ -1,7 +1,8 @@
 import api from "@/services/google/axiosInstance";
+import { Group } from "@/types/types";
 
 export type UserPermissions = {
-  grupo: string;
+  grupo: Group[];
   empresa: string;
   permisos: string[];
 };

@@ -8,10 +8,12 @@ from rest_framework.routers import DefaultRouter
 from .api.api import UserProfileView, UserAllView, UserDetailView
 from rest_framework_simplejwt.views import TokenRefreshView
 from usuarios.views import (
-     CicloViewSet)
+     CicloViewSet, CargoViewSet, GeneroViewSet)
 
 router = DefaultRouter()
 router.register(r'ciclos', CicloViewSet)
+router.register(r'cargos', CargoViewSet)
+router.register(r'generos', GeneroViewSet)
 
 
 urlpatterns = [

@@ -56,6 +56,7 @@ export const usePermissions = () => {
     permisos: data?.permisos || [],
     grupo: data?.grupo || "",
     empresa: data?.empresa || "",
+    is_staff: Boolean(data?.is_staff),
     hasAccess,
   };
 };

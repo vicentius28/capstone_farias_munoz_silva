@@ -1,29 +1,26 @@
 """
 Modelo User principal refactorizado
 """
-from django.contrib.auth.models import AbstractUser, Group
+from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from imagekit.models import ImageSpecField
 from imagekit.processors import ResizeToFill
-from institucion.models import Asignacion
 from usuarios.models.estructura import Cargo, Ciclo, Genero
 from usuarios.utils.date_utils import _as_date
 from usuarios.utils.validators import validate_rut
 from .user_choices import (
     TipoContrato, 
     DEFAULT_PASSWORD, 
-    DEFAULT_DIAS_RESTANTES, 
-    DEFAULT_DIAS_CUMPLEANIOS,
     DEFAULT_GROUP_NAME,
     FOTO_UPLOAD_PATH,
     THUMBNAIL_SIZE,
     THUMBNAIL_QUALITY
 )
 from .user_mixins import ContractMixin, AssignmentMixin
-
+from acceso.models import AccessPermission
 
 class User(AbstractUser, ContractMixin, AssignmentMixin):
     """
@@ -32,13 +29,15 @@ class User(AbstractUser, ContractMixin, AssignmentMixin):
     
     # Relaciones básicas
     group = models.ForeignKey(
-        Group, 
+        AccessPermission, 
         related_name='user_group', 
         verbose_name="grupo", 
         on_delete=models.CASCADE, 
         blank=True, 
         null=True
     )
+    groups = None
+    user_permissions = None
     
     # Campos de autenticación
     password = models.CharField(
@@ -147,15 +146,9 @@ class User(AbstractUser, ContractMixin, AssignmentMixin):
         on_delete=models.SET_NULL, 
         null=True, 
         blank=True,
-        help_text="DEPRECADO: Usar asignaciones_trabajo en su lugar",
-        verbose_name="Empresa (Deprecado)"
+        verbose_name="Empresa"
     )
     
-    # Configuración de permisos
-    is_superuser = models.BooleanField(
-        default=False, 
-        verbose_name=_('super usuario')
-    )
 
     class Meta:
         verbose_name = "Usuario"
@@ -198,6 +191,10 @@ class User(AbstractUser, ContractMixin, AssignmentMixin):
         
         # Gestión de contratos
         self._handle_contract_logic()
+        if self.group_id:
+            self.is_staff = bool(getattr(self.group, 'is_staff', False))
+        else:
+            self.is_staff = False
         
         # Obtener valor anterior para detectar cambios
         prev_fin = self._get_previous_contract_end()
@@ -258,13 +255,7 @@ class User(AbstractUser, ContractMixin, AssignmentMixin):
                     ).update(fecha_fin=None)
 
     def _assign_default_group(self):
-        """Asigna grupo por defecto si no tiene ninguno"""
-        if not self.groups.exists():
-            try:
-                default_group = Group.objects.get(name=DEFAULT_GROUP_NAME)
-                self.groups.add(default_group)
-            except Group.DoesNotExist:
-                pass
+        return
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"

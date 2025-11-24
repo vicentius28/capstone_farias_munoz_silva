@@ -4,8 +4,8 @@ from acceso.models import AccessPermission,TemplateAccess
  
 # Register your models here.
 class AccessPermissionAdmin(ImportExportModelAdmin):
-    list_display = ('titulo','group')
-    list_filter = ('group','empresa','templates','titulo')
+    list_display = ('group', 'is_staff')
+    list_filter = ('group','empresa','templates','is_staff')
 
 admin.site.register(AccessPermission,AccessPermissionAdmin)
 

@@ -177,22 +177,35 @@ export default function EvaluacionDetalleCommon({
 
           const parts = String(fecha).split("-");
           const fechaCandidates: string[] = [String(fecha)];
+
           if (parts.length === 2) {
             const [a, b] = parts;
-            if (/^\d{2}$/.test(a) && /^\d{4}$/.test(b)) fechaCandidates.push(`${b}-${a}`);
-            if (/^\d{4}$/.test(a) && /^\d{2}$/.test(b)) fechaCandidates.push(`${b}-${a}`);
+
+            if (/^\d{2}$/.test(a) && /^\d{4}$/.test(b))
+              fechaCandidates.push(`${b}-${a}`);
+            if (/^\d{4}$/.test(a) && /^\d{2}$/.test(b))
+              fechaCandidates.push(`${b}-${a}`);
           }
 
           let detalleId: number | null = null;
 
           for (const a of asignaciones || []) {
-            const tipoNombre = String(a?.tipo_evaluacion?.n_tipo_evaluacion ?? "");
+            const tipoNombre = String(
+              a?.tipo_evaluacion?.n_tipo_evaluacion ?? "",
+            );
             const fechaAsignacion = String(a?.fecha_evaluacion ?? "");
 
-            if (tipoNombre === String(te) && fechaCandidates.includes(fechaAsignacion)) {
+            if (
+              tipoNombre === String(te) &&
+              fechaCandidates.includes(fechaAsignacion)
+            ) {
               for (const d of a?.detalles || []) {
-                const personaOk = String(d?.persona?.id ?? "") === String(personaId ?? "");
-                const evaluadorOk = evaluadorId == null || String(d?.evaluador?.id ?? "") === String(evaluadorId);
+                const personaOk =
+                  String(d?.persona?.id ?? "") === String(personaId ?? "");
+                const evaluadorOk =
+                  evaluadorId == null ||
+                  String(d?.evaluador?.id ?? "") === String(evaluadorId);
+
                 if (personaOk && evaluadorOk) {
                   detalleId = Number(d.id);
                   break;
@@ -205,7 +218,9 @@ export default function EvaluacionDetalleCommon({
           if (detalleId != null) {
             const data2 = await getEvaluacionMixta(detalleId);
             const pct2 = data2?.resumen?.auto_pct;
-            if (active) setAutoComparisonPct(typeof pct2 === "number" ? pct2 : null);
+
+            if (active)
+              setAutoComparisonPct(typeof pct2 === "number" ? pct2 : null);
           } else {
             if (active) setAutoComparisonPct(null);
           }
@@ -225,8 +240,11 @@ export default function EvaluacionDetalleCommon({
 
               if (parts.length === 2) {
                 const [a, b] = parts;
-                if (/^\d{2}$/.test(a) && /^\d{4}$/.test(b)) candidates.push(`${b}-${a}`);
-                if (/^\d{4}$/.test(a) && /^\d{2}$/.test(b)) candidates.push(`${b}-${a}`);
+
+                if (/^\d{2}$/.test(a) && /^\d{4}$/.test(b))
+                  candidates.push(`${b}-${a}`);
+                if (/^\d{4}$/.test(a) && /^\d{2}$/.test(b))
+                  candidates.push(`${b}-${a}`);
               }
 
               let found: number | null = null;
@@ -245,9 +263,11 @@ export default function EvaluacionDetalleCommon({
                 if (Array.isArray(data) && data.length) {
                   // Lista simple
                   const item = data.find(
-                    (x: any) => String(x?.persona?.id ?? "") === String(personaId),
+                    (x: any) =>
+                      String(x?.persona?.id ?? "") === String(personaId),
                   );
                   const pct3n = Number(item?.logro_obtenido);
+
                   if (!Number.isNaN(pct3n)) {
                     found = pct3n;
                     break;
@@ -258,9 +278,11 @@ export default function EvaluacionDetalleCommon({
                     (g: any) => String(g?.fecha_evaluacion ?? "") === String(f),
                   );
                   const item = grupo?.autoevaluaciones?.find(
-                    (x: any) => String(x?.persona?.id ?? "") === String(personaId),
+                    (x: any) =>
+                      String(x?.persona?.id ?? "") === String(personaId),
                   );
                   const pct3n = Number(item?.logro_obtenido);
+
                   if (!Number.isNaN(pct3n)) {
                     found = pct3n;
                     break;
@@ -268,9 +290,11 @@ export default function EvaluacionDetalleCommon({
                 } else if (data && Array.isArray(data?.autoevaluaciones)) {
                   // Objeto con autoevaluaciones
                   const item = data.autoevaluaciones.find(
-                    (x: any) => String(x?.persona?.id ?? "") === String(personaId),
+                    (x: any) =>
+                      String(x?.persona?.id ?? "") === String(personaId),
                   );
                   const pct3n = Number(item?.logro_obtenido);
+
                   if (!Number.isNaN(pct3n)) {
                     found = pct3n;
                     break;
@@ -284,13 +308,18 @@ export default function EvaluacionDetalleCommon({
                 const { data: dataAll } = await axios.get(
                   `/evaluacion/api/autoevaluaciones-subordinados/`,
                 );
+
                 if (Array.isArray(dataAll) && dataAll.length) {
-                  const match = dataAll.find((g: any) => candidates.includes(String(g?.fecha_evaluacion ?? "")));
+                  const match = dataAll.find((g: any) =>
+                    candidates.includes(String(g?.fecha_evaluacion ?? "")),
+                  );
                   const grupo = match ?? dataAll[0];
                   const item = grupo?.autoevaluaciones?.find(
-                    (x: any) => String(x?.persona?.id ?? "") === String(personaId),
+                    (x: any) =>
+                      String(x?.persona?.id ?? "") === String(personaId),
                   );
                   const pct4n = Number(item?.logro_obtenido);
+
                   if (!Number.isNaN(pct4n)) found = pct4n;
                 }
               }
@@ -373,12 +402,12 @@ export default function EvaluacionDetalleCommon({
         {/* Resultado Principal */}
         <ResultadoPrincipalCard
           autoComparisonPct={autoComparisonPct}
+          autoLoading={autoLoading}
           logroColor={logroColor}
           logroLevel={logroLevel}
           porcentajeTotal={porcentajeTotal}
           puntajeMaximo={puntajeMaximo}
           puntajeTotal={puntajeTotal}
-          autoLoading={autoLoading}
           showAuto={showAuto}
           showStats={showStats}
         />

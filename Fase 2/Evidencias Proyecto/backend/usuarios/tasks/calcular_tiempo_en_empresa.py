@@ -4,7 +4,7 @@ import time
 from datetime import date, datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from usuarios.models import User
-from django.contrib.auth.models import Group
+from acceso.models import AccessPermission
 import logging
 import os
 
@@ -36,10 +36,10 @@ def actualizar_tiempos():
 
 def actualizar_grupo_usuarios():
     try:
-        grupo_1er_ingreso = Group.objects.get(name="1er ingreso")
-        grupo_basico = Group.objects.get(name="Básico")
-    except Group.DoesNotExist:
-        logger.error("❌ Uno de los grupos no existe: '1er ingreso' o 'Básico'")
+        grupo_1er_ingreso = AccessPermission.objects.get(group="1er ingreso")
+        grupo_basico = AccessPermission.objects.get(group="Básico")
+    except AccessPermission.DoesNotExist:
+        logger.error("❌ Uno de los permisos no existe: '1er ingreso' o 'Básico'")
         return
 
     hoy = date.today()
@@ -50,7 +50,7 @@ def actualizar_grupo_usuarios():
             dias = (hoy - user.date_joined).days
             if dias >= 183:
                 user.group = grupo_basico
-                user.save(update_fields=['group'])
+                user.save(update_fields=['group', 'is_staff'])
                 logger.info(f"🔁 Usuario {user.username} movido a grupo 'Básico' ({dias} días)")
 
 

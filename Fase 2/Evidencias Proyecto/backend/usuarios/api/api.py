@@ -1,5 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from django.db import IntegrityError
 from rest_framework.permissions import IsAuthenticated
 from usuarios.serializers import UserSerializer
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -25,11 +26,9 @@ class UserAllView(APIView):
         # Parámetro de búsqueda
         search_query = request.GET.get('search', '').strip()
         
-        # Filtro base
-        users = User.objects.filter(
-            empresa__id__in=[ 1, 2], 
-            is_active=True,
-            group__id__in=[4,5,7,14,18,21]
+        # Filtro base: traer todos los usuarios activos
+        users = User.objects.select_related('cargo', 'empresa', 'ciclo').filter(
+            is_active=True
         )
         
         # Aplicar búsqueda si existe
@@ -54,6 +53,18 @@ class UserAllView(APIView):
         serializer = UserSerializer(users, many=True)
         return Response(serializer.data)
 
+    def post(self, request):
+        actor = request.user
+        if not getattr(getattr(actor, 'group', None), 'is_staff', False):
+            return Response({"detail": "No tienes permisos para crear usuarios"}, status=403)
+        serializer = UserSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        try:
+            user = serializer.save()
+        except IntegrityError as e:
+            return Response({"detail": str(e)}, status=400)
+        return Response(UserSerializer(user, context={'request': request}).data, status=201)
+
 class UserDetailView(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -64,4 +75,16 @@ class UserDetailView(APIView):
         
         # Serializar los datos del usuario
         serializer = UserSerializer(user, context={'request': request})
+        return Response(serializer.data)
+
+    def patch(self, request, user_id):
+        user = get_object_or_404(User, id=user_id)
+        actor = request.user
+        if not getattr(getattr(actor, 'group', None), 'is_staff', False):
+            return Response({"detail": "No tienes permisos para editar usuarios"}, status=403)
+        if int(actor.id) == int(user_id):
+            return Response({"detail": "No puedes editar tu propio usuario"}, status=403)
+        serializer = UserSerializer(user, data=request.data, partial=True, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
         return Response(serializer.data)

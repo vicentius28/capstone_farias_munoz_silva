@@ -11,10 +11,7 @@ class EmpresaAllView(APIView):
     permission_classes = [IsAuthenticated]  # Solo usuarios autenticados pueden acceder
 
     def get(self, request):
-        # Obtener todos los usuarios
-        empresas = Empresa.objects.filter(id__in=[1, 2])
-
-        # Serializar los datos de todos los usuarios
+        empresas = Empresa.objects.all().order_by('name')
         serializer = EmpresaSerializer(empresas, many=True)
         return Response(serializer.data)
         

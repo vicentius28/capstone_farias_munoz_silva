@@ -10,7 +10,7 @@ const CACHE_CONFIG = {
   STORAGE_KEY: "users_cache_data",
   TIMESTAMP_KEY: "users_cache_timestamp",
   VERSION_KEY: "users_cache_version",
-  CURRENT_VERSION: "1.1.0", // Incrementar versión para limpiar caché corrupto
+  CURRENT_VERSION: "1.2.0", // Incrementar versión para limpiar caché corrupto
 };
 
 interface CacheData {
@@ -54,6 +54,7 @@ const useUsersCache = () => {
         // Verificar caché en memoria
         if (
           memoryCache &&
+          memoryCache.version === CACHE_CONFIG.CURRENT_VERSION &&
           now - memoryCache.timestamp < CACHE_CONFIG.MEMORY_TTL
         ) {
           console.log(

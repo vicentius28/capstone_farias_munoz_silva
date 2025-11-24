@@ -7,8 +7,7 @@ from historial.admin import HistorialAdminMixin
 from usuarios.models import (
     User, Cargo, Ciclo, Genero
 )
-# Importar el nuevo modelo
-from institucion.models import AsignacionTrabajador
+
 
 
 
@@ -29,26 +28,7 @@ class UserResource(resources.ModelResource):
         widget=ForeignKeyWidget(User, 'email')
     )
 
-    titulos = fields.Field(
-        column_name="Títulos",
-        attribute="titulos",
-        readonly=True
-    )
-    magister = fields.Field(
-        column_name="Magíster",
-        attribute="magister",
-        readonly=True
-    )
-    diplomados = fields.Field(
-        column_name="Diplomados",
-        attribute="diplomados",
-        readonly=True
-    )
-    bienios = fields.Field(
-        column_name="Bienios",
-        attribute="bienios",
-        readonly=True
-    )
+    
 
 
     def before_import_row(self, row, **kwargs):
@@ -64,10 +44,10 @@ class UserResource(resources.ModelResource):
     class Meta:
         model = User
         fields = (
-            'id', 'last_login', 'is_staff', 'is_active', 'rut', 'password', 'username',
-            'first_name', 'last_name', 'email', 'is_superuser', 'birthday',
+            'id', 'last_login', 'is_active', 'rut', 'password', 'username',
+            'first_name', 'last_name', 'email', 'birthday',
             'date_joined', 'jefe', 'tiempo', 'tiempo_en', 'dias_tomados',
-            'dias_restantes', DIAS_cumpleanioS, 'group__name', 'cargo__cargo', 'ciclo__ciclo',
+            'dias_restantes', DIAS_cumpleanioS, 'group', 'cargo__cargo', 'ciclo__ciclo',
             'empresa', 'genero', 'foto',
             # nuevos
             'titulos', 'magister', 'diplomados', 'bienios'
@@ -75,35 +55,6 @@ class UserResource(resources.ModelResource):
         import_id_fields = ('id',)
         skip_unchanged = True
         report_skipped = True
-
-# Nuevo inline para asignaciones de trabajador
-class AsignacionTrabajadorInline(admin.TabularInline):
-    model = AsignacionTrabajador
-    extra = 0
-    fields = (
-        'organizacion', 'relacion_servicio', 'sede', 
-        'porcentaje_tiempo', 'fecha_inicio', 'fecha_fin', 
-        'es_permanente', 'activa'
-    )
-    autocomplete_fields = ('organizacion', 'relacion_servicio', 'sede')
-    
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        return qs.select_related('organizacion', 'relacion_servicio', 'sede')
-    
-    # Personalizar el formulario para mostrar mejor las opciones
-    def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        if db_field.name == "sede":
-            # Filtrar sedes activas
-            kwargs["queryset"] = db_field.related_model.objects.filter(activa=True)
-        elif db_field.name == "organizacion":
-            # Filtrar organizaciones activas
-            kwargs["queryset"] = db_field.related_model.objects.filter(activa=True)
-        elif db_field.name == "relacion_servicio":
-            # Filtrar relaciones activas
-            kwargs["queryset"] = db_field.related_model.objects.filter(activo=True)
-        return super().formfield_for_foreignkey(db_field, request, **kwargs)
-
 
 
 
@@ -126,7 +77,7 @@ class CustomUserAdmin(HistorialAdminMixin):
             # reemplaza 'tiempo', 'tiempo_en' por los métodos readonly
             'fields': ('jefe', 'empresa', 'date_joined', 'tiempo_en_admin', 'cargo', 'ciclo')
         }),
-        (_('Permisos'), {'fields': ('is_active', 'is_staff', 'is_superuser', 'group')}),
+        (_('Permisos'), {'fields': ('is_active',  'group')}),
     )
 
     add_fieldsets = (
@@ -141,7 +92,7 @@ class CustomUserAdmin(HistorialAdminMixin):
     ordering = ('username', 'date_joined')
     list_filter = ('genero', 'group', 'ciclo', 'empresa','is_active')
     # Agregar el nuevo inline
-    inlines = [AsignacionTrabajadorInline]
+
 
 
 # class TramosAdmin(HistorialAdminMixin):

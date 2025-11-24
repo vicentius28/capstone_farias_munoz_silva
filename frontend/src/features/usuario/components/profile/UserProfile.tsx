@@ -11,8 +11,11 @@ import { Select as HSelect, SelectItem } from "@heroui/select";
 
 import { UserEvaluations } from "../UserProfile";
 import { UserInfoCard } from "../UserProfile";
+import { buildFileUrl } from "@/utils/urlUtils";
+const UserProfileEditorLazy = React.lazy(() => import("../UserProfile/UserProfileEditor"));
 
 import { useSession } from "@/hooks/useSession";
+import { usePermissions } from "@/hooks/usePermissions";
 import { fetchUserById } from "@/api/user/user";
 import { User } from "@/types/types";
 
@@ -26,6 +29,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ hideEmptyTabs = false }) => {
   const location = useLocation();
   const userId = location.state?.userId;
   const { user: loggedUser } = useSession();
+  const { is_staff } = usePermissions();
   const [user, setUser] = useState<User>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -75,6 +79,11 @@ const UserProfile: React.FC<UserProfileProps> = ({ hideEmptyTabs = false }) => {
   }, [userId]);
 
   // Configuración de tabs simplificada
+  const canEdit = Boolean(
+    is_staff && loggedUser?.id && user?.id && loggedUser.id !== user.id,
+  );
+  const [editing, setEditing] = useState<boolean>(false);
+
   const tabs = useMemo(() => {
     return [
       {
@@ -84,16 +93,40 @@ const UserProfile: React.FC<UserProfileProps> = ({ hideEmptyTabs = false }) => {
         count: null,
         color: "primary" as const,
         content: (
-          <UserInfoCard
-            formatDate={formatDate}
-            image={user?.foto}
-            user={user}
-            userId={userId}
-          />
+          <div className="space-y-6">
+            <UserInfoCard
+              canEdit={canEdit}
+              formatDate={formatDate}
+              image={buildFileUrl(user?.foto || user?.foto_thumbnail)}
+              user={user}
+              userId={userId}
+              onStartEdit={() => setEditing(true)}
+            />
+            {canEdit && editing && (
+              <Card>
+                <CardBody className="p-4 sm:p-6">
+                  <React.Suspense fallback={<div style={{minHeight: 120}}></div>}>
+                    <UserProfileEditorLazy
+                      canEdit={canEdit}
+                      user={user}
+                      userId={userId}
+                      onCancel={() => setEditing(false)}
+                      onSaved={(updated) => {
+                        setUser(updated);
+                        setEditing(false);
+                      }}
+                      onUserUpdated={(updated) => {
+                        setUser(updated);
+                      }}
+                    />
+                  </React.Suspense>
+                </CardBody>
+              </Card>
+            )}
+          </div>
         ),
         show: true,
       },
-
       {
         key: "evaluaciones",
         title: "Evaluaciones",
@@ -106,7 +139,16 @@ const UserProfile: React.FC<UserProfileProps> = ({ hideEmptyTabs = false }) => {
           [15, 11, 7].includes(loggedUser?.group || 0),
       },
     ].filter((tab) => tab.show);
-  }, [user, stats, hideEmptyTabs, loggedUser?.group, formatDate]);
+  }, [
+    user,
+    stats,
+    hideEmptyTabs,
+    loggedUser?.group,
+    formatDate,
+    canEdit,
+    userId,
+    editing,
+  ]);
   const [selectedKey, setSelectedKey] = useState<string>(
     tabs[0]?.key || "info",
   );

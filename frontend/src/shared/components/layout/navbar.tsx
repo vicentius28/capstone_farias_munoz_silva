@@ -39,13 +39,12 @@ import { useUser } from "@/hooks/useUser";
 import { SidebarDrawer } from "@/shared/components/layout/Sidebar";
 import { sidebarRoutes } from "@/shared/utils/sidebarRoutes";
 import { usePermissions } from "@/hooks/usePermissions";
-import { PERMISSIONS } from "@/constants/permissions";
 
 export const Navbar: React.FC = () => {
   const { isAuthorized, logout } = useAuthentication();
   const { user } = useUser();
   const navigate = useNavigate();
-  const { hasAccess } = usePermissions();
+  const { is_staff } = usePermissions();
 
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
@@ -187,7 +186,7 @@ export const Navbar: React.FC = () => {
 
         {isAuthorized && user && (
           <DropdownMenu aria-label="Profile Actions" variant="flat">
-            {user.is_superuser ? (
+            {is_staff ? (
               <>
                 <DropdownItem
                   key="admin"
@@ -203,10 +202,12 @@ export const Navbar: React.FC = () => {
               </>
             ) : null}
 
-            {user.is_superuser || hasAccess(PERMISSIONS.EVALUACION.ASIGNAR) ? (
+            {is_staff ? (
               <DropdownItem
                 key="metabase"
-                onPress={() => window.open("https://meta.gsr.cat", "_blank", "noopener")}
+                onPress={() =>
+                  window.open("https://meta.gsr.cat", "_blank", "noopener")
+                }
               >
                 <div className="flex items-center gap-x-2">
                   <BarChart className="w-4 h-4" />

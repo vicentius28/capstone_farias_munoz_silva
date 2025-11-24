@@ -25,8 +25,8 @@ export const buttons: Record<string, SectionButton> = {
   },
   usuarios: {
     label: "USUARIOS",
-    href: "/usuarios",
-    permiso: PERMISSIONS.SISTEMA.USUARIOS,
+    href: "/ficha",
+    permiso: PERMISSIONS.EVALUACION.PLANTILLAS,
   },
   evaluacionMixta: {
     label: "EVALUACIÓN MIXTA",

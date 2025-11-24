@@ -6,7 +6,6 @@ export interface User {
   last_name: string;
   genero: string | null;
 
-  is_superuser: boolean;
   edad: Date;
   empresa: Empresa | string | null | number;
 
@@ -18,9 +17,16 @@ export interface User {
   evaluacion: Evaluation[];
 
   jefe: string | null;
-  group: number;
+  group: Group[];
   rut: string;
   tiempo_en: string;
+}
+
+export interface Group {
+  id: number;
+  group: string;
+  empresa: Empresa[];
+  is_staff: boolean;
 }
 
 export interface Empresa {

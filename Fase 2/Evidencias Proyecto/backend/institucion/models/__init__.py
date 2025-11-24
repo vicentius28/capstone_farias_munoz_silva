@@ -1,14 +1,7 @@
 # Modelos existentes (mantener compatibilidad)
-from .empresa import Empresa, Sede, EmpresaPersonaConfig, Asignacion
+from .empresa import Empresa
 
-# Nuevos modelos (principales)
-from .organizacion import (
-    TipoOrganizacion,
-    Organizacion,
-    SedeOrganizacion,
-    RelacionServicio,
-    AsignacionTrabajador,
-)
+
 
 __all__ = [
     # Nuevos modelos (usar estos)

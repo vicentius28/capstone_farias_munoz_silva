@@ -25,6 +25,7 @@ const ProfilePage = lazy(() => import("@/features/usuario/pages/ProfilePage"));
 const UserProfileView = lazy(
   () => import("@/features/usuario/pages/UserProfileView"),
 );
+
 const TableevaPage = lazy(
   () => import("@/features/evaluacion/pages/evaluacion_jefatura/tableeva"),
 );
@@ -147,15 +148,15 @@ export const protectedRoutes: RouteObject[] = [
       {
         path: "ficha",
         element: (
-          <ProtectedRoute permiso={PERMISSIONS.FUNDACION.USUARIOS_FICHA}>
+          <ProtectedRoute permiso={PERMISSIONS.EVALUACION.PLANTILLAS}>
             {withSuspense(UsersPage)}
           </ProtectedRoute>
         ),
       },
       {
-        path: "ficha/user-profile",
+        path: "ficha/usuario",
         element: (
-          <ProtectedRoute permiso={PERMISSIONS.FUNDACION.USUARIOS_FICHA}>
+          <ProtectedRoute permiso={PERMISSIONS.EVALUACION.PLANTILLAS}>
             {withSuspense(UserProfileView)}
           </ProtectedRoute>
         ),

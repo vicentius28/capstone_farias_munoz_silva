@@ -4,6 +4,7 @@
 # For more information on this file, see
 # https://docs.djangoproject.com/en/4.2/topics/settings/
 from django.contrib import admin
+from colegio.admin_site import custom_admin_site
 from django.shortcuts import redirect
 from django.urls import path,include
 from django.conf import settings
@@ -21,7 +22,7 @@ urlpatterns = [
     # Health check endpoint para mantener el servicio activo
     path('healthz', health_check, name='health_check'),
 
-    path('admin/', admin.site.urls),
+    path('admin/', custom_admin_site.urls),
     path('ckeditor5/', include('django_ckeditor_5.urls')),
     path('accounts/google/login/callback/', RedirectView.as_view(url='/api/callback/', permanent=False)),
     path('auth/social/', include('allauth.socialaccount.urls')),

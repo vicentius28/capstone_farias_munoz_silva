@@ -13,15 +13,11 @@ export const sections: Section[] = [
     icon: "📋",
     buttons: [buttons.evaluarDesempeno, buttons.evaluacionMixta],
   },
-  {
-    title: "FUNDACIÓN",
-    icon: "🏫",
-    buttons: [buttons.usuarios], // Changed from buttons.usuariosFicha to buttons.usuarios
-  },
+
   {
     title: "RECURSOS HUMANOS",
     icon: "📊",
-    buttons: [buttons.plantillas, buttons.asignar],
+    buttons: [buttons.plantillas, buttons.asignar, buttons.usuarios],
     fullWidth: true,
   },
 ];

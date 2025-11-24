@@ -5,6 +5,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.db.models import Q
 
 from acceso.models import AccessPermission
+from acceso.serializers import AccessPermissionSerializer
 
 
 class UserPermissionsView(APIView):
@@ -14,28 +15,42 @@ class UserPermissionsView(APIView):
     def get(self, request):
         user = request.user
 
-        # ✅ Verifica que el usuario tenga grupo y empresa
         if not hasattr(user, 'group') or not user.group or not user.empresa:
             return Response({
-                "grupo": None,
+                "grupo": [],
                 "empresa": None,
-                "permisos": []
+                "permisos": [],
+                "is_staff": False
             })
 
-        # ✅ Filtra permisos por grupo y empresa (o empresa nula)
-        permisos_qs = AccessPermission.objects.filter(
-            group=user.group
-        ).filter(
-            Q(empresa__in=[user.empresa]) | Q(empresa__isnull=True)
-        ).prefetch_related('templates')
+        permiso = user.group
+        permiso_empresas = permiso.empresa.all()
+        permitido = (not permiso_empresas.exists()) or permiso_empresas.filter(pk=user.empresa_id).exists()
+        template_names = permiso.templates.values_list('name', flat=True) if permitido else []
 
-        # ✅ Extrae los nombres de las plantillas permitidas
-        template_names = set()
-        for permiso in permisos_qs:
-            template_names.update(permiso.templates.values_list('name', flat=True))
+        grupo_payload = [{
+            "id": permiso.id,
+            "group": permiso.group,
+            "is_staff": bool(getattr(permiso, 'is_staff', False)),
+            "empresa": [
+                {"id": e.id, "name": getattr(e, 'name', None) or getattr(e, 'empresa', None)}
+                for e in permiso_empresas
+            ],
+        }]
 
         return Response({
-            "grupo": user.group.name,
+            "grupo": grupo_payload,
             "empresa": user.empresa.name,
-            "permisos": sorted(template_names)  # ejemplo: ['/solicitar', '/beneficios']
+            "permisos": sorted(template_names),
+            "is_staff": bool(getattr(user.group, 'is_staff', False))
         })
+
+
+class AccessPermissionsListView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        qs = AccessPermission.objects.all().order_by('group')
+        ser = AccessPermissionSerializer(qs, many=True)
+        return Response(ser.data)

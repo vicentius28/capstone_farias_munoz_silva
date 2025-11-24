@@ -20,7 +20,7 @@ export default function UsersPage() {
             <UsersTable
               buttonText="VER PERFIL"
               onButtonClick={(userId: number) => {
-                navigate(`/ficha/user-profile`, { state: { userId } });
+                navigate(`/ficha/usuario`, { state: { userId } });
               }}
             />
           </Suspense>

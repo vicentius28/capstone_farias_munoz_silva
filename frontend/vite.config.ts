@@ -25,6 +25,17 @@ export default defineConfig({
     chunkSizeWarningLimit: 750,
     rollupOptions: {
       output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('@heroui') || id.includes('@heroicons')) return 'ui';
+            if (id.includes('react-router')) return 'router';
+            if (id.includes('lucide-react')) return 'icons';
+            if (id.includes('date-fns')) return 'date';
+            if (id.includes('framer-motion')) return 'motion';
+            if (id.includes('axios')) return 'network';
+            if (id.includes('react') || id.includes('react-dom')) return 'react';
+          }
+        },
       },
     },
   },

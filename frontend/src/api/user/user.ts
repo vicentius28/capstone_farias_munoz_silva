@@ -113,6 +113,53 @@ export const fetchUserById = async (userId: string): Promise<User | null> => {
   }
 };
 
+export const updateUserById = async (
+  userId: number,
+  payload: any,
+): Promise<User> => {
+  const response = await api.patch<User>(
+    `${BASE_API_URL}/user/${userId}/`,
+    payload,
+  );
+
+  return response.data;
+};
+
+export const createUser = async (payload: any): Promise<User> => {
+  if (payload instanceof FormData) {
+    const response = await api.post<User>(
+      `${BASE_API_URL}/user-all/`,
+      payload,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      },
+    );
+
+    return response.data;
+  }
+  const response = await api.post<User>(`${BASE_API_URL}/user-all/`, payload);
+
+  return response.data;
+};
+
+export const uploadUserPhoto = async (
+  userId: number,
+  file: File,
+): Promise<User> => {
+  const form = new FormData();
+
+  form.append("foto", file);
+  const response = await api.patch<User>(
+    `${BASE_API_URL}/user/${userId}/`,
+    form,
+    {
+      headers: { "Content-Type": "multipart/form-data" },
+    },
+  );
+
+  return response.data;
+};
+
 // api/authService.ts
 export const fetchUsuarioActual = async () => {
   try {
@@ -136,4 +183,37 @@ export const obtenerUsuariosDias = async (): Promise<UsuarioDias[]> => {
 
     return [];
   }
+};
+
+export const fetchEmpresas = async (): Promise<any[]> => {
+  const url = `${import.meta.env.VITE_API_URL}/institucion/empresa/get/all/`;
+  const response = await api.get<any[]>(url);
+
+  return response.data || [];
+};
+
+export const fetchCiclos = async (): Promise<any[]> => {
+  const response = await api.get<any[]>(`${BASE_API_URL}/ciclos/`);
+
+  return response.data || [];
+};
+
+export const fetchCargos = async (): Promise<any[]> => {
+  const response = await api.get<any[]>(`${BASE_API_URL}/cargos/`);
+
+  return response.data || [];
+};
+
+export const fetchGeneros = async (): Promise<any[]> => {
+  const response = await api.get<any[]>(`${BASE_API_URL}/generos/`);
+
+  return response.data || [];
+};
+
+export const fetchAccessPermissions = async (): Promise<any[]> => {
+  const response = await api.get<any[]>(
+    `${import.meta.env.VITE_API_URL}/acceso/api/access/permissions/`,
+  );
+
+  return response.data || [];
 };

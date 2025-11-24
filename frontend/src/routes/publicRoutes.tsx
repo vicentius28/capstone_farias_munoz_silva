@@ -3,11 +3,11 @@ import { Navigate } from "react-router-dom";
 
 import RedirectGoogleAuth from "@/features/auth/components/GoogleRedirectHandler";
 import Welcome from "@/shared/pages/Welcome";
-import { useAuthentication } from "@/services/google/auth";
+import { useSession } from "@/hooks/useSession";
 const ProtectedLogin = () => {
-  const { isAuthorized } = useAuthentication();
+  const { isAuthenticated } = useSession();
 
-  return isAuthorized ? <Navigate to="/" /> : <Welcome />;
+  return isAuthenticated ? <Navigate to="/" /> : <Welcome />;
 };
 
 export const publicRoutes: RouteObject[] = [

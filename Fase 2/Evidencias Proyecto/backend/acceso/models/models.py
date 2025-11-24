@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import Group
 from institucion.models import Empresa
-
+from django.utils.translation import gettext_lazy as _
 class TemplateAccess(models.Model):
     # Usar la ruta (href) como identificador único del permiso
     name = models.CharField(
@@ -17,14 +17,17 @@ class TemplateAccess(models.Model):
        verbose_name_plural = "plantillas de accesos"  # Nombre en plural
 
 class AccessPermission(models.Model):
-    titulo = models.CharField(max_length=200, null=True, blank=True)
-    group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    group = models.CharField(max_length=200, null=True, blank=True)
     empresa = models.ManyToManyField(Empresa, blank=True)
     templates = models.ManyToManyField(TemplateAccess, related_name='permissions')
+    # Configuración de permisos
+    is_staff = models.BooleanField(
+        default=False,
+        verbose_name=_('Super usuario')
+    )
 
     def __str__(self):
-        empresas = ", ".join(e.name for e in self.empresa.all()) if self.empresa.exists() else "Todas"
-        return f"Permisos: {self.group.name} - {empresas}"
+        return f"{self.group}"
 
     class Meta:
         verbose_name = "Permiso"  # Nombre en singular

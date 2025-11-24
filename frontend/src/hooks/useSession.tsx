@@ -71,7 +71,13 @@ export const SessionProvider = ({
       setUser(res.data);
       setIsAuthenticated(true);
     } catch (error) {
-      console.error("Error fetching user:", error);
+      const anyErr: any = error as any;
+
+      if (anyErr?.code === "ERR_NETWORK" || !anyErr?.response) {
+        console.error("Backend no disponible (ERR_NETWORK)");
+      } else {
+        console.error("Error fetching user:", error);
+      }
       setIsAuthenticated(false);
     } finally {
       setIsLoading(false);

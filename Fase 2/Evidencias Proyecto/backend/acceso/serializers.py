@@ -8,8 +8,18 @@ class TemplateAccessSerializer(serializers.ModelSerializer):
 
 
 class AccessPermissionSerializer(serializers.ModelSerializer):
-    templates = TemplateAccessSerializer(many=True)
+    templates = TemplateAccessSerializer(many=True, read_only=True)
+    empresa = serializers.SerializerMethodField()
 
     class Meta:
         model = AccessPermission
-        fields = ['group', 'empresa', 'templates']
+        fields = ['id', 'group', 'is_staff', 'empresa', 'templates']
+
+    def get_empresa(self, obj):
+        return [
+            {
+                "id": e.id,
+                "name": getattr(e, 'name', None) or getattr(e, 'empresa', None)
+            }
+            for e in obj.empresa.all()
+        ]
