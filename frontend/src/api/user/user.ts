@@ -117,12 +117,41 @@ export const updateUserById = async (
   userId: number,
   payload: any,
 ): Promise<User> => {
-  const response = await api.patch<User>(
-    `${BASE_API_URL}/user/${userId}/`,
-    payload,
-  );
-
-  return response.data;
+  try {
+    const response = await api.patch<User>(
+      `${BASE_API_URL}/user/${userId}/`,
+      payload,
+    );
+    return response.data;
+  } catch (error: any) {
+    if (error?.response) {
+      const status: number = error.response.status;
+      const data = error.response.data;
+      const message =
+        data?.message ||
+        data?.detail ||
+        (typeof data === "object"
+          ? Object.entries(data)
+              .map(([k, v]) => {
+                const text = Array.isArray(v) ? v.join(" | ") : String(v);
+                return `${k}: ${text}`;
+              })
+              .join("; ")
+          : String(data));
+      throw new Error(`Error ${status}: ${message}`);
+    }
+    if (error?.request) {
+      throw new Error(
+        "Error de conexión. Verifica tu internet o disponibilidad del servidor.",
+      );
+    }
+    if (error?.code === "ECONNABORTED") {
+      throw new Error(
+        "La solicitud venció por timeout. Intenta nuevamente más tarde.",
+      );
+    }
+    throw new Error(error?.message || "Error al actualizar usuario");
+  }
 };
 
 export const createUser = async (payload: any): Promise<User> => {

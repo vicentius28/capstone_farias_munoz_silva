@@ -73,6 +73,22 @@ export default function UserProfileEditor({
     is_active: typeof user?.is_active === "boolean" ? user.is_active : true,
   });
   const [usernameTouched, setUsernameTouched] = useState(false);
+  const normalizeRut = (rut: string) =>
+    String(rut || "")
+      .replace(/\./g, "")
+      .replace(/-/g, "")
+      .toUpperCase();
+  const formatRut = (rut: string) => {
+    const s = normalizeRut(rut);
+    if (s.length < 2) return s;
+    const body = s.slice(0, -1);
+    const dv = s.slice(-1);
+    const rev = body.split("").reverse();
+    const grouped: string[] = [];
+    for (let i = 0; i < rev.length; i += 3) grouped.push(rev.slice(i, i + 3).join(""));
+    const withDots = grouped.join(".").split("").reverse().join("");
+    return `${withDots}-${dv}`;
+  };
 
   useEffect(() => {
     setForm((prev: any) => ({
@@ -204,7 +220,20 @@ export default function UserProfileEditor({
     if (!userId && !user?.id) return;
     try {
       setSaving(true);
-      const updated = await updateUserById(Number(userId || user.id), form);
+      const payload: any = { ...form };
+      if (normalizeRut(payload.rut) === normalizeRut(String(user?.rut || ""))) {
+        delete payload.rut;
+      }
+      if (String(payload.username || "") === String(user?.username || "")) {
+        delete payload.username;
+      }
+      if (String(payload.email || "") === String(user?.email || "")) {
+        delete payload.email;
+      }
+      Object.keys(payload).forEach((k) => {
+        if (payload[k] === "" || payload[k] === null) delete payload[k];
+      });
+      const updated = await updateUserById(Number(userId || user.id), payload);
 
       addToast({
         title: "Perfil actualizado",
@@ -506,6 +535,7 @@ export default function UserProfileEditor({
               label="RUT"
               value={form.rut}
               onChange={(e) => handleChange("rut", e.target.value)}
+              onBlur={() => setForm((prev: any) => ({ ...prev, rut: formatRut(prev.rut) }))}
             />
             <Input
               isDisabled={!canEdit}
