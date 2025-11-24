@@ -5,8 +5,10 @@ import { visualizer } from 'rollup-plugin-visualizer';
 import Pages from 'vite-plugin-pages';
 
 const isVisualizer = process.env.VITE_VISUALIZER === 'true';
+const isProd = process.env.NODE_ENV === 'production';
 
 export default defineConfig({
+  esbuild: isProd ? { drop: ['console', 'debugger'] } : {},
   plugins: [
     react(),
     tsconfigPaths(),
