@@ -102,7 +102,7 @@ const useUsersCache = () => {
             }
           }
         } catch (error) {
-          console.warn("⚠️ Error al leer caché del localStorage:", error);
+          if (import.meta.env.DEV) console.warn("⚠️ Error al leer caché del localStorage:", error);
           // Limpiar caché corrupto
           localStorage.removeItem(CACHE_CONFIG.STORAGE_KEY);
           localStorage.removeItem(CACHE_CONFIG.TIMESTAMP_KEY);
