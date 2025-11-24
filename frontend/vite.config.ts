@@ -31,7 +31,7 @@ export default defineConfig({
             if (id.includes('react-router')) return 'router';
             if (id.includes('lucide-react')) return 'icons';
             if (id.includes('date-fns')) return 'date';
-            if (id.includes('framer-motion')) return 'motion';
+            if (id.includes('framer-motion')) return 'react';
             if (id.includes('axios')) return 'network';
             if (id.includes('react') || id.includes('react-dom')) return 'react';
           }
