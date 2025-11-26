@@ -11,8 +11,11 @@ import { Select as HSelect, SelectItem } from "@heroui/select";
 
 import { UserEvaluations } from "../UserProfile";
 import { UserInfoCard } from "../UserProfile";
+
 import { buildFileUrl } from "@/utils/urlUtils";
-const UserProfileEditorLazy = React.lazy(() => import("../UserProfile/UserProfileEditor"));
+const UserProfileEditorLazy = React.lazy(
+  () => import("../UserProfile/UserProfileEditor"),
+);
 
 import { useSession } from "@/hooks/useSession";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -105,7 +108,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ hideEmptyTabs = false }) => {
             {canEdit && editing && (
               <Card>
                 <CardBody className="p-4 sm:p-6">
-                  <React.Suspense fallback={<div style={{minHeight: 120}}></div>}>
+                  <React.Suspense fallback={<div style={{ minHeight: 120 }} />}>
                     <UserProfileEditorLazy
                       canEdit={canEdit}
                       user={user}

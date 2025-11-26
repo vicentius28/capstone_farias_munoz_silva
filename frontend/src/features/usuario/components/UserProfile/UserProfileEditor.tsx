@@ -4,7 +4,13 @@ import { Input } from "@heroui/input";
 import { Select, SelectItem } from "@heroui/select";
 import { Button } from "@heroui/button";
 import { addToast } from "@heroui/toast";
-import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@heroui/modal";
+import {
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+} from "@heroui/modal";
 import { Switch } from "@heroui/switch";
 
 import FileField from "@/shared/components/FileField";
@@ -80,13 +86,17 @@ export default function UserProfileEditor({
       .toUpperCase();
   const formatRut = (rut: string) => {
     const s = normalizeRut(rut);
+
     if (s.length < 2) return s;
     const body = s.slice(0, -1);
     const dv = s.slice(-1);
     const rev = body.split("").reverse();
     const grouped: string[] = [];
-    for (let i = 0; i < rev.length; i += 3) grouped.push(rev.slice(i, i + 3).join(""));
+
+    for (let i = 0; i < rev.length; i += 3)
+      grouped.push(rev.slice(i, i + 3).join(""));
     const withDots = grouped.join(".").split("").reverse().join("");
+
     return `${withDots}-${dv}`;
   };
 
@@ -102,7 +112,8 @@ export default function UserProfileEditor({
       date_joined: user?.date_joined || "",
       empresa_id: user?.empresa?.id ?? null,
       group_id: user?.group_id ?? prev.group_id,
-      is_active: typeof user?.is_active === "boolean" ? user.is_active : prev.is_active,
+      is_active:
+        typeof user?.is_active === "boolean" ? user.is_active : prev.is_active,
     }));
   }, [user]);
 
@@ -166,7 +177,7 @@ export default function UserProfileEditor({
           group_id: prev.group_id ?? grupoMatch?.id ?? null,
           jefe_id: prev.jefe_id ?? jefeMatch?.id ?? null,
         }));
-      } catch { }
+      } catch {}
     })();
 
     return () => {
@@ -175,7 +186,9 @@ export default function UserProfileEditor({
   }, []);
 
   const makeUsername = (first: string, last: string) => {
-    const raw = `${String(first || "").trim()} ${String(last || "").trim()}`.trim();
+    const raw =
+      `${String(first || "").trim()} ${String(last || "").trim()}`.trim();
+
     if (!raw) return "";
     const cleaned = raw
       .normalize("NFD")
@@ -183,6 +196,7 @@ export default function UserProfileEditor({
       .replace(/[^a-zA-Z\s]+/g, " ")
       .replace(/\s+/g, " ")
       .trim();
+
     return cleaned
       .split(" ")
       .map((w) => (w ? w[0].toUpperCase() + w.slice(1).toLowerCase() : ""))
@@ -193,24 +207,31 @@ export default function UserProfileEditor({
     if (key === "username") {
       setUsernameTouched(true);
       setForm((prev: any) => ({ ...prev, [key]: value }));
+
       return;
     }
     if (key === "first_name") {
       setForm((prev: any) => {
-        const suggested = (!usernameTouched || !prev.username)
-          ? makeUsername(value, prev.last_name)
-          : prev.username;
+        const suggested =
+          !usernameTouched || !prev.username
+            ? makeUsername(value, prev.last_name)
+            : prev.username;
+
         return { ...prev, first_name: value, username: suggested };
       });
+
       return;
     }
     if (key === "last_name") {
       setForm((prev: any) => {
-        const suggested = (!usernameTouched || !prev.username)
-          ? makeUsername(prev.first_name, value)
-          : prev.username;
+        const suggested =
+          !usernameTouched || !prev.username
+            ? makeUsername(prev.first_name, value)
+            : prev.username;
+
         return { ...prev, last_name: value, username: suggested };
       });
+
       return;
     }
     setForm((prev: any) => ({ ...prev, [key]: value }));
@@ -221,6 +242,7 @@ export default function UserProfileEditor({
     try {
       setSaving(true);
       const payload: any = { ...form };
+
       if (normalizeRut(payload.rut) === normalizeRut(String(user?.rut || ""))) {
         delete payload.rut;
       }
@@ -255,12 +277,16 @@ export default function UserProfileEditor({
     }
   };
 
-  const getImageMeta = (file: File): Promise<{ width: number; height: number }> =>
+  const getImageMeta = (
+    file: File,
+  ): Promise<{ width: number; height: number }> =>
     new Promise((resolve, reject) => {
       const url = URL.createObjectURL(file);
       const img = new Image();
+
       img.onload = () => {
         const meta = { width: img.naturalWidth, height: img.naturalHeight };
+
         URL.revokeObjectURL(url);
         resolve(meta);
       };
@@ -276,29 +302,43 @@ export default function UserProfileEditor({
       try {
         const url = URL.createObjectURL(file);
         const img = new Image();
+
         img.onload = () => {
-          const ratio = Math.min(maxW / img.naturalWidth, maxH / img.naturalHeight, 1);
+          const ratio = Math.min(
+            maxW / img.naturalWidth,
+            maxH / img.naturalHeight,
+            1,
+          );
           const w = Math.round(img.naturalWidth * ratio);
           const h = Math.round(img.naturalHeight * ratio);
           const canvas = document.createElement("canvas");
+
           canvas.width = w;
           canvas.height = h;
           const ctx = canvas.getContext("2d");
+
           if (!ctx) {
             URL.revokeObjectURL(url);
             reject(new Error("No ctx"));
+
             return;
           }
           ctx.drawImage(img, 0, 0, w, h);
-          canvas.toBlob((blob) => {
-            URL.revokeObjectURL(url);
-            if (!blob) {
-              reject(new Error("No blob"));
-              return;
-            }
-            const out = new File([blob], file.name, { type: blob.type });
-            resolve(out);
-          }, file.type || "image/jpeg", 0.92);
+          canvas.toBlob(
+            (blob) => {
+              URL.revokeObjectURL(url);
+              if (!blob) {
+                reject(new Error("No blob"));
+
+                return;
+              }
+              const out = new File([blob], file.name, { type: blob.type });
+
+              resolve(out);
+            },
+            file.type || "image/jpeg",
+            0.92,
+          );
         };
         img.onerror = (e) => {
           URL.revokeObjectURL(url);
@@ -312,46 +352,66 @@ export default function UserProfileEditor({
 
   const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0] || null;
+
     if (!f) {
       setPhotoFile(null);
       setPhotoError(null);
+
       return;
     }
     const MAX_MB = 5;
     const MAX_W = 4000;
     const MAX_H = 4000;
+
     if (f.size > MAX_MB * 1024 * 1024) {
-      addToast({ title: "Imagen pesada", description: `Se recortará y comprimirá automáticamente`, color: "warning", variant: "flat" });
+      addToast({
+        title: "Imagen pesada",
+        description: `Se recortará y comprimirá automáticamente`,
+        color: "warning",
+        variant: "flat",
+      });
     }
     try {
       const meta = await getImageMeta(f);
       let inputFile = f;
+
       if (meta.width > MAX_W || meta.height > MAX_H) {
         inputFile = await resizeImage(f, MAX_W, MAX_H);
       }
       setCropOriginalFile(inputFile);
       const url = URL.createObjectURL(inputFile);
+
       setCropUrl(url);
       const img = new Image();
+
       img.onload = () => {
         cropImgRef.current = img;
         const CROP_TARGET = 256;
         const minSide = Math.min(img.naturalWidth, img.naturalHeight);
+
         if (minSide < CROP_TARGET) {
           setPhotoError(`Mínimo ${CROP_TARGET}×${CROP_TARGET} px`);
-          addToast({ title: "Imagen muy pequeña", description: `Mínimo ${CROP_TARGET}×${CROP_TARGET} px`, color: "warning", variant: "solid" });
+          addToast({
+            title: "Imagen muy pequeña",
+            description: `Mínimo ${CROP_TARGET}×${CROP_TARGET} px`,
+            color: "warning",
+            variant: "solid",
+          });
           URL.revokeObjectURL(url);
           setCropUrl(null);
           setCropOpen(false);
           setPhotoFile(null);
+
           return;
         }
         const maxZoom = minSide / CROP_TARGET;
+
         setCropMaxZoom(maxZoom);
         setCropZoom(1);
         const sourceSize = minSide;
         const startX = Math.floor((img.naturalWidth - sourceSize) / 2);
         const startY = Math.floor((img.naturalHeight - sourceSize) / 2);
+
         setCropX(startX);
         setCropY(startY);
         setCropOpen(true);
@@ -361,12 +421,22 @@ export default function UserProfileEditor({
         URL.revokeObjectURL(url);
         setCropUrl(null);
         setPhotoError("Archivo inválido");
-        addToast({ title: "Archivo inválido", description: (err as any)?.message || "No se pudo leer la imagen", color: "danger", variant: "solid" });
+        addToast({
+          title: "Archivo inválido",
+          description: (err as any)?.message || "No se pudo leer la imagen",
+          color: "danger",
+          variant: "solid",
+        });
       };
       img.src = url;
     } catch (err: any) {
       setPhotoError("Archivo inválido");
-      addToast({ title: "Archivo inválido", description: err?.message || "No se pudo leer la imagen", color: "danger", variant: "solid" });
+      addToast({
+        title: "Archivo inválido",
+        description: err?.message || "No se pudo leer la imagen",
+        color: "danger",
+        variant: "solid",
+      });
       setPhotoFile(null);
     }
   };
@@ -375,20 +445,35 @@ export default function UserProfileEditor({
     if (!cropOpen) return;
     const img = cropImgRef.current;
     const canvas = previewCanvasRef.current;
+
     if (!img || !canvas) return;
     const ctx = canvas.getContext("2d");
+
     if (!ctx) return;
     const VIEW_SIZE = 320;
+
     canvas.width = VIEW_SIZE;
     canvas.height = VIEW_SIZE;
     const minSide = Math.min(img.naturalWidth, img.naturalHeight);
     const sourceSize = Math.floor(minSide / cropZoom);
+
     ctx.clearRect(0, 0, VIEW_SIZE, VIEW_SIZE);
-    ctx.drawImage(img, Math.floor(cropX), Math.floor(cropY), sourceSize, sourceSize, 0, 0, VIEW_SIZE, VIEW_SIZE);
+    ctx.drawImage(
+      img,
+      Math.floor(cropX),
+      Math.floor(cropY),
+      sourceSize,
+      sourceSize,
+      0,
+      0,
+      VIEW_SIZE,
+      VIEW_SIZE,
+    );
   }, [cropOpen, cropZoom, cropX, cropY]);
 
   const onZoomSlider = (val: number) => {
     const img = cropImgRef.current;
+
     if (!img) return;
     const minSide = Math.min(img.naturalWidth, img.naturalHeight);
     const oldZoom = cropZoom;
@@ -397,8 +482,15 @@ export default function UserProfileEditor({
     const newSize = minSide / newZoom;
     const cx = cropX + oldSize / 2;
     const cy = cropY + oldSize / 2;
-    const nx = Math.max(0, Math.min(img.naturalWidth - newSize, cx - newSize / 2));
-    const ny = Math.max(0, Math.min(img.naturalHeight - newSize, cy - newSize / 2));
+    const nx = Math.max(
+      0,
+      Math.min(img.naturalWidth - newSize, cx - newSize / 2),
+    );
+    const ny = Math.max(
+      0,
+      Math.min(img.naturalHeight - newSize, cy - newSize / 2),
+    );
+
     setCropX(nx);
     setCropY(ny);
     setCropZoom(newZoom);
@@ -413,11 +505,13 @@ export default function UserProfileEditor({
   const onCanvasPointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!draggingRef.current) return;
     const img = cropImgRef.current;
+
     if (!img) return;
     const VIEW_SIZE = 320;
     const minSide = Math.min(img.naturalWidth, img.naturalHeight);
     const sourceSize = minSide / cropZoom;
     const ds = dragStartRef.current;
+
     if (!ds) return;
     const dx = e.clientX - ds.x;
     const dy = e.clientY - ds.y;
@@ -426,6 +520,7 @@ export default function UserProfileEditor({
     const ny = cropY - dy * ratio;
     const maxX = img.naturalWidth - sourceSize;
     const maxY = img.naturalHeight - sourceSize;
+
     setCropX(Math.max(0, Math.min(maxX, nx)));
     setCropY(Math.max(0, Math.min(maxY, ny)));
     dragStartRef.current = { x: e.clientX, y: e.clientY };
@@ -439,29 +534,47 @@ export default function UserProfileEditor({
   const onCanvasWheel = (e: React.WheelEvent<HTMLCanvasElement>) => {
     e.preventDefault();
     const delta = e.deltaY > 0 ? -0.1 : 0.1;
+
     onZoomSlider(cropZoom + delta);
   };
 
   const applyCrop = async () => {
     const img = cropImgRef.current;
+
     if (!img) return;
     const CROP_TARGET = 256;
     const minSide = Math.min(img.naturalWidth, img.naturalHeight);
     const sourceSize = Math.floor(minSide / cropZoom);
     const canvas = document.createElement("canvas");
+
     canvas.width = CROP_TARGET;
     canvas.height = CROP_TARGET;
     const ctx = canvas.getContext("2d");
+
     if (!ctx) return;
-    ctx.drawImage(img, Math.floor(cropX), Math.floor(cropY), sourceSize, sourceSize, 0, 0, CROP_TARGET, CROP_TARGET);
+    ctx.drawImage(
+      img,
+      Math.floor(cropX),
+      Math.floor(cropY),
+      sourceSize,
+      sourceSize,
+      0,
+      0,
+      CROP_TARGET,
+      CROP_TARGET,
+    );
     const fileRef = cropOriginalFile;
     const mime = fileRef?.type || "image/jpeg";
     const base = fileRef?.name ? fileRef.name.replace(/\.[^/.]+$/, "") : "foto";
     const ext = (fileRef?.name?.split(".").pop() || "jpg").toLowerCase();
     const name = `${base}_crop.${ext}`;
-    const blob: Blob | null = await new Promise((resolve) => canvas.toBlob(resolve, mime, 0.92));
+    const blob: Blob | null = await new Promise((resolve) =>
+      canvas.toBlob(resolve, mime, 0.92),
+    );
+
     if (!blob) return;
     const outFile = new File([blob], name, { type: mime });
+
     setPhotoFile(outFile);
     setCropOpen(false);
     if (cropUrl) {
@@ -529,13 +642,14 @@ export default function UserProfileEditor({
           title={<span className="font-medium text-sm">Personal</span>}
         >
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
-
             <Input
               isDisabled={!canEdit}
               label="RUT"
               value={form.rut}
+              onBlur={() =>
+                setForm((prev: any) => ({ ...prev, rut: formatRut(prev.rut) }))
+              }
               onChange={(e) => handleChange("rut", e.target.value)}
-              onBlur={() => setForm((prev: any) => ({ ...prev, rut: formatRut(prev.rut) }))}
             />
             <Input
               isDisabled={!canEdit}
@@ -707,9 +821,9 @@ export default function UserProfileEditor({
               ))}
             </Select>
             <Switch
+              isDisabled={!canEdit}
               isSelected={Boolean(form.is_active)}
               onValueChange={(v) => handleChange("is_active", Boolean(v))}
-              isDisabled={!canEdit}
             >
               Usuario Activo
             </Switch>
@@ -729,48 +843,65 @@ export default function UserProfileEditor({
           </div>
         </Tab>
       </Tabs>
-      <Modal isOpen={cropOpen} onOpenChange={setCropOpen} placement="center" size="lg">
+      <Modal
+        isOpen={cropOpen}
+        placement="center"
+        size="lg"
+        onOpenChange={setCropOpen}
+      >
         <ModalContent>
           <ModalHeader>Ajustar fotografía</ModalHeader>
           <ModalBody>
             <div className="flex flex-col gap-4">
-              <div className="mx-auto rounded-xl overflow-hidden ring-1 ring-black/10 dark:ring-white/10" style={{ width: 320, height: 320 }}>
+              <div
+                className="mx-auto rounded-xl overflow-hidden ring-1 ring-black/10 dark:ring-white/10"
+                style={{ width: 320, height: 320 }}
+              >
                 <canvas
                   ref={previewCanvasRef as any}
-                  width={320}
+                  className="w-[320px] h-[320px] bg-default-100/40 dark:bg-default-50/20 cursor-grab active:cursor-grabbing"
                   height={320}
+                  width={320}
                   onPointerDown={onCanvasPointerDown}
+                  onPointerLeave={onCanvasPointerUp}
                   onPointerMove={onCanvasPointerMove}
                   onPointerUp={onCanvasPointerUp}
-                  onPointerLeave={onCanvasPointerUp}
                   onWheel={onCanvasWheel}
-                  className="w-[320px] h-[320px] bg-default-100/40 dark:bg-default-50/20 cursor-grab active:cursor-grabbing"
                 />
               </div>
               <div className="flex items-center gap-3">
                 <span className="text-sm text-default-600">Zoom</span>
                 <input
-                  type="range"
-                  min={1}
+                  className="flex-1"
                   max={cropMaxZoom}
+                  min={1}
                   step={0.01}
+                  type="range"
                   value={cropZoom}
                   onChange={(e) => onZoomSlider(parseFloat(e.target.value))}
-                  className="flex-1"
                 />
               </div>
-              <div className="text-xs text-default-500">Se recortará a 256×256 px</div>
+              <div className="text-xs text-default-500">
+                Se recortará a 256×256 px
+              </div>
             </div>
           </ModalBody>
           <ModalFooter>
-            <Button variant="light" onPress={() => {
-              setCropOpen(false);
-              if (cropUrl) {
-                URL.revokeObjectURL(cropUrl);
-                setCropUrl(null);
-              }
-            }}>Cancelar</Button>
-            <Button color="primary" onPress={applyCrop}>Aplicar recorte</Button>
+            <Button
+              variant="light"
+              onPress={() => {
+                setCropOpen(false);
+                if (cropUrl) {
+                  URL.revokeObjectURL(cropUrl);
+                  setCropUrl(null);
+                }
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button color="primary" onPress={applyCrop}>
+              Aplicar recorte
+            </Button>
           </ModalFooter>
         </ModalContent>
       </Modal>

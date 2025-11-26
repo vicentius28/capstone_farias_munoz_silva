@@ -3,6 +3,7 @@ import { User as HeroUser } from "@heroui/user";
 import { Avatar } from "@heroui/avatar";
 import { UserIcon } from "lucide-react";
 import { Skeleton } from "@heroui/skeleton";
+
 import useImageCache from "@/hooks/useImageCache";
 
 // Tipos más específicos y constantes
@@ -50,7 +51,8 @@ const OptimizedAvatar = memo<OptimizedAvatarProps>(function OptimizedAvatar({
   // Validar y normalizar la URL - SIMPLIFICADO
   const normalizedSrc = useMemo(() => {
     if (!src || typeof src !== "string") {
-      if (import.meta.env.DEV) console.log("OptimizedAvatar: No src provided or invalid type:", src);
+      if (import.meta.env.DEV)
+        console.log("OptimizedAvatar: No src provided or invalid type:", src);
 
       return undefined;
     }
@@ -58,18 +60,21 @@ const OptimizedAvatar = memo<OptimizedAvatarProps>(function OptimizedAvatar({
     const trimmedSrc = src.trim();
 
     if (!trimmedSrc) {
-      if (import.meta.env.DEV) console.log("OptimizedAvatar: Empty src after trim");
+      if (import.meta.env.DEV)
+        console.log("OptimizedAvatar: Empty src after trim");
 
       return undefined;
     }
 
-    if (import.meta.env.DEV) console.log("OptimizedAvatar: Using normalized src:", trimmedSrc);
+    if (import.meta.env.DEV)
+      console.log("OptimizedAvatar: Using normalized src:", trimmedSrc);
 
     return trimmedSrc;
   }, [src]);
 
   const isCorsProne = useMemo(() => {
     if (!normalizedSrc) return false;
+
     return (
       normalizedSrc.includes("storage.googleapis.com") ||
       normalizedSrc.includes("googleusercontent.com") ||
@@ -80,7 +85,8 @@ const OptimizedAvatar = memo<OptimizedAvatarProps>(function OptimizedAvatar({
 
   // Manejar errores de imagen
   const handleImageError = useCallback(() => {
-    if (import.meta.env.DEV) console.warn(`OptimizedAvatar: Image failed to load: ${normalizedSrc}`);
+    if (import.meta.env.DEV)
+      console.warn(`OptimizedAvatar: Image failed to load: ${normalizedSrc}`);
     setImageError(true);
     setImageSrc(undefined);
     setIsImageLoading(false);
@@ -94,7 +100,8 @@ const OptimizedAvatar = memo<OptimizedAvatarProps>(function OptimizedAvatar({
 
   // Manejar carga exitosa
   const handleImageLoad = useCallback(() => {
-    if (import.meta.env.DEV) console.log("OptimizedAvatar: Image loaded successfully:", normalizedSrc);
+    if (import.meta.env.DEV)
+      console.log("OptimizedAvatar: Image loaded successfully:", normalizedSrc);
     setImageError(false);
     setIsImageLoading(false);
     onImageLoad?.();
@@ -107,7 +114,8 @@ const OptimizedAvatar = memo<OptimizedAvatarProps>(function OptimizedAvatar({
     setImageSrc(undefined);
 
     if (!normalizedSrc) {
-      if (import.meta.env.DEV) console.log("OptimizedAvatar: No normalized src, showing fallback");
+      if (import.meta.env.DEV)
+        console.log("OptimizedAvatar: No normalized src, showing fallback");
       setImageError(true);
 
       return;
@@ -117,10 +125,15 @@ const OptimizedAvatar = memo<OptimizedAvatarProps>(function OptimizedAvatar({
     if (isCorsProne) {
       setImageSrc(normalizedSrc);
       setIsImageLoading(false);
+
       return;
     }
 
-    if (import.meta.env.DEV) console.log("OptimizedAvatar: Starting cached image load for:", normalizedSrc);
+    if (import.meta.env.DEV)
+      console.log(
+        "OptimizedAvatar: Starting cached image load for:",
+        normalizedSrc,
+      );
     setIsImageLoading(true);
 
     const cached = getCachedImage(normalizedSrc);
@@ -142,14 +155,22 @@ const OptimizedAvatar = memo<OptimizedAvatarProps>(function OptimizedAvatar({
       })
       .catch((err) => {
         if (cancelled) return;
-        if (import.meta.env.DEV) console.error("OptimizedAvatar: cacheImage error", err);
+        if (import.meta.env.DEV)
+          console.error("OptimizedAvatar: cacheImage error", err);
         handleImageError();
       });
 
     return () => {
       cancelled = true;
     };
-  }, [normalizedSrc, isCorsProne, getCachedImage, cacheImage, handleImageError, handleImageLoad]);
+  }, [
+    normalizedSrc,
+    isCorsProne,
+    getCachedImage,
+    cacheImage,
+    handleImageError,
+    handleImageLoad,
+  ]);
 
   // Props del avatar
   const avatarProps = useMemo(

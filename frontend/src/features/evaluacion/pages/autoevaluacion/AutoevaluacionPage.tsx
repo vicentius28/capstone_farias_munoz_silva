@@ -1,5 +1,5 @@
-import { useEffect, useState, lazy, Suspense } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState, lazy, Suspense } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Spinner } from "@heroui/spinner";
 import { addToast } from "@heroui/toast";
 
@@ -20,10 +20,44 @@ interface Autoevaluacion {
 export default function AutoevaluacionPage() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { state, search } = useLocation();
+  const selectedId = useMemo(() => {
+    const fromState = state?.id;
+    const params = new URLSearchParams(search);
+    const fromQuery = params.get("id");
+    const raw = fromState ?? fromQuery;
+    const num = raw != null ? Number(String(raw).split("/")[0]) : undefined;
+
+    return Number.isFinite(num as number) ? (num as number) : undefined;
+  }, [state, search]);
 
   useEffect(() => {
     const cargarAutoevaluacion = async () => {
       try {
+        const cameFromInicio = state?.from === "/autoevaluacion/inicio";
+        const hasId = Boolean(selectedId);
+
+        // Si ya viene un ID desde la selección o query, respetarlo
+        if (hasId) {
+          setLoading(false);
+
+          return;
+        }
+
+        // Si venimos explícitamente desde el listado y no hay id, NO hacer fallback
+        if (cameFromInicio) {
+          addToast({
+            title: "Selecciona una autoevaluación",
+            description: "No se encontró el período seleccionado.",
+            color: "warning",
+            variant: "solid",
+          });
+          navigate("/autoevaluacion/inicio", { replace: true });
+
+          return;
+        }
+
+        // Fallback solo para accesos directos sin state ni query
         const response = await axios.get<Autoevaluacion[]>(
           "/evaluacion/api/autoevaluaciones/",
         );
@@ -32,6 +66,7 @@ export default function AutoevaluacionPage() {
         if (evaluacionPendiente) {
           navigate("/autoevaluacion/inicio/formulario", {
             state: { id: evaluacionPendiente.id },
+            replace: true,
           });
         } else {
           addToast({
@@ -40,7 +75,7 @@ export default function AutoevaluacionPage() {
             color: "warning",
             variant: "solid",
           });
-          navigate("/autoevaluacion?sinEvaluacion=true");
+          navigate("/autoevaluacion?sinEvaluacion=true", { replace: true });
         }
       } catch (err) {
         console.error(err);
@@ -56,7 +91,7 @@ export default function AutoevaluacionPage() {
     };
 
     cargarAutoevaluacion();
-  }, [navigate]);
+  }, [navigate, selectedId]);
 
   if (loading) {
     return (

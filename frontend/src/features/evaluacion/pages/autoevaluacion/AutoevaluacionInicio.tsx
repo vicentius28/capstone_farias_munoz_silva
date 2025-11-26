@@ -13,20 +13,25 @@ import {
 } from "@heroui/table";
 import { Select, SelectItem } from "@heroui/select";
 import { Chip } from "@heroui/chip";
-import { Divider } from "@heroui/divider";
-
-import "@/features/evaluacion/styles/animations.css";
-import axios from "axios";
-import { addToast } from "@heroui/toast";
 import { Button } from "@heroui/button";
+import { Skeleton } from "@heroui/skeleton";
+import { addToast } from "@heroui/toast";
+
+// Iconos estándar (Heroicons)
+import {
+  ClipboardDocumentCheckIcon,
+  ClockIcon,
+  CheckCircleIcon,
+  ChartPieIcon,
+  Squares2X2Icon,
+  TableCellsIcon,
+  FunnelIcon,
+} from "@heroicons/react/24/outline";
 
 import { useAutoevaluaciones } from "@/features/evaluacion/hooks/useAutoevaluaciones";
-import {
-  EvaluacionGrid,
-  GridSkeleton,
-} from "@/features/evaluacion/components/autoevaluacion/PageInicio";
+import { EvaluacionGrid } from "@/features/evaluacion/components/autoevaluacion/PageInicio";
 
-// Tipos para mejor tipado
+// --- Tipos ---
 interface Estadisticas {
   total: number;
   completadas: number;
@@ -35,175 +40,57 @@ interface Estadisticas {
   promedioLogro: number;
 }
 
+// --- Componente StatCard Moderno (Bento Style) ---
 interface StatCardProps {
   title: string;
-  value: number;
-  subtitle: string;
-  description: string;
+  value: number | string;
+  subtitle?: string;
   icon: React.ReactNode;
+  trend?: string; // Opcional: para mostrar "+5%" etc
   color: "blue" | "amber" | "green" | "purple";
-  percentage?: number;
 }
 
-// Componente reutilizable para tarjetas de estadísticas
-const StatCard = ({
-  value,
-  subtitle,
-  description,
-  icon,
-  color,
-  percentage,
-}: StatCardProps) => {
-  const colorClasses = {
-    blue: {
-      bg: "from-blue-50 to-blue-100 dark:from-blue-950/50 dark:to-blue-900/50",
-      iconBg: "bg-blue-500",
-      textPrimary: "text-blue-700 dark:text-blue-300",
-      textSecondary: "text-blue-600 dark:text-blue-400",
-      textTertiary: "text-blue-500 dark:text-blue-500",
-    },
-    amber: {
-      bg: "from-amber-50 to-orange-100 dark:from-amber-950/50 dark:to-orange-900/50",
-      iconBg: "bg-amber-500",
-      textPrimary: "text-amber-700 dark:text-amber-300",
-      textSecondary: "text-amber-600 dark:text-amber-400",
-      textTertiary: "text-amber-500 dark:text-amber-500",
-    },
-    green: {
-      bg: "from-green-50 to-emerald-100 dark:from-green-950/50 dark:to-emerald-900/50",
-      iconBg: "bg-green-500",
-      textPrimary: "text-green-700 dark:text-green-300",
-      textSecondary: "text-green-600 dark:text-green-400",
-      textTertiary: "text-green-500 dark:text-green-500",
-    },
-    purple: {
-      bg: "from-purple-50 to-violet-100 dark:from-purple-950/50 dark:to-violet-900/50",
-      iconBg: "bg-purple-500",
-      textPrimary: "text-purple-700 dark:text-purple-300",
-      textSecondary: "text-purple-600 dark:text-purple-400",
-      textTertiary: "text-purple-500 dark:text-purple-500",
-    },
+const StatCard = ({ title, value, subtitle, icon, color }: StatCardProps) => {
+  const styles = {
+    blue: "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400",
+    amber:
+      "bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400",
+    green:
+      "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400",
+    purple:
+      "bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400",
   };
 
-  const classes = colorClasses[color];
-
   return (
-    <Card
-      className={`bg-gradient-to-br ${classes.bg} border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105`}
-    >
-      <CardBody className="p-6">
-        <div className="flex items-start justify-between mb-4">
-          <div
-            className={`inline-flex items-center justify-center w-12 h-12 ${classes.iconBg} rounded-xl shadow-lg`}
-          >
-            {icon}
-          </div>
-          {percentage !== undefined && (
-            <Chip
-              className="font-bold"
-              color={
-                color === "blue"
-                  ? "primary"
-                  : color === "amber"
-                    ? "warning"
-                    : color === "green"
-                      ? "success"
-                      : "secondary"
-              }
-              size="sm"
-              variant="flat"
-            >
-              {percentage}%
-            </Chip>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <div className="flex items-center justify-start gap-3">
-            <h3 className={`text-2xl font-bold ${classes.textPrimary}`}>
+    <Card className="border border-gray-200 dark:border-gray-800 shadow-sm bg-white dark:bg-gray-900">
+      <CardBody className="p-5 flex items-start justify-between">
+        <div>
+          <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+            {title}
+          </p>
+          <div className="mt-2 flex items-baseline gap-2">
+            <span className="text-3xl font-bold text-gray-900 dark:text-white">
               {value}
-            </h3>
-            <p className={`font-semibold ${classes.textSecondary}`}>
-              {subtitle}
-            </p>
+            </span>
+            {subtitle && (
+              <span className="text-xs font-medium text-gray-400">
+                {subtitle}
+              </span>
+            )}
           </div>
-          <p className={`text-sm ${classes.textTertiary}`}>{description}</p>
         </div>
+        <div className={`p-3 rounded-xl ${styles[color]}`}>{icon}</div>
       </CardBody>
     </Card>
   );
 };
 
-// Iconos como componentes para mejor rendimiento
-const Icons = {
-  clipboard: (
-    <svg
-      className="w-6 h-6 text-white"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-      />
-    </svg>
-  ),
-  clock: (
-    <svg
-      className="w-6 h-6 text-white"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-      />
-    </svg>
-  ),
-  check: (
-    <svg
-      className="w-6 h-6 text-white"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-      />
-    </svg>
-  ),
-  target: (
-    <svg
-      className="w-6 h-6 text-white"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-      />
-    </svg>
-  ),
-};
-
 export default function AutoevaluacionInicioPage() {
   const navigate = useNavigate();
   const [tab, setTab] = useState<"pendientes" | "finalizadas">("pendientes");
+  const { pendientes, finalizadas, loading, error } = useAutoevaluaciones();
 
-  const { pendientes, finalizadas, loading, error, showLoadingUI } =
-    useAutoevaluaciones();
+  // --- Lógica de Negocio (Intacta) ---
   const all = useMemo(
     () => [...pendientes, ...finalizadas],
     [pendientes, finalizadas],
@@ -211,6 +98,7 @@ export default function AutoevaluacionInicioPage() {
 
   const [yearFilter, setYearFilter] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
+
   const years = useMemo(() => {
     const extractYear = (v: any) => {
       const s = String(v?.fecha_evaluacion ?? v?.periodo ?? "");
@@ -231,7 +119,7 @@ export default function AutoevaluacionInicioPage() {
 
   const yearItems = useMemo(
     () => [
-      { key: "all", label: "Todos" },
+      { key: "all", label: "Todos los años" },
       ...years.map((y) => ({ key: y, label: y })),
     ],
     [years],
@@ -271,22 +159,17 @@ export default function AutoevaluacionInicioPage() {
     return sortByPeriodDesc(base);
   }, [finalizadas, yearFilter]);
 
-  // Estadísticas calculadas con promedio de logro
   const estadisticas = useMemo((): Estadisticas => {
     const total = pendientes.length + finalizadas.length;
     const completadas = finalizadas.length;
     const progresoGeneral = total > 0 ? (completadas / total) * 100 : 0;
-
     const promedioLogro =
       finalizadas.length > 0
-        ? finalizadas.reduce((acc: number, item: any) => {
-            const logro = item?.logro_obtenido || 0; // ✅ Ya usa logro_obtenido del backend
-
-            return acc + logro;
-          }, 0) / finalizadas.length
+        ? finalizadas.reduce(
+            (acc: number, item: any) => acc + (item?.logro_obtenido || 0),
+            0,
+          ) / finalizadas.length
         : 0;
-
-    console.log("Promedio de logro calculado:", promedioLogro);
 
     return {
       total,
@@ -297,410 +180,291 @@ export default function AutoevaluacionInicioPage() {
     };
   }, [pendientes, finalizadas]);
 
-  // Función optimizada para abrir evaluaciones
   const openEvaluacion = useCallback(
     async (id: number | string, finalizada: boolean) => {
       if (!finalizada) {
         navigate("/autoevaluacion/inicio/formulario", {
-          state: { id, from: "/autoevaluacion/inicio" },
+          state: { id: String(id), from: "/autoevaluacion/inicio" },
         });
 
         return;
       }
-
       try {
-        // Buscar en memoria primero (opcional)
-        let item = all.find((e: any) => e?.id === id);
-        let isPonderada = item?.ponderada;
-
-        // Fallback a la API si es necesario (opcional)
-        if (typeof isPonderada !== "boolean") {
-          const { data } = await axios.get(
-            `/evaluacion/api/autoevaluaciones/${id}/`,
-            {
-              params: { _t: Date.now() },
-            },
-          );
-
-          isPonderada = !!(data?.ponderada ?? data?.tipo_evaluacion?.ponderada);
-        }
-
-        // ✅ Navegar al detalle de autoevaluación finalizada
         navigate("/autoevaluacion/inicio/detalle", {
-          state: { id, from: "/autoevaluacion/inicio" },
+          state: { id: String(id), from: "/autoevaluacion/inicio" },
         });
       } catch (error) {
         addToast({
           title: "Error",
-          description: "No se pudo abrir el detalle de la autoevaluación.",
+          description: "No se pudo abrir el detalle.",
           color: "danger",
-          variant: "solid",
         });
       }
     },
-    [navigate, all],
+    [navigate],
   );
 
+  // --- Renderizado ---
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-900 dark:via-blue-950/30 dark:to-indigo-950/50">
-      {/* Barra de carga */}
-      {showLoadingUI && (
-        <div className="fixed top-0 left-0 right-0 z-50 h-1 bg-slate-200 dark:bg-slate-700">
-          <div
-            className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 animate-pulse"
-            style={{
-              animation: "shimmer 2s infinite linear",
-              backgroundSize: "200% 100%",
-            }}
-          />
-        </div>
-      )}
-
-      {/* Elementos decorativos optimizados */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-24 -right-24 w-64 h-64 bg-gradient-to-br from-blue-400/10 to-indigo-600/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-gradient-to-tr from-purple-400/10 to-pink-600/10 rounded-full blur-3xl animate-pulse delay-1000" />
-      </div>
-
-      <div className="relative z-10 container mx-auto px-4 py-8 max-w-7xl">
-        {/* Header simplificado */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl mb-6 shadow-xl shadow-blue-500/25">
-            <svg
-              className="w-8 h-8 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-              />
-            </svg>
-          </div>
-
-          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent mb-4">
+    <div className="w-full max-w-7xl mx-auto p-6 space-y-8 animate-in fade-in duration-500">
+      {/* 1. HEADER */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
             Mis Autoevaluaciones
           </h1>
-
-          <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-            Gestiona tu desarrollo profesional y revisa tu progreso
+          <p className="text-gray-500 mt-1">
+            Gestiona tu historial y tareas pendientes.
           </p>
         </div>
-
-        {/* Dashboard de estadísticas mejorado */}
-        {estadisticas.total > 0 && (
-          <div className="mb-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              <StatCard
-                color="blue"
-                description="Total de Autoevaluaciones asignadas"
-                icon={Icons.clipboard}
-                subtitle="Autoevaluaciones"
-                title="Total"
-                value={estadisticas.total}
-              />
-
-              <StatCard
-                color="amber"
-                description="Autoevaluaciones que requieren tu atención"
-                icon={Icons.clock}
-                subtitle="por completar"
-                title="Pendientes"
-                value={estadisticas.pendientes}
-              />
-
-              <StatCard
-                color="green"
-                description="Autoevaluaciones ya completadas"
-                icon={Icons.check}
-                subtitle="finalizadas"
-                title="Completadas"
-                value={estadisticas.completadas}
-              />
-
-              <StatCard
-                color="purple"
-                description="Porcentaje de avance general"
-                icon={Icons.target}
-                subtitle="% completado"
-                title="Progreso"
-                value={Math.round(estadisticas.progresoGeneral)}
-              />
-            </div>
-          </div>
-        )}
-
-        <Divider className="mb-8" />
-
-        {/* Sección de tabs simplificada */}
-        <Card className="bg-white/80 backdrop-blur-xl border-0 shadow-xl dark:bg-slate-800/80">
-          <CardHeader className="pb-0">
-            <div className="w-full">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-slate-800 dark:text-white">
-                  Gestión de Evaluaciones
-                </h2>
-                {estadisticas.pendientes > 0 && (
-                  <Chip
-                    className="animate-pulse font-semibold"
-                    color="warning"
-                    variant="flat"
-                  >
-                    {estadisticas.pendientes} pendiente
-                    {estadisticas.pendientes !== 1 ? "s" : ""}
-                  </Chip>
-                )}
-              </div>
-
-              {/* Tabs mejorados */}
-              <Tabs
-                classNames={{
-                  tabList:
-                    "gap-6 w-full relative rounded-xl bg-slate-50/50 dark:bg-slate-700/50 p-1",
-                  cursor:
-                    "w-full bg-white dark:bg-slate-600 shadow-md rounded-lg",
-                  tab: "max-w-fit px-6 py-3 h-12",
-                  tabContent:
-                    "group-data-[selected=true]:text-slate-800 dark:group-data-[selected=true]:text-white font-semibold",
-                }}
-                selectedKey={tab}
-                variant="underlined"
-                onSelectionChange={(key) => setTab(key as typeof tab)}
-              >
-                <Tab
-                  key="pendientes"
-                  title={
-                    <div className="flex items-center gap-2">
-                      <span>📋</span>
-                      <span>Pendientes</span>
-                      {estadisticas.pendientes > 0 && (
-                        <Chip
-                          className="font-bold"
-                          color="warning"
-                          size="sm"
-                          variant="flat"
-                        >
-                          {estadisticas.pendientes}
-                        </Chip>
-                      )}
-                    </div>
-                  }
-                />
-                <Tab
-                  key="finalizadas"
-                  title={
-                    <div className="flex items-center gap-2">
-                      <span>✅</span>
-                      <span>Finalizadas</span>
-                      {estadisticas.completadas > 0 && (
-                        <Chip
-                          className="font-bold"
-                          color="success"
-                          size="sm"
-                          variant="flat"
-                        >
-                          {estadisticas.completadas}
-                        </Chip>
-                      )}
-                    </div>
-                  }
-                />
-              </Tabs>
-            </div>
-          </CardHeader>
-
-          <CardBody className="pt-6">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-6">
-              <div className="flex items-center gap-3">
-                <Select
-                  className="w-full md:w-[240px]"
-                  classNames={{
-                    trigger: "h-11",
-                    label: "text-default-600",
-                    value: "text-sm",
-                  }}
-                  items={yearItems}
-                  label="Año"
-                  labelPlacement="outside-left"
-                  selectedKeys={[yearFilter]}
-                  size="md"
-                  onSelectionChange={(keys) => {
-                    const key = Array.from(keys as Set<React.Key>)[0] as
-                      | string
-                      | undefined;
-
-                    setYearFilter(key ?? "all");
-                  }}
-                >
-                  {(item) => (
-                    <SelectItem key={item.key}>{item.label}</SelectItem>
-                  )}
-                </Select>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="text-xs text-default-500">
-                  {yearFilter === "all"
-                    ? `Mostrando ${all.length} evaluaciones`
-                    : `Año ${yearFilter}: ${filteredPendientes.length + filteredFinalizadas.length} evaluaciones`}
-                </div>
-                <div className="hidden md:flex items-center gap-2">
-                  <Button
-                    color={viewMode === "cards" ? "primary" : "default"}
-                    size="sm"
-                    variant={viewMode === "cards" ? "solid" : "flat"}
-                    onPress={() => setViewMode("cards")}
-                  >
-                    Tarjetas
-                  </Button>
-                  <Button
-                    color={viewMode === "table" ? "primary" : "default"}
-                    size="sm"
-                    variant={viewMode === "table" ? "solid" : "flat"}
-                    onPress={() => setViewMode("table")}
-                  >
-                    Tabla
-                  </Button>
-                </div>
-              </div>
-            </div>
-            <div className="min-h-[400px]">
-              {viewMode === "cards" ? (
-                tab === "pendientes" ? (
-                  showLoadingUI ? (
-                    <GridSkeleton />
-                  ) : (
-                    <EvaluacionGrid
-                      finalizada={false}
-                      items={filteredPendientes}
-                      onOpen={openEvaluacion}
-                    />
-                  )
-                ) : showLoadingUI ? (
-                  <GridSkeleton />
-                ) : (
-                  <EvaluacionGrid
-                    finalizada={true}
-                    items={filteredFinalizadas}
-                    onOpen={openEvaluacion}
-                  />
-                )
-              ) : (
-                <Table
-                  isStriped
-                  aria-label="Listado de autoevaluaciones"
-                  classNames={{ wrapper: "min-h-[400px]" }}
-                  selectedKeys={new Set()}
-                  selectionMode="none"
-                >
-                  <TableHeader>
-                    <TableColumn>Evaluación</TableColumn>
-                    <TableColumn>Período</TableColumn>
-                    <TableColumn>Estado</TableColumn>
-                    <TableColumn>Acción</TableColumn>
-                  </TableHeader>
-                  <TableBody>
-                    {(tab === "pendientes"
-                      ? filteredPendientes
-                      : filteredFinalizadas
-                    ).map((ev: any) => (
-                      <TableRow key={String(ev.id)}>
-                        <TableCell>
-                          {ev?.tipo_evaluacion?.n_tipo_evaluacion ??
-                            "Autoevaluación"}
-                        </TableCell>
-                        <TableCell>
-                          {ev?.fecha_evaluacion ?? ev?.periodo ?? ""}
-                        </TableCell>
-                        <TableCell>
-                          <Chip
-                            color={tab === "pendientes" ? "warning" : "success"}
-                            size="sm"
-                            variant="flat"
-                          >
-                            {tab === "pendientes" ? "Pendiente" : "Finalizada"}
-                          </Chip>
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            color={tab === "pendientes" ? "warning" : "success"}
-                            size="sm"
-                            variant="flat"
-                            onPress={() =>
-                              openEvaluacion(
-                                String(ev.id).split("/")[0],
-                                tab !== "pendientes",
-                              )
-                            }
-                          >
-                            {tab === "pendientes" ? "Continuar" : "Ver"}
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
-            </div>
-
-            {/* Estados de carga y error optimizados */}
-            {loading && (
-              <div className="text-center py-8">
-                <div className="inline-flex items-center gap-3 px-4 py-2 bg-blue-50 dark:bg-blue-950/50 rounded-full">
-                  <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                  <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
-                    Cargando autoevaluaciones...
-                  </span>
-                </div>
-              </div>
-            )}
-
-            {error && (
-              <div className="text-center py-8">
-                <Card className="bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 max-w-md mx-auto">
-                  <CardBody className="p-6">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
-                        <svg
-                          className="w-4 h-4 text-white"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                          />
-                        </svg>
-                      </div>
-                      <h3 className="font-semibold text-red-800 dark:text-red-200">
-                        Error al cargar
-                      </h3>
-                    </div>
-                    <p className="text-sm text-red-600 dark:text-red-300">
-                      {error}
-                    </p>
-                    <Button
-                      color="danger"
-                      size="sm"
-                      variant="flat"
-                      onPress={() => window.location.reload()}
-                    >
-                      Reintentar
-                    </Button>
-                  </CardBody>
-                </Card>
-              </div>
-            )}
-          </CardBody>
-        </Card>
+        {/* Aquí podrías poner un botón de "Descargar Reporte" si existiera la función */}
       </div>
 
-      {/* Estilos para animaciones personalizadas */}
+      {/* 2. STATS GRID (Diseño Limpio) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard
+          color="blue"
+          icon={<ClipboardDocumentCheckIcon className="w-6 h-6" />}
+          title="Total Asignadas"
+          value={estadisticas.total}
+        />
+        <StatCard
+          color="amber"
+          icon={<ClockIcon className="w-6 h-6" />}
+          subtitle="Requieren atención"
+          title="Pendientes"
+          value={estadisticas.pendientes}
+        />
+        <StatCard
+          color="green"
+          icon={<CheckCircleIcon className="w-6 h-6" />}
+          title="Completadas"
+          value={estadisticas.completadas}
+        />
+        <StatCard
+          color="purple"
+          icon={<ChartPieIcon className="w-6 h-6" />}
+          title="Progreso Global"
+          value={`${Math.round(estadisticas.progresoGeneral)}%`}
+        />
+      </div>
+
+      {/* 3. CONTENIDO PRINCIPAL (Tabs + Filtros + Lista) */}
+      <Card className="shadow-sm border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+        <CardHeader className="flex flex-col md:flex-row gap-4 justify-between items-center px-6 py-5 border-b border-gray-100 dark:border-gray-800">
+          {/* Tabs */}
+          <Tabs
+            aria-label="Estado de evaluaciones"
+            classNames={{
+              tabList: "gap-4",
+              cursor: "w-full bg-blue-50 dark:bg-blue-900/20",
+              tabContent:
+                "group-data-[selected=true]:text-blue-600 font-medium",
+            }}
+            color="primary"
+            selectedKey={tab}
+            variant="light"
+            onSelectionChange={(k) => setTab(k as any)}
+          >
+            <Tab
+              key="pendientes"
+              title={
+                <div className="flex items-center gap-2">
+                  <span>Pendientes</span>
+                  {estadisticas.pendientes > 0 && (
+                    <Chip color="warning" size="sm" variant="flat">
+                      {estadisticas.pendientes}
+                    </Chip>
+                  )}
+                </div>
+              }
+            />
+            <Tab
+              key="finalizadas"
+              title={
+                <div className="flex items-center gap-2">
+                  <span>Finalizadas</span>
+                  {estadisticas.completadas > 0 && (
+                    <Chip color="success" size="sm" variant="flat">
+                      {estadisticas.completadas}
+                    </Chip>
+                  )}
+                </div>
+              }
+            />
+          </Tabs>
+
+          {/* Toolbar (Filtros y Vista) */}
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            <Select
+              className="w-40"
+              defaultSelectedKeys={["all"]}
+              selectedKeys={[yearFilter]}
+              size="sm"
+              startContent={<FunnelIcon className="w-4 h-4 text-gray-400" />}
+              onSelectionChange={(keys) =>
+                setYearFilter(Array.from(keys)[0] as string)
+              }
+            >
+              {yearItems.map((item) => (
+                <SelectItem key={item.key}>{item.label}</SelectItem>
+              ))}
+            </Select>
+
+            <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
+              <Button
+                isIconOnly
+                className={
+                  viewMode === "cards"
+                    ? "bg-white shadow-sm text-gray-900"
+                    : "text-gray-500"
+                }
+                color={viewMode === "cards" ? "secondary" : "default"}
+                size="sm"
+                variant={viewMode === "cards" ? "solid" : "light"}
+                onPress={() => setViewMode("cards")}
+              >
+                <Squares2X2Icon className="w-5 h-5" />
+              </Button>
+              <Button
+                isIconOnly
+                className={
+                  viewMode === "table"
+                    ? "bg-white shadow-sm text-gray-900"
+                    : "text-gray-500"
+                }
+                color={viewMode === "table" ? "secondary" : "default"}
+                size="sm"
+                variant={viewMode === "table" ? "solid" : "light"}
+                onPress={() => setViewMode("table")}
+              >
+                <TableCellsIcon className="w-5 h-5" />
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+
+        <CardBody className="p-6 min-h-[400px]">
+          {/* Loading State */}
+          {loading && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="border p-4 rounded-xl space-y-3">
+                  <Skeleton className="w-1/3 h-4 rounded-lg" />
+                  <Skeleton className="w-full h-24 rounded-lg" />
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Error State */}
+          {!loading && error && (
+            <div className="text-center py-10 text-red-500">
+              <p>Error: {error}</p>
+              <Button
+                className="mt-4"
+                color="danger"
+                size="sm"
+                variant="flat"
+                onPress={() => window.location.reload()}
+              >
+                Reintentar
+              </Button>
+            </div>
+          )}
+
+          {/* Empty State */}
+          {!loading &&
+            !error &&
+            ((tab === "pendientes" ? filteredPendientes : filteredFinalizadas)
+              .length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+                <ClipboardDocumentCheckIcon className="w-16 h-16 mb-4 opacity-20" />
+                <p className="text-lg font-medium">
+                  No hay evaluaciones en esta sección
+                </p>
+                <p className="text-sm">Prueba cambiando el filtro de año.</p>
+              </div>
+            ) : // Content
+            viewMode === "cards" ? (
+              <EvaluacionGrid
+                finalizada={tab === "finalizadas"}
+                items={
+                  tab === "pendientes"
+                    ? filteredPendientes
+                    : filteredFinalizadas
+                }
+                onOpen={(id) => openEvaluacion(id, tab === "finalizadas")}
+              />
+            ) : (
+              <TableView
+                isPendiente={tab === "pendientes"}
+                items={
+                  tab === "pendientes"
+                    ? filteredPendientes
+                    : filteredFinalizadas
+                }
+                onAction={openEvaluacion}
+              />
+            ))}
+        </CardBody>
+      </Card>
     </div>
   );
 }
+
+// --- Subcomponente Tabla para mantener limpio el principal ---
+const TableView = ({
+  items,
+  isPendiente,
+  onAction,
+}: {
+  items: any[];
+  isPendiente: boolean;
+  onAction: any;
+}) => (
+  <Table
+    aria-label="Tabla de evaluaciones"
+    classNames={{ wrapper: "p-0" }}
+    shadow="none"
+  >
+    <TableHeader>
+      <TableColumn>NOMBRE</TableColumn>
+      <TableColumn>PERIODO</TableColumn>
+      <TableColumn>ESTADO</TableColumn>
+      <TableColumn align="end">ACCIÓN</TableColumn>
+    </TableHeader>
+    <TableBody>
+      {items.map((ev: any) => (
+        <TableRow key={ev.id}>
+          <TableCell className="font-medium">
+            {ev?.tipo_evaluacion?.n_tipo_evaluacion || "Autoevaluación"}
+          </TableCell>
+          <TableCell>{ev?.fecha_evaluacion || ev?.periodo}</TableCell>
+          <TableCell>
+            <Chip
+              color={isPendiente ? "warning" : "success"}
+              size="sm"
+              variant="dot"
+            >
+              {isPendiente ? "Pendiente" : "Finalizada"}
+            </Chip>
+          </TableCell>
+          <TableCell>
+            <Button
+              color="primary"
+              size="sm"
+              variant="flat"
+              onPress={() =>
+                onAction(String(ev.id).split("/")[0], !isPendiente)
+              }
+            >
+              {isPendiente ? "Continuar" : "Ver Resultados"}
+            </Button>
+          </TableCell>
+        </TableRow>
+      ))}
+    </TableBody>
+  </Table>
+);

@@ -12,25 +12,25 @@ interface Props {
 
 export default function VistaTabla({ items, onVerMixta }: Props) {
   return (
-    <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-xl">
+    <Card className="bg-background/70 backdrop-blur-sm border border-divider shadow-xl">
       <CardBody className="p-0">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-slate-50 border-b border-slate-200">
+            <thead className="bg-background border-b border-divider">
               <tr>
-                <th className="text-left p-4 font-semibold text-slate-700">
+                <th className="text-left p-4 font-semibold text-foreground">
                   Evaluado
                 </th>
-                <th className="text-left p-4 font-semibold text-slate-700">
+                <th className="text-left p-4 font-semibold text-foreground">
                   Evaluador
                 </th>
-                <th className="text-left p-4 font-semibold text-slate-700">
+                <th className="text-left p-4 font-semibold text-foreground">
                   Tipo
                 </th>
-                <th className="text-left p-4 font-semibold text-slate-700">
+                <th className="text-left p-4 font-semibold text-foreground">
                   Período
                 </th>
-                <th className="text-left p-4 font-semibold text-slate-700">
+                <th className="text-left p-4 font-semibold text-foreground">
                   Acciones
                 </th>
               </tr>
@@ -39,7 +39,7 @@ export default function VistaTabla({ items, onVerMixta }: Props) {
               {items.map((item, idx) => (
                 <tr
                   key={item.id}
-                  className={`border-b border-slate-100 hover:bg-slate-50 transition-colors ${idx % 2 === 0 ? "bg-white" : "bg-slate-25"}`}
+                  className={`border-b border-divider hover:bg-default-50/50 transition-colors ${idx % 2 === 0 ? "bg-background" : "bg-default-50/30"}`}
                 >
                   <td className="p-4">
                     <div className="flex items-center gap-3">
@@ -47,12 +47,12 @@ export default function VistaTabla({ items, onVerMixta }: Props) {
                         {item.persona.first_name.charAt(0)}
                         {item.persona.last_name.charAt(0)}
                       </div>
-                      <span className="font-medium text-slate-800">
+                      <span className="font-medium text-foreground">
                         {item.persona.first_name} {item.persona.last_name}
                       </span>
                     </div>
                   </td>
-                  <td className="p-4 text-slate-600">
+                  <td className="p-4 text-default-600 dark:text-default-300">
                     {item.evaluador.first_name} {item.evaluador.last_name}
                   </td>
                   <td className="p-4">
@@ -60,7 +60,7 @@ export default function VistaTabla({ items, onVerMixta }: Props) {
                       {item.asignacion.tipo_evaluacion.n_tipo_evaluacion}
                     </Chip>
                   </td>
-                  <td className="p-4 text-slate-600">
+                  <td className="p-4 text-default-600 dark:text-default-300">
                     {item.asignacion.fecha_evaluacion}
                   </td>
                   <td className="p-4">

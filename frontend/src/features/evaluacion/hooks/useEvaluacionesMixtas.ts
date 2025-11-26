@@ -7,11 +7,10 @@ import {
   useCallback,
 } from "react";
 
-import { fetchAsignarEvaluacion } from "@/features/evaluacion/services/asignar/evaluacion";
+import { listarEvaluacionesMixtas } from "@/features/evaluacion/services/evaluacionMixta";
 import { AsignacionEvaluacion } from "@/features/evaluacion/types/asignar/evaluacion";
 import {
   flattenDetalles,
-  filtrarDetalles,
   paginar,
 } from "@/features/evaluacion/utils/evaluacionMixta";
 
@@ -28,6 +27,7 @@ export function useEvaluacionesMixtas(itemsPorPagina = 6) {
   const [asignaciones, setAsignaciones] = useState<AsignacionEvaluacion[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [loadingGate] = useState(false);
 
   const [filtros, setFiltros] = useState<FiltrosEvaluacion>({
     busqueda: "",
@@ -46,12 +46,14 @@ export function useEvaluacionesMixtas(itemsPorPagina = 6) {
     (async () => {
       try {
         setLoading(true);
-        const data = await fetchAsignarEvaluacion();
-        const conJefatura = data.filter(
-          (a) => a.detalles && a.detalles.length > 0,
-        );
+        const data = await listarEvaluacionesMixtas({
+          q: deferredBusqueda || undefined,
+          tipo: filtros.tipoEvaluacion || undefined,
+          anio: filtros.año || undefined,
+          scope: "all",
+        });
 
-        setAsignaciones(conJefatura);
+        setAsignaciones(data);
       } catch (e) {
         console.error(e);
         setError("Error al cargar las evaluaciones disponibles");
@@ -59,7 +61,7 @@ export function useEvaluacionesMixtas(itemsPorPagina = 6) {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [deferredBusqueda, filtros.tipoEvaluacion, filtros.año]);
 
   // opciones únicas para selects
   const opcionesFiltros = useMemo(() => {
@@ -83,16 +85,11 @@ export function useEvaluacionesMixtas(itemsPorPagina = 6) {
     return { tipos, años };
   }, [asignaciones]);
 
-  // aplanar + filtrar + paginar
   const { items, total, totalPaginas } = useMemo(() => {
-    const detalles = flattenDetalles(asignaciones); // (detalle + asignación)
-    const filtrados = filtrarDetalles(detalles, {
-      ...filtros,
-      busqueda: deferredBusqueda, // suaviza tipeo
-    });
+    const detalles = flattenDetalles(asignaciones);
 
-    return paginar(filtrados, paginaActual, itemsPorPagina);
-  }, [asignaciones, filtros, paginaActual, itemsPorPagina, deferredBusqueda]);
+    return paginar(detalles, paginaActual, itemsPorPagina);
+  }, [asignaciones, paginaActual, itemsPorPagina]);
 
   // helpers para limpiar/actualizar
   const limpiarFiltros = useCallback(() => {
@@ -103,7 +100,7 @@ export function useEvaluacionesMixtas(itemsPorPagina = 6) {
   return {
     // estado
     asignaciones,
-    loading,
+    loading: loading || loadingGate,
     error,
     filtros,
     setFiltros,

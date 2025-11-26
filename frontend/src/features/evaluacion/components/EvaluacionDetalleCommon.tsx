@@ -160,15 +160,6 @@ export default function EvaluacionDetalleCommon({
       setAutoLoading(true);
       (async () => {
         try {
-          const data = await getEvaluacionMixta(evaluacionId);
-          const pct = data?.resumen?.auto_pct;
-
-          if (active)
-            setAutoComparisonPct(typeof pct === "number" ? pct : null);
-          if (typeof pct === "number") return;
-        } catch {}
-
-        try {
           const asignaciones = await fetchAsignarEvaluacion();
           const te = evaluacionData?.tipo_evaluacion?.n_tipo_evaluacion || "";
           const fecha = evaluacionData?.fecha_evaluacion || "";

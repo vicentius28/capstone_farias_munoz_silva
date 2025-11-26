@@ -1,481 +1,290 @@
-// src/pages/DashboardPage.tsx
-import React from "react";
-import { Card, CardBody, CardHeader } from "@heroui/card";
+import React, { useMemo } from "react";
+// Asegúrate de que estos imports coinciden con tu librería de componentes (HeroUI / NextUI)
+import { Card, CardBody } from "@heroui/card";
+
+import { useNavigate } from "react-router-dom";
+
+// Usamos solo iconos estándar de HeroIcons (Outline) para evitar errores
 import {
-  AcademicCapIcon,
-  ClipboardDocumentListIcon,
-  HeartIcon,
+
+  BuildingOfficeIcon,
+  ArrowRightIcon,
+  DocumentTextIcon,
   ShieldCheckIcon,
 } from "@heroicons/react/24/outline";
 
+// --- Imports de Lógica de Negocio ---
+// Ajusta las rutas (@/...) según la estructura de tu proyecto
 import { useSession } from "@/hooks/useSession";
 import { usePermissions } from "@/hooks/usePermissions";
-import ModulesPanel from "@/features/dashboard/components/ModulesPanel";
-import { Logo } from "@/shared/components/Icons/icons";
+import { sections } from "@/data/sections";
 
-// Error Boundary para encapsular el bloque
-class DashboardBoundary extends React.Component<
-  { children: React.ReactNode },
-  { hasError: boolean }
-> {
-  constructor(props: { children: React.ReactNode }) {
-    super(props);
-    this.state = { hasError: false };
-  }
-  static getDerivedStateFromError() {
-    return { hasError: true };
-  }
-  componentDidCatch(error: unknown) {
-    console.error("Error cargando el panel:", error);
-  }
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div className="w-full p-6 rounded-xl bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-200">
-          Ocurrió un problema al cargar los módulos. Intenta recargar la página.
-        </div>
-      );
-    }
-
-    return this.props.children;
-  }
+// --- Tipos ---
+interface DashboardAction {
+  id: string;
+  category: string;
+  title: string;
+  href: string;
+  icon: React.ReactNode;
+  description: string;
 }
 
+// --- Estilos de Categoría (Colores Educativos/Profesionales) ---
+const CATEGORY_STYLES: Record<string, { color: string; bg: string; border: string }> = {
+  "RECURSOS HUMANOS": {
+    color: "text-fuchsia-600",
+    bg: "bg-fuchsia-50",
+    border: "border-fuchsia-100"
+  },
+  "EVALUADOR": {
+    color: "text-violet-600",
+    bg: "bg-violet-50",
+    border: "border-violet-100"
+  },
+  "TRABAJADOR": {
+    color: "text-blue-600",
+    bg: "bg-blue-50",
+    border: "border-blue-100"
+  },
+  "DEFAULT": {
+    color: "text-slate-600",
+    bg: "bg-slate-50",
+    border: "border-slate-100"
+  }
+};
+
 export default function DashboardPage() {
-  const { permisos } = usePermissions();
+  const navigate = useNavigate();
+  const { hasAccess } = usePermissions();
   const { user } = useSession();
-  const displayName =
-    (user?.nombres as string) ||
-    (user?.nombre as string) ||
-    (user?.name as string) ||
-    (user?.username as string) ||
-    "Usuario";
 
-  const companyName =
-    (user?.empresa?.name as string) ||
-    (user?.empresa?.empresa as string) ||
-    (user?.empresa?.nombre as string) ||
-    "";
 
-  const hasAny = (prefix: string) =>
-    permisos?.some((p) => p.startsWith(prefix));
+  const displayName = user?.nombres?.split(" ")[0] || user?.username || "Docente";
+  const companyName = user?.empresa?.name || user?.empresa?.nombre || "Institución Educativa";
+  const companyLogoUrl = user?.empresa?.logo || user?.empresa?.logo_url || null;
 
-  const featureCards = (() => {
-    if (hasAny("directivo.")) {
-      return [
-        {
-          icon: (
-            <ClipboardDocumentListIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-          ),
-          title: "Gestión de procesos",
-          desc: "Operaciones del portal y seguimiento general.",
-          bg: "bg-blue-50/70 dark:bg-blue-900/20",
-          titleColor: "text-blue-700 dark:text-blue-300",
-          descColor: "text-blue-800/80 dark:text-blue-200/80",
-        },
-        {
-          icon: (
-            <AcademicCapIcon className="w-5 h-5 text-amber-600 dark:text-amber-300" />
-          ),
-          title: "Indicadores y seguimiento",
-          desc: "Visualización consolidada sin detalles sensibles.",
-          bg: "bg-amber-50/70 dark:bg-amber-900/20",
-          titleColor: "text-amber-700 dark:text-amber-200",
-          descColor: "text-amber-800/80 dark:text-amber-200/80",
-        },
-        {
-          icon: (
-            <ShieldCheckIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-300" />
-          ),
-          title: "Privacidad y acceso",
-          desc: "Accesos y protección por roles.",
-          bg: "bg-emerald-50/70 dark:bg-emerald-900/20",
-          titleColor: "text-emerald-700 dark:text-emerald-200",
-          descColor: "text-emerald-800/80 dark:text-emerald-200/80",
-        },
-      ];
+  // --- Lógica de Descripciones Inspiradoras (Contexto Colegio) ---
+  const getInspiringDescription = (title: string, category: string) => {
+    const t = title.toLowerCase();
+    const c = category.toLowerCase();
+
+    if (t.includes("evaluación de")) {
+      return "Reflexiona sobre tu práctica pedagógica, reconoce tus logros en el aula y detecta áreas de crecimiento personal.";
     }
-    if (hasAny("portal.")) {
-      return [
-        {
-          icon: (
-            <HeartIcon className="w-5 h-5 text-rose-600 dark:text-rose-400" />
-          ),
-          title: "Mi espacio",
-          desc: "Vista personal y herramientas del portal.",
-          bg: "bg-rose-50/70 dark:bg-rose-900/20",
-          titleColor: "text-rose-700 dark:text-rose-300",
-          descColor: "text-rose-800/80 dark:text-rose-200/80",
-        },
-        {
-          icon: (
-            <ClipboardDocumentListIcon className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-          ),
-          title: "Progreso general",
-          desc: "Seguimiento de actividad sin exponer detalle.",
-          bg: "bg-indigo-50/70 dark:bg-indigo-900/20",
-          titleColor: "text-indigo-700 dark:text-indigo-300",
-          descColor: "text-indigo-800/80 dark:text-indigo-200/80",
-        },
-        {
-          icon: (
-            <ShieldCheckIcon className="w-5 h-5 text-sky-600 dark:text-sky-400" />
-          ),
-          title: "Privacidad",
-          desc: "Datos protegidos conforme a políticas de acceso.",
-          bg: "bg-sky-50/70 dark:bg-sky-900/20",
-          titleColor: "text-sky-700 dark:text-sky-300",
-          descColor: "text-sky-800/80 dark:text-sky-200/80",
-        },
-      ];
+    if (t.includes("evaluar")) {
+      return "Brinda una mirada constructiva y guía el desarrollo profesional de tu equipo docente hacia la excelencia.";
+    }
+    if (t.includes("evaluación mixta")) {
+      return "Una visión integral 180°: conecta tu autopercepción con la retroalimentación de tu liderazgo educativo.";
+    }
+    if (t.includes("plantilla")) {
+      return "Crea plantillas de evaluación para facilitar la asignación y seguimiento de las mismas.";
+    }
+    if (t.includes("asignar")) {
+      return "Asigna las evaluaciones de desempeño a los miembros de la comunidad educativa.";
+    }
+    if (t.includes("usuario")) {
+      return "Gestiona los usuarios, roles y permisos dentro de la plataforma.";
     }
 
-    return [
-      {
-        icon: (
-          <ShieldCheckIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-300" />
-        ),
-        title: "Gobernanza y seguridad",
-        desc: "Gestión de accesos y resguardo de datos.",
-        bg: "bg-emerald-50/70 dark:bg-emerald-900/20",
-        titleColor: "text-emerald-700 dark:text-emerald-200",
-        descColor: "text-emerald-800/80 dark:text-emerald-200/80",
-      },
-      {
-        icon: (
-          <ClipboardDocumentListIcon className="w-5 h-5 text-amber-600 dark:text-amber-300" />
-        ),
-        title: "Operaciones",
-        desc: "Procesos y coordinación del portal.",
-        bg: "bg-amber-50/70 dark:bg-amber-900/20",
-        titleColor: "text-amber-700 dark:text-amber-200",
-        descColor: "text-amber-800/80 dark:text-amber-200/80",
-      },
-      {
-        icon: (
-          <AcademicCapIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-        ),
-        title: "Calidad de servicio",
-        desc: "Mejora continua y soporte.",
-        bg: "bg-blue-50/70 dark:bg-blue-900/20",
-        titleColor: "text-blue-700 dark:text-blue-300",
-        descColor: "text-blue-800/80 dark:text-blue-200/80",
-      },
-    ];
-  })();
+    // Fallbacks
+    if (c.includes("trabajador")) return "Herramientas para gestionar tu trayectoria y evolución dentro del colegio.";
+    if (c.includes("evaluador")) return "Gestiona las evaluaciones de tu equipo y fomenta el talento educativo.";
 
-  // Rutas de recursos visuales (ajusta según tus archivos en /public)
-  const bannerIllustration = "/images/teacher.png";
+    return "Explora las herramientas diseñadas para potenciar la calidad educativa.";
+  };
 
-  // Puerta de hidratación: sincroniza loaders de hero y módulos
+  // --- Memoización de Acciones (Botones) ---
+  const { groupedActions, totalActions } = useMemo(() => {
+    const groups: Record<string, DashboardAction[]> = {};
+    let count = 0;
+
+    if (sections && Array.isArray(sections)) {
+      sections.forEach((section) => {
+        if (!section.buttons) return;
+        const validButtons = section.buttons.filter((btn) => hasAccess(btn.permiso));
+
+        if (validButtons.length > 0) {
+          const catName = section.title ? section.title.toUpperCase() : "GENERAL";
+          if (!groups[catName]) groups[catName] = [];
+
+          validButtons.forEach((btn) => {
+            groups[catName].push({
+              id: `${section.title}-${btn.label}`,
+              category: catName,
+              title: btn.label,
+              href: btn.href,
+              icon: section.icon || <DocumentTextIcon className="w-6 h-6" />,
+              description: getInspiringDescription(btn.label, catName),
+            });
+            count++;
+          });
+        }
+      });
+    }
+    return { groupedActions: groups, totalActions: count };
+  }, [hasAccess]);
+
+  // --- Control de Hidratación ---
   const [isHydrating, setIsHydrating] = React.useState(true);
-
   React.useEffect(() => {
-    const ready = !!user && Array.isArray(permisos);
-
-    if (ready) {
-      const t = setTimeout(() => setIsHydrating(false), 350);
-
-      return () => clearTimeout(t);
-    }
-  }, [user, permisos]);
-
-  const quickStartSteps = [
-    "Explora módulos disponibles",
-    "Revisa la guía rápida",
-    "Comienza tu primera evaluación",
-  ];
+    if (user) setTimeout(() => setIsHydrating(false), 300);
+  }, [user]);
 
   return (
-    <main className="w-full min-h-screen bg-mesh">
-      <section className="relative isolate overflow-visible text-white">
-        {/* Fondo mesh azul→morado */}
-        <div
-          className="absolute inset-0 -z-10 dark:hidden"
-          style={{
-            backgroundImage: `
-              radial-gradient(60% 80% at 12% 15%, rgba(59,130,246,0.25) 0%, rgba(59,130,246,0.12) 30%, transparent 70%),
-              radial-gradient(80% 60% at 88% 20%, rgba(124,58,237,0.25) 0%, rgba(124,58,237,0.12) 35%, transparent 70%),
-              radial-gradient(100% 80% at 50% 90%, rgba(99,102,241,0.20) 0%, rgba(99,102,241,0.10) 40%, transparent 75%),
-              linear-gradient(120deg, #0e3aa7 0%, #2443b8 40%, #3b82f6 60%, #7c3aed 85%, #4c1d95 100%)
-            `,
-            backgroundBlendMode: "screen, screen, screen, normal",
-          }}
-        />
-        <div
-          className="absolute inset-0 -z-10 hidden dark:block"
-          style={{
-            backgroundImage: `
-              radial-gradient(60% 80% at 12% 15%, rgba(59,130,246,0.18) 0%, rgba(30,64,175,0.12) 30%, transparent 70%),
-              radial-gradient(80% 60% at 88% 20%, rgba(124,58,237,0.18) 0%, rgba(76,29,149,0.12) 35%, transparent 70%),
-              radial-gradient(100% 80% at 50% 90%, rgba(99,102,241,0.16) 0%, rgba(99,102,241,0.08) 40%, transparent 75%),
-              linear-gradient(120deg, #0b1220 0%, #0f172a 40%, #1e3a8a 60%, #312e81 85%, #0b1220 100%)
-            `,
-            backgroundBlendMode: "screen, screen, screen, normal",
-          }}
-        />
-        {/* Textura y viñetas */}
-        <div
-          className="absolute inset-0 -z-10 opacity-[0.05]"
-          style={{
-            backgroundImage:
-              "repeating-linear-gradient(0deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 2px)",
-          }}
-        />
-        {/* Acento flotante sutil */}
-        <svg
-          className="pointer-events-none absolute top-6 left-6 w-24 h-24 opacity-20"
-          viewBox="0 0 100 100"
-        >
-          <defs>
-            <linearGradient id="heroAccent" x1="0" x2="1" y1="0" y2="1">
-              <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.6" />
-              <stop offset="100%" stopColor="#7c3aed" stopOpacity="0.6" />
-            </linearGradient>
-          </defs>
-          <circle
-            cx="50"
-            cy="50"
-            fill="none"
-            r="32"
-            stroke="url(#heroAccent)"
-            strokeWidth="3"
-          />
-        </svg>
+    <div className="w-full min-h-screen font-sans bg-[#F8FAFC] dark:bg-[#09090b] relative overflow-x-hidden">
 
-        <div className="pointer-events-none absolute left-6 top-1/2 -translate-y-1/4 translate-x-[50%] z-0 hidden md:block text-center">
-          <div className="rounded-3xl bg-white/15 dark:bg-[#0b1220]/40 ring-1 ring-black/10 dark:ring-white/10 supports-[backdrop-filter]:backdrop-blur-sm p-5 shadow-xl">
-            <Logo className="rounded-2xl" size={120} />
-          </div>
-        </div>
+      {/* 1. FONDO CON PATRÓN DE PUNTOS MEJORADO (VISIBLE EN MODO CLARO) */}
+      {/* Usamos 'text-slate-400' para modo claro y 'dark:text-slate-800' para oscuro. 
+          Esto hace que los puntos sean gris medio en fondo claro (visibles) y gris oscuro en fondo oscuro. */}
+      <div 
+        className="absolute inset-0 z-0 pointer-events-none text-slate-400/40 dark:text-slate-800"
+        style={{
+          backgroundImage: `radial-gradient(currentColor 1px, transparent 1px)`,
+          backgroundSize: '24px 24px',
+          // Opcional: Un mask para que se desvanezca suavemente hacia abajo y no corte de golpe
+          maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 100%)',
+          WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 100%)'
+        }}>
+      </div>
 
-        {/* Hero más compacto */}
-        <div className="max-w-screen-lg mx-auto px-4 pt-6 pb-12 min-h-[420px]">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-center">
-            <div>
-              <div className="flex items-center gap-10">
-                <p className="text-[32px] font-semibold tracking-widest uppercase text-sky-200">
-                  Bienvenido
-                </p>
-                <h3 className="mt-1 text-2xl md:text-3xl font-bold leading-tight">
-                  {displayName}
-                </h3>
-              </div>
-              {companyName && (
-                <p className="mt-1 text-sm text-sky-100/90">{companyName}</p>
-              )}
+      {/* 2. GRADIENTE SUPERIOR SUAVE (Transparente arriba para ver los puntos) */}
+      <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-transparent via-white/40 to-white/0 dark:from-transparent dark:via-slate-900/40 dark:to-transparent z-0"></div>
 
-              {/* Guía breve – tres pasos (rellena sin métricas) */}
-              <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3 text-sky-100/90">
-                {quickStartSteps.map((step, idx) => (
-                  <div key={idx} className="rounded-lg p-3 bg-white/12">
-                    <div className="flex items-center gap-2">
-                      <span className="inline-flex w-5 h-5 items-center justify-center rounded-full bg-white/20 text-[11px]">
-                        {idx + 1}
-                      </span>
-                      <span className="text-xs">{step}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+      <div className="max-w-6xl mx-auto px-6 py-8 relative z-10">
 
-              {/* Tarjetas “Qué encontrarás” integradas al hero */}
-              <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {isHydrating ? (
-                  <>
-                    {[0, 1, 2].map((i) => (
-                      <Card
-                        key={i}
-                        className="rounded-2xl backdrop-blur-xl shadow-md ring-1 ring-black/5 dark:ring-white/10 bg-white/70 dark:bg-[#0b1220]/70"
-                      >
-                        <CardHeader className="px-4 pt-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-6 h-6 rounded bg-slate-200/70 dark:bg-slate-700/50 animate-pulse" />
-                            <div className="h-4 w-28 rounded bg-slate-200/70 dark:bg-slate-700/50 animate-pulse" />
-                          </div>
-                        </CardHeader>
-                        <CardBody className="px-4 pb-4">
-                          <div className="h-3 w-3/4 rounded bg-slate-200/70 dark:bg-slate-700/50 animate-pulse" />
-                        </CardBody>
-                      </Card>
-                    ))}
-                  </>
+        {/* HERO BANNER */}
+        <div className="mb-10 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-[2rem] p-6 md:p-8 border border-white/50 dark:border-gray-800 shadow-sm relative overflow-hidden">
+
+          {/* Decoración superior sutil */}
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 opacity-80"></div>
+
+          <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-8">
+
+            {/* A. LOGO GRANDE */}
+            <div className="flex-shrink-0">
+              <div className="w-20 h-20 md:w-24 md:h-24 bg-gray-50 dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 flex items-center justify-center p-4 shadow-sm">
+                {companyLogoUrl ? (
+                  <img
+                    src={companyLogoUrl}
+                    alt={companyName}
+                    className="w-full h-full object-contain mix-blend-multiply dark:mix-blend-normal"
+                  />
                 ) : (
-                  featureCards.map((f, idx) => (
-                    <Card
-                      key={idx}
-                      className={`rounded-2xl backdrop-blur-xl shadow-md ring-1 ring-black/5 dark:ring-white/10 ${f.bg}`}
-                    >
-                      <CardHeader className="px-4 pt-4">
-                        {f.icon}
-                        <div className="flex items-center gap-3 text-center">
-                          <h2
-                            className={`text-sm font-semibold ${f.titleColor}`}
-                          >
-                            {f.title}
-                          </h2>
-                        </div>
-                      </CardHeader>
-                      <CardBody className="px-4 pb-4 text-center">
-                        <p className={`text-xs ${f.descColor}`}>{f.desc}</p>
-                      </CardBody>
-                    </Card>
-                  ))
+                  <BuildingOfficeIcon className="w-10 h-10 text-gray-400" />
                 )}
               </div>
             </div>
 
-            <div className="relative flex justify-center lg:justify-end">
-              <div className="pointer-events-none absolute -z-10 inset-0">
-                {/* fondos decorativos del hero */}
-                <div className="absolute left-8 top-6 w-48 h-48 rounded-full bg-gradient-to-tr from-sky-400/40 to-violet-500/40 blur-2xl opacity-70" />
-                <svg
-                  className="absolute right-6 top-8 w-40 h-40 opacity-20"
-                  viewBox="0 0 120 120"
-                >
-                  <circle
-                    cx="60"
-                    cy="60"
-                    fill="none"
-                    r="50"
-                    stroke="#ffffff"
-                    strokeOpacity="0.20"
-                    strokeWidth="2"
-                  />
-                  <circle
-                    cx="60"
-                    cy="60"
-                    fill="none"
-                    r="35"
-                    stroke="#ffffff"
-                    strokeOpacity="0.15"
-                    strokeWidth="2"
-                  />
-                </svg>
-                <svg
-                  className="absolute left-0 bottom-0 w-36 h-24 opacity-20"
-                  viewBox="0 0 140 80"
-                >
-                  <defs>
-                    <pattern
-                      height="8"
-                      id="dots"
-                      patternUnits="userSpaceOnUse"
-                      width="8"
-                      x="0"
-                      y="0"
-                    >
-                      <circle
-                        cx="1.5"
-                        cy="1.5"
-                        fill="#ffffff"
-                        opacity="0.18"
-                        r="1.5"
-                      />
-                    </pattern>
-                  </defs>
-                  <rect fill="url(#dots)" height="80" width="140" x="0" y="0" />
-                </svg>
-              </div>
+            {/* B. TEXTO CENTRAL */}
+            <div className="flex-1 space-y-2">
+              <span className="inline-block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">
+                {companyName}
+              </span>
 
-              {/* Ilustración del teacher restaurada y mejorada */}
-              <div className="relative">
-                <div className="absolute -inset-5 rounded-[28px] bg-gradient-to-tr from-sky-400/25 via-indigo-400/25 to-violet-500/25 blur-2xl" />
-                <img
-                  alt="Ilustración del portal"
-                  className="relative z-10 w-full max-w-[20rem] lg:max-w-[24rem] rounded-2xl object-contain drop-shadow-xl"
-                  src={bannerIllustration}
-                />
+              <h1 className="text-3xl md:text-5xl font-black text-gray-900 dark:text-white tracking-tight leading-tight">
+                Hola, {displayName} <span className="inline-block animate-bounce-slow">👋</span>
+              </h1>
+
+              <p className="text-gray-500 dark:text-gray-400 text-sm md:text-lg font-medium max-w-xl">
+                Bienvenido a tu centro de excelencia. <span className="text-blue-600 dark:text-blue-400 font-bold">Tu impacto en el aula</span> y tu desarrollo profesional comienzan aquí.
+              </p>
+            </div>
+
+            {/* C. WIDGET KPI */}
+            <div className="w-full md:w-auto mt-4 md:mt-0 pt-4 md:pt-0 border-t md:border-t-0 border-gray-100 dark:border-gray-800 flex flex-row md:flex-col items-center md:items-end justify-between md:justify-center gap-3">
+              <div className="text-left md:text-right">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Total Módulos</p>
+                <div className="flex items-baseline md:justify-end gap-1">
+                  <span className="text-4xl font-black text-gray-900 dark:text-white tracking-tight">{totalActions}</span>
+                  <span className="text-sm font-bold text-gray-500">Activos</span>
+                </div>
               </div>
             </div>
+
           </div>
         </div>
 
-        {/* Onda decorativa inferior para cerrar el hero */}
-        <svg
-          className="absolute inset-x-0 bottom-0 -z-10"
-          preserveAspectRatio="none"
-          viewBox="0 0 1440 120"
-        >
-          <path
-            className="fill-white/85 dark:fill-[#0f172a]/85"
-            d="M0,60 C240,120 480,0 720,60 C960,120 1200,0 1440,60 L1440,120 L0,120 Z"
-          />
-        </svg>
-
-        {/* Panel flotante divisorio */}
-        <div className="pointer-events-auto absolute left-1/2 bottom-0 z-40 w-full max-w-screen-lg -translate-x-1/2 translate-y-1/2 px-5 mt-8">
+        {/* 3. GRID DE CONTENIDO */}
+        <div className="space-y-10 pb-12">
           {isHydrating ? (
-            <Card className="rounded-3xl bg-white/80 dark:bg-[#0f172a]/80 supports-[backdrop-filter]:backdrop-blur-xl ring-1 ring-black/10 dark:ring-white/10 shadow-xl max-w-4xl mx-auto">
-              <CardHeader className="px-6 pt-5 flex items-center justify-center text-center gap-2">
-                <span className="inline-flex">
-                  <span className="w-5 h-5 rounded-full border-2 border-slate-300/70 dark:border-slate-600/70 border-t-transparent animate-spin" />
-                </span>
-                <span className="text-xl font-semibold">
-                  Preparando accesos…
-                </span>
-              </CardHeader>
-              <CardBody className="px-6 pb-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 justify-items-center">
-                  {[0, 1, 2].map((i) => (
-                    <div
-                      key={i}
-                      className="w-full max-w-sm rounded-2xl ring-1 ring-black/5 dark:ring-white/10 bg-white/70 dark:bg-[#0b1220]/70 supports-[backdrop-filter]:backdrop-blur p-4 shadow-sm"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-lg bg-white/80 dark:bg-slate-700/40" />
-                        <div className="h-4 w-28 rounded bg-slate-200/70 dark:bg-slate-700/50 animate-pulse" />
-                      </div>
-                      <div className="mt-3 h-8 w-36 rounded-full bg-slate-200/70 dark:bg-slate-700/50 animate-pulse" />
-                    </div>
-                  ))}
-                </div>
-              </CardBody>
-            </Card>
+            // Skeleton de carga
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="h-44 rounded-2xl bg-white/60 animate-pulse border border-gray-100"></div>
+              ))}
+            </div>
           ) : (
-            <DashboardBoundary>
-              <ModulesPanel />
-            </DashboardBoundary>
+            Object.entries(groupedActions).length > 0 ? (
+              Object.entries(groupedActions).map(([category, actions], catIdx) => {
+                const style = CATEGORY_STYLES[category] || CATEGORY_STYLES["DEFAULT"];
+
+                return (
+                  <div key={category} className="animate-in fade-in slide-in-from-bottom-4 duration-500" style={{ animationDelay: `${catIdx * 75}ms` }}>
+
+                    {/* Título de Sección */}
+                    <div className="flex items-center gap-3 mb-5 pl-1">
+                      <span className={`px-3 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-widest ${style.bg} ${style.color} border ${style.border}`}>
+                        {category}
+                      </span>
+                      <div className="h-px flex-1 bg-gray-200 dark:bg-gray-800 border-t border-dashed border-gray-300 dark:border-gray-700"></div>
+                    </div>
+
+                    {/* Grid de Tarjetas */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {actions.map((action, idx) => (
+                        <Card
+                          key={idx}
+                          isPressable
+                          onPress={() => navigate(action.href)}
+                          className="w-full border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm hover:shadow-xl hover:border-blue-200 dark:hover:border-blue-800 transition-all duration-300 h-full group rounded-2xl"
+                        >
+                          <CardBody className="p-6 flex flex-col justify-between h-full gap-4">
+
+                            {/* Header de Tarjeta */}
+                            <div className="flex justify-between items-start">
+                              <div className={`p-3 rounded-xl ${style.bg} ${style.color} group-hover:scale-110 transition-transform duration-300`}>
+                                {React.isValidElement(action.icon)
+                                  ? React.cloneElement(action.icon as React.ReactElement)
+                                  : <DocumentTextIcon className="w-6 h-6" />}
+                              </div>
+                              <ArrowRightIcon className="w-5 h-5 text-gray-300 group-hover:text-blue-500 transition-colors transform group-hover:translate-x-1" />
+                            </div>
+
+                            {/* Contenido de Texto */}
+                            <div>
+                              <h3 className="text-base font-bold text-gray-900 dark:text-gray-100 mb-2 leading-tight group-hover:text-blue-600 transition-colors">
+                                {action.title}
+                              </h3>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 font-medium leading-relaxed line-clamp-3">
+                                {action.description}
+                              </p>
+                            </div>
+
+                            {/* Barra de progreso decorativa */}
+                            <div className="w-full h-1 bg-gray-50 dark:bg-gray-800 rounded-full overflow-hidden mt-1">
+                              <div className="h-full w-0 group-hover:w-full transition-all duration-700 ease-out bg-gradient-to-r from-blue-400 to-purple-500"></div>
+                            </div>
+
+                          </CardBody>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              // Estado vacío
+              <div className="col-span-full py-16 flex flex-col items-center justify-center border border-dashed border-gray-200 bg-white/50 rounded-2xl">
+                <ShieldCheckIcon className="w-12 h-12 text-gray-300 mb-2" />
+                <h3 className="text-gray-900 font-bold">Sin módulos activos</h3>
+                <p className="text-gray-500 text-sm mt-1">Todo parece estar en orden por ahora.</p>
+              </div>
+            )
           )}
         </div>
-      </section>
 
-      {/* Separador para evitar solape con el panel flotante */}
-      <div aria-hidden className="h-28 sm:h-40 lg:h-48" />
-
-      {/* Oculto la sección independiente para evitar duplicados */}
-      <section className="hidden w-full px-5 pt-8 pb-6 max-w-screen-lg mx-auto">
-        <div className="flex items-end justify-between">
-          <div>
-            <h3 className="text-base font-semibold text-slate-900 dark:text-white">
-              Qué encontrarás aquí
-            </h3>
-            <p className="mt-1 text-xs text-slate-700 dark:text-slate-300">
-              Capacidades del portal según tu rol.
-            </p>
-          </div>
-        </div>
-        <div className="mt-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {featureCards.map((f, idx) => (
-            <Card
-              key={idx}
-              className={`rounded-2xl backdrop-blur-xl shadow-xl ring-1 ring-black/5 dark:ring-white/10 ${f.bg}`}
-            >
-              <CardHeader className="px-5 pt-5">
-                <div className="flex items-center gap-3">
-                  {f.icon}
-                  <h2 className={`text-base font-semibold ${f.titleColor}`}>
-                    {f.title}
-                  </h2>
-                </div>
-              </CardHeader>
-              <CardBody className="px-5 pb-5">
-                <p className={`text-xs ${f.descColor}`}>{f.desc}</p>
-              </CardBody>
-            </Card>
-          ))}
-        </div>
-      </section>
-    </main>
+      </div>
+    </div>
   );
 }

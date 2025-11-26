@@ -107,14 +107,16 @@ const useImageCache = () => {
         JSON.stringify(validCorsFailedUrls),
       );
     } catch (error) {
-      if (import.meta.env.DEV) console.warn("Error saving image cache to localStorage:", error);
+      if (import.meta.env.DEV)
+        console.warn("Error saving image cache to localStorage:", error);
       // Si localStorage está lleno, intentar limpiar
       try {
         localStorage.removeItem(IMAGE_CACHE_CONFIG.STORAGE_KEY);
         localStorage.removeItem(IMAGE_CACHE_CONFIG.TIMESTAMP_KEY);
         localStorage.removeItem(IMAGE_CACHE_CONFIG.CORS_FAILED_KEY);
       } catch (cleanupError) {
-        if (import.meta.env.DEV) console.warn("Error cleaning localStorage:", cleanupError);
+        if (import.meta.env.DEV)
+          console.warn("Error cleaning localStorage:", cleanupError);
       }
     }
   }, []);
@@ -163,11 +165,13 @@ const useImageCache = () => {
             }
           });
         } catch (corsError) {
-          if (import.meta.env.DEV) console.warn("Error loading CORS failed URLs:", corsError);
+          if (import.meta.env.DEV)
+            console.warn("Error loading CORS failed URLs:", corsError);
         }
       }
     } catch (error) {
-      if (import.meta.env.DEV) console.warn("Error loading image cache from localStorage:", error);
+      if (import.meta.env.DEV)
+        console.warn("Error loading image cache from localStorage:", error);
     }
   }, []);
 
@@ -365,7 +369,8 @@ const useImageCache = () => {
               );
           }
         } else {
-          if (import.meta.env.DEV) console.warn(`Error caching image ${url}:`, error);
+          if (import.meta.env.DEV)
+            console.warn(`Error caching image ${url}:`, error);
         }
         throw error;
       } finally {

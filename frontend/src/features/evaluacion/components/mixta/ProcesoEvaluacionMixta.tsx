@@ -22,7 +22,7 @@ export default function ProcesoEvaluacionMixta({
   pasos,
 }: Props) {
   return (
-    <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-xl">
+    <Card className="bg-background/70 backdrop-blur-sm border border-divider shadow-xl">
       <CardHeader className="pb-4">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
@@ -37,8 +37,10 @@ export default function ProcesoEvaluacionMixta({
             </svg>
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-slate-800">{title}</h2>
-            <p className="text-sm text-slate-600">{subtitle}</p>
+            <h2 className="text-xl font-semibold text-foreground">{title}</h2>
+            <p className="text-sm text-default-600 dark:text-default-300">
+              {subtitle}
+            </p>
           </div>
         </div>
       </CardHeader>
@@ -47,7 +49,7 @@ export default function ProcesoEvaluacionMixta({
           {pasos.map((paso, index) => (
             <div
               key={index}
-              className={`relative p-6 rounded-2xl bg-gradient-to-br ${paso.bgGradient} border border-white/20 backdrop-blur-sm`}
+              className={`relative p-6 rounded-2xl border border-divider bg-background/80 backdrop-blur-sm`}
             >
               <div className="flex items-start gap-4">
                 <div
@@ -57,14 +59,14 @@ export default function ProcesoEvaluacionMixta({
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xs font-bold text-slate-500 bg-white/50 px-2 py-1 rounded-full">
+                    <span className="text-xs font-bold text-default-600 dark:text-default-300 bg-background/60 px-2 py-1 rounded-full border border-divider">
                       {paso.numero}
                     </span>
-                    <h3 className="text-lg font-semibold text-slate-800">
+                    <h3 className="text-lg font-semibold text-foreground">
                       {paso.title}
                     </h3>
                   </div>
-                  <p className="text-sm text-slate-600 leading-relaxed">
+                  <p className="text-sm text-default-600 dark:text-default-300 leading-relaxed">
                     {paso.text}
                   </p>
                 </div>

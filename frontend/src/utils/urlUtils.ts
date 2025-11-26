@@ -26,8 +26,6 @@ export const buildFileUrl = (fileUrl?: string, baseUrl?: string): string => {
 
   // Si ya es una URL completa (http/https), devolverla tal como está
   if (cleanUrl.startsWith("http://") || cleanUrl.startsWith("https://")) {
-    
-
     return cleanUrl;
   }
 
@@ -41,8 +39,6 @@ export const buildFileUrl = (fileUrl?: string, baseUrl?: string): string => {
       ? `https:${cleanUrl}`
       : `https://${cleanUrl}`;
 
-    
-
     return result;
   }
 
@@ -50,8 +46,6 @@ export const buildFileUrl = (fileUrl?: string, baseUrl?: string): string => {
   const apiBaseUrl =
     baseUrl || import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
   const fullUrl = `${apiBaseUrl}${cleanUrl.startsWith("/") ? cleanUrl : "/" + cleanUrl}`;
-
-  
 
   return fullUrl;
 };

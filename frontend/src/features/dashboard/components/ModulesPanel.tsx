@@ -1,6 +1,7 @@
-// ModulesPanel: unificado, configurable y con filtro de evaluación/autoevaluación
-import { Card, CardBody, CardHeader } from "@heroui/card";
+import { useMemo } from "react";
 import { Button } from "@heroui/button";
+import { Skeleton } from "@heroui/skeleton";
+import { Divider } from "@heroui/divider";
 import { useNavigate } from "react-router-dom";
 
 import { sections } from "@/data/sections";
@@ -8,171 +9,178 @@ import { usePermissions } from "@/hooks/usePermissions";
 import { useSession } from "@/hooks/useSession";
 import { useTheme } from "@/hooks/useTheme";
 
+// Tipado seguro
 type ModulesPanelProps = {
   title?: string;
   showCount?: boolean;
   focus?: "eva" | "all";
+  className?: string; // Para inyectar clases extra si es necesario
 };
 
 export default function ModulesPanel({
-  title = "Accesos",
+  title, // Opcional: si se pasa, renderiza un título interno
   showCount = false,
   focus = "all",
+  className = "",
 }: ModulesPanelProps) {
   const navigate = useNavigate();
   const { hasAccess } = usePermissions();
   const { user } = useSession();
+
+  // Theme Logic
   const themeId = user?.empresa?.theme ?? null;
   const { theme } = useTheme(themeId);
+  const primaryColor = theme?.primary_color ?? "#3b82f6"; // Fallback a azul estándar
 
-  // Secciones visibles según permisos
-  const visibleSections = sections
-    .map((section) => {
-      const filteredButtons = section.buttons.filter((btn) =>
-        hasAccess(btn.permiso),
-      );
+  // 1. Optimización: Filtrado de Secciones con useMemo
+  const filteredModules = useMemo(() => {
+    // A. Filtrar por permisos globales
+    const accessibleSections = sections
+      .map((section) => ({
+        ...section,
+        buttons: section.buttons.filter((btn) => hasAccess(btn.permiso)),
+      }))
+      .filter((section) => section.buttons.length > 0);
 
-      return { ...section, buttons: filteredButtons };
-    })
-    .filter((section) => section.buttons.length > 0);
+    // B. Filtrar por Foco (Evaluación vs Todo)
+    if (focus === "eva") {
+      return accessibleSections
+        .map((s) => ({
+          ...s,
+          buttons: s.buttons.filter((btn) => /evalu/i.test(btn.label)),
+        }))
+        .filter((s) => s.buttons.length > 0);
+    }
 
-  // Foco en evaluación/autoevaluación aplicado a nivel de acción dentro de cada sección
-  const sectionsWithFocus =
-    focus === "eva"
-      ? visibleSections
-          .map((s) => ({
-            ...s,
-            buttons: s.buttons.filter((btn) => /evalu/i.test(btn.label)),
-          }))
-          .filter((s) => s.buttons.length > 0)
-      : visibleSections;
+    return accessibleSections;
+  }, [focus, hasAccess]); // Dependencias correctas
 
-  // UNA tarjeta por sección, con TODAS sus acciones visibles dentro
-  const moduleCards = sectionsWithFocus.map((s) => ({
-    title: s.title,
-    icon: s.icon,
-    actions: s.buttons.map((btn) => ({ label: btn.label, href: btn.href })),
-  }));
+  const count = filteredModules.length;
+  const isLoading = !user; // O tu lógica de loading específica
 
-  const count = moduleCards.length;
+  // --- RENDER: Loading State ---
+  if (isLoading) {
+    return (
+      <div
+        className={`w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 ${className}`}
+      >
+        {[1, 2, 3].map((i) => (
+          <div
+            key={i}
+            className="rounded-2xl border border-gray-100 p-4 space-y-3 bg-white/50"
+          >
+            <div className="flex items-center gap-3">
+              <Skeleton className="rounded-lg w-10 h-10" />
+              <div className="space-y-1">
+                <Skeleton className="h-3 w-24 rounded-lg" />
+                <Skeleton className="h-2 w-16 rounded-lg" />
+              </div>
+            </div>
+            <Skeleton className="h-8 w-full rounded-full mt-2" />
+          </div>
+        ))}
+      </div>
+    );
+  }
 
-  // Subtítulo contextual según foco
-  const subtitle =
-    focus === "eva"
-      ? "Módulos de evaluación y autoevaluación"
-      : "Módulos disponibles";
+  // --- RENDER: Empty State ---
+  if (count === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center p-8 text-center border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50/50">
+        <span className="text-4xl mb-2">🔒</span>
+        <p className="text-gray-500 font-medium">No hay módulos disponibles</p>
+        <p className="text-xs text-gray-400">
+          Contacta a tu administrador si crees que es un error.
+        </p>
+      </div>
+    );
+  }
 
-  // Clases de grid según cantidad para centrar tarjetas
-  const gridClass =
-    count <= 1
-      ? "grid grid-cols-1 justify-items-center"
-      : count === 2
-        ? "grid grid-cols-1 sm:grid-cols-2 justify-items-center"
-        : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3";
-
-  // Contraste y estilo según tema (sin cambios)
-  const getContrastText = (hex: string) => {
-    const c = (hex || "#3b82f6").replace("#", "");
-    const r = parseInt(c.substring(0, 2), 16);
-    const g = parseInt(c.substring(2, 4), 16);
-    const b = parseInt(c.substring(4, 6), 16);
-    const yiq = (r * 299 + g * 587 + b * 114) / 1000;
-
-    return yiq >= 140 ? "#111827" : "#ffffff";
-  };
-
-  const primary = theme?.primary_color ?? "#3b82f6";
-  const textOnPrimary = theme?.button_text_color ?? getContrastText(primary);
-  const buttonStyle = { backgroundColor: primary, color: textOnPrimary };
-
+  // --- RENDER: Content Grid ---
   return (
-    <div className="w-full">
-      {count === 0 && (
-        <Card className="rounded-3xl bg-white/80 dark:bg-[#0f172a]/80 supports-[backdrop-filter]:backdrop-blur-xl ring-1 ring-black/10 dark:ring-white/10 shadow-xl max-w-4xl mx-auto">
-          <CardHeader className="px-6 pt-5 flex items-center justify-center text-center gap-2">
-            <span className="inline-flex">
-              <span className="w-5 h-5 rounded-full border-2 border-slate-300/70 dark:border-slate-600/70 border-t-transparent animate-spin" />
+    <div className={`w-full ${className}`}>
+      {/* Título opcional interno (útil si se usa fuera del Hero) */}
+      {title && (
+        <div className="mb-4 flex items-center gap-2">
+          <h3 className="text-lg font-bold text-gray-800 dark:text-white">
+            {title}
+          </h3>
+          {showCount && (
+            <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs font-medium">
+              {count}
             </span>
-            <span className="text-base font-semibold">Cargando accesos…</span>
-          </CardHeader>
-          <CardBody className="px-6 pb-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 justify-items-center">
-              {[0, 1, 2].map((i) => (
-                <div
-                  key={i}
-                  className="w-full max-w-sm rounded-2xl ring-1 ring-black/5 dark:ring-white/10 bg-white/70 dark:bg-[#0b1220]/70 supports-[backdrop-filter]:backdrop-blur p-4 shadow-sm"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-white/80 dark:bg-slate-700/40" />
-                    <div className="h-4 w-28 rounded bg-slate-200/70 dark:bg-slate-700/50 animate-pulse" />
-                  </div>
-                  <div className="mt-3 h-8 w-36 rounded-full bg-slate-200/70 dark:bg-slate-700/50 animate-pulse" />
-                </div>
-              ))}
-            </div>
-          </CardBody>
-        </Card>
+          )}
+        </div>
       )}
 
-      {count > 0 && (
-        <Card className="rounded-3xl bg-white/80 dark:bg-[#0f172a]/80 supports-[backdrop-filter]:backdrop-blur-xl ring-1 ring-black/10 dark:ring-white/10 shadow-xl max-w-4xl mx-auto">
-          <CardHeader className="px-6 pt-5 flex flex-col items-center text-center gap-1">
-            <h3 className="text-xl font-semibold text-slate-900 dark:text-white">
-              {title}{" "}
-              {showCount && (
-                <span className="text-xs text-slate-500 dark:text-slate-400">
-                  · {count} módulos
-                </span>
-              )}
-            </h3>
-            <p className="text-sm text-slate-600 dark:text-slate-300">
-              {subtitle}
-            </p>
-          </CardHeader>
-          <CardBody className="px-6 pb-6">
-            <div className={`${gridClass} gap-3 sm:gap-4`}>
-              {moduleCards.map((m, i) => (
-                <div
-                  key={`${m.title}-${i}`}
-                  className="group w-full max-w-sm mx-auto rounded-2xl ring-1 ring-black/5 dark:ring-white/10 bg-white/70 dark:bg-[#0b1220]/70 supports-[backdrop-filter]:backdrop-blur p-4 flex flex-col gap-3 shadow-sm transition hover:shadow-md hover:-translate-y-[1px] text-center"
-                >
-                  <div className="flex items-center justify-center gap-3">
-                    <div
-                      className="w-9 h-9 rounded-lg flex items-center justify-center"
-                      style={{
-                        backgroundColor: "rgba(255,255,255,0.7)",
-                        color: primary,
-                      }}
-                    >
-                      <span className="text-lg">{m.icon}</span>
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">
-                        {m.title}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Grupo de acciones dentro del mismo target */}
-                  <div className="flex flex-wrap justify-center items-center gap-2">
-                    {m.actions.map((action, idx) => (
-                      <Button
-                        key={`${m.title}-${action.href}-${idx}`}
-                        className="rounded-full h-8 px-3 text-xs font-semibold shadow-sm hover:opacity-95 active:opacity-90"
-                        style={buttonStyle}
-                        variant="solid"
-                        onPress={() => navigate(action.href)}
-                      >
-                        {action.label}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardBody>
-        </Card>
-      )}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filteredModules.map((module, idx) => (
+          <ModuleCard
+            key={`${module.title}-${idx}`}
+            module={module}
+            primaryColor={primaryColor}
+            onNavigate={navigate}
+          />
+        ))}
+      </div>
     </div>
   );
 }
+
+// --- Subcomponente: Module Card (Para mantener limpio el código) ---
+type ModuleCardProps = {
+  module: any; // Define tu tipo Section aquí si lo tienes
+  primaryColor: string;
+  onNavigate: (path: string) => void;
+};
+
+const ModuleCard = ({ module, primaryColor, onNavigate }: ModuleCardProps) => {
+  return (
+    <div className="group relative flex flex-col p-5 rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-sm transition-all hover:shadow-md hover:border-blue-200 hover:-translate-y-1">
+      {/* Header de la Card */}
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center text-xl transition-colors group-hover:bg-opacity-20 bg-gray-50 dark:bg-gray-700"
+            style={{ color: primaryColor }} // Icono toma el color de la marca
+          >
+            {module.icon}
+          </div>
+          <div>
+            <h4 className="font-bold text-gray-800 dark:text-white text-sm leading-tight">
+              {module.title}
+            </h4>
+            <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">
+              {module.buttons.length} Acciones
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Separador sutil */}
+      <Divider className="my-2 bg-gray-50 dark:bg-gray-700" />
+
+      {/* Lista de Botones */}
+      <div className="flex flex-col gap-2 mt-auto">
+        {module.buttons.map((btn: any, btnIdx: number) => (
+          <Button
+            key={btnIdx}
+            className="justify-start h-9 w-full bg-gray-50 hover:bg-gray-100 dark:bg-gray-700/50 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 font-medium"
+            size="sm"
+            startContent={
+              // Pequeño punto de color indicador
+              <span
+                className="w-1.5 h-1.5 rounded-full mr-1"
+                style={{ backgroundColor: primaryColor }}
+              />
+            }
+            variant="flat"
+            onPress={() => onNavigate(btn.href)}
+          >
+            {btn.label}
+          </Button>
+        ))}
+      </div>
+    </div>
+  );
+};

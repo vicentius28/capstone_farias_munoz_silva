@@ -1,15 +1,18 @@
 import { Button } from "@heroui/button";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useMemo } from "react";
-import { Card, CardBody, CardHeader } from "@heroui/card";
+import { Card, CardBody } from "@heroui/card";
 import { Spinner } from "@heroui/spinner";
 import { Tabs, Tab } from "@heroui/tabs";
 import { Chip } from "@heroui/chip";
+import { Divider } from "@heroui/divider";
 import {
   PlusIcon,
   DocumentTextIcon,
   UserIcon,
-  SparklesIcon,
+  PencilSquareIcon,
+  SwatchIcon,
+  ChevronRightIcon,
 } from "@heroicons/react/24/outline";
 
 import { fetchEvaluacion } from "@/features/evaluacion/services/plantilla/evaluacion";
@@ -17,12 +20,15 @@ import { TipoEvaluacion } from "@/features/evaluacion/types/evaluacion";
 
 export default function EditarEvaluacionPage() {
   const navigate = useNavigate();
+
+  // Estados
   const [tiposEvaluacion, setTiposEvaluacion] = useState<TipoEvaluacion[]>([]);
   const [loading, setLoading] = useState(true);
   const [tabSeleccionado, setTabSeleccionado] = useState<
     "evaluaciones" | "autoevaluaciones"
   >("evaluaciones");
 
+  // Carga de datos
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -41,11 +47,11 @@ export default function EditarEvaluacionPage() {
     fetchData();
   }, []);
 
+  // Filtrado
   const autoevaluaciones = useMemo(
     () => tiposEvaluacion.filter((t) => t.auto),
     [tiposEvaluacion],
   );
-
   const evaluaciones = useMemo(
     () => tiposEvaluacion.filter((t) => !t.auto),
     [tiposEvaluacion],
@@ -55,7 +61,8 @@ export default function EditarEvaluacionPage() {
     tabSeleccionado === "evaluaciones" ? evaluaciones : autoevaluaciones;
   const isEvaluaciones = tabSeleccionado === "evaluaciones";
 
-  const TipoEvaluacionCard = ({
+  // --- Componente: Tarjeta de Plantilla (Admin Style) ---
+  const TemplateCard = ({
     tipo,
     onClick,
   }: {
@@ -64,249 +71,191 @@ export default function EditarEvaluacionPage() {
   }) => (
     <Card
       isPressable
-      className="group cursor-pointer border-0 bg-background/60 backdrop-blur-sm 
-                 hover:bg-background/80 hover:scale-[1.02] 
-                 transition-all duration-300 ease-out
-                 shadow-sm hover:shadow-xl hover:shadow-primary/5
-                 dark:bg-default-50/5 dark:hover:bg-default-50/10"
+      className="group border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md hover:border-primary-300 transition-all duration-200 bg-white dark:bg-gray-900 h-full"
       onPress={onClick}
     >
-      <CardHeader className="pb-2">
-        <div className="flex items-start justify-between w-full">
-          <div className="flex items-center gap-3">
-            <div
-              className={`p-2 rounded-lg ${
-                isEvaluaciones
-                  ? "bg-primary/10 text-primary"
-                  : "bg-secondary/10 text-secondary"
-              }`}
-            >
-              {isEvaluaciones ? (
-                <DocumentTextIcon className="w-5 h-5" />
-              ) : (
-                <UserIcon className="w-5 h-5" />
-              )}
-            </div>
-            <div>
-              <h3 className="text-base font-semibold text-foreground leading-tight">
-                {tipo.n_tipo_evaluacion}
-              </h3>
-            </div>
-          </div>
-          <Chip
-            className="text-xs"
-            color={isEvaluaciones ? "primary" : "secondary"}
-            size="sm"
-            variant="flat"
+      <CardBody className="p-5 flex flex-col h-full">
+        <div className="flex justify-between items-start mb-4">
+          <div
+            className={`p-3 rounded-xl transition-colors ${isEvaluaciones ? "bg-blue-50 text-blue-600 dark:bg-blue-900/20" : "bg-purple-50 text-purple-600 dark:bg-purple-900/20"}`}
           >
-            {isEvaluaciones ? "Evaluación" : "AutoEvaluación"}
-          </Chip>
+            {isEvaluaciones ? (
+              <DocumentTextIcon className="w-6 h-6" />
+            ) : (
+              <UserIcon className="w-6 h-6" />
+            )}
+          </div>
+          {/* Icono de edición que aparece al hacer hover */}
+          <div className="text-gray-300 group-hover:text-primary-600 transition-colors">
+            <PencilSquareIcon className="w-5 h-5" />
+          </div>
         </div>
-      </CardHeader>
-      <CardBody className="pt-0">
-        <p className="text-sm text-default-500 group-hover:text-default-600 transition-colors">
-          Click para editar configuración
-        </p>
+
+        <div className="flex-1">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 line-clamp-2 leading-tight group-hover:text-primary-700 transition-colors">
+            {tipo.n_tipo_evaluacion}
+          </h3>
+          <div className="flex items-center gap-2">
+            <Chip
+              className={`h-6 px-2 text-xs font-medium ${isEvaluaciones ? "bg-blue-50 text-blue-700" : "bg-purple-50 text-purple-700"}`}
+              size="sm"
+              variant="flat"
+            >
+              {isEvaluaciones
+                ? "Plantilla Evaluación"
+                : "Plantilla AutoEvaluación"}
+            </Chip>
+          </div>
+        </div>
+
+        <Divider className="my-4 bg-gray-100 dark:bg-gray-800" />
+
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">
+            Acción
+          </span>
+          <div className="flex items-center gap-1 text-sm font-semibold text-gray-600 group-hover:text-primary-600 transition-colors">
+            Editar Contenido{" "}
+            <ChevronRightIcon className="w-3 h-3 stroke-[3px]" />
+          </div>
+        </div>
       </CardBody>
     </Card>
   );
 
+  // --- Componente: Empty State ---
   const EmptyState = () => (
-    <div className="flex flex-col items-center justify-center py-16 px-6">
+    <div className="flex flex-col items-center justify-center py-20 border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-2xl bg-gray-50/50 dark:bg-gray-900/50">
       <div
-        className={`p-4 rounded-full mb-4 ${
-          isEvaluaciones
-            ? "bg-primary/10 text-primary"
-            : "bg-secondary/10 text-secondary"
-        }`}
+        className={`p-4 rounded-full mb-4 bg-gray-100 dark:bg-gray-800 text-gray-400`}
       >
-        {isEvaluaciones ? (
-          <DocumentTextIcon className="w-8 h-8" />
-        ) : (
-          <UserIcon className="w-8 h-8" />
-        )}
+        <SwatchIcon className="w-10 h-10" />
       </div>
-      <h3 className="text-lg font-medium text-foreground mb-2">
-        {isEvaluaciones ? "No hay evaluaciones" : "No hay autoevaluaciones"}
-      </h3>
-      <p className="text-sm text-default-500 text-center mb-6 max-w-sm">
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
         {isEvaluaciones
-          ? "Crea tu primera evaluación para comenzar a gestionar el proceso de evaluación."
-          : "Crea tu primera autoevaluación para permitir la autoevaluación de usuarios."}
+          ? "Sin Plantillas de Evaluación"
+          : "Sin Plantillas de Autoevaluación"}
+      </h3>
+      <p className="text-sm text-gray-500 text-center max-w-xs mb-6">
+        Define los criterios, preguntas y estructura creando tu primera
+        plantilla.
       </p>
       <Button
-        color={isEvaluaciones ? "primary" : "secondary"}
+        color="primary"
         startContent={<PlusIcon className="w-4 h-4" />}
-        variant="flat"
         onPress={() =>
           navigate(
             `/evaluacion-crear?auto=${tabSeleccionado === "autoevaluaciones"}`,
           )
         }
       >
-        {isEvaluaciones ? "Crear Evaluación" : "Crear AutoEvaluación"}
+        Crear Nueva Plantilla
       </Button>
     </div>
   );
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-[#0b1220]">
         <div className="flex flex-col items-center gap-4">
-          <div className="relative">
-            <Spinner
-              classNames={{
-                circle1: "border-b-primary",
-                circle2: "border-b-primary/30",
-              }}
-              color="primary"
-              size="lg"
-            />
-            <div className="absolute inset-0 animate-ping">
-              <div className="w-full h-full rounded-full bg-primary/10" />
-            </div>
-          </div>
-          <div className="text-center">
-            <p className="text-lg font-medium text-foreground">Cargando</p>
-            <p className="text-sm text-default-500">
-              Obteniendo tipos de evaluación...
-            </p>
-          </div>
+          <Spinner color="primary" size="lg" />
+          <p className="text-sm text-gray-500 font-medium">
+            Cargando plantillas...
+          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-900 dark:via-blue-950/30 dark:to-indigo-950/50 rounded-xl">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header Section */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="p-3 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 backdrop-blur-sm">
-              <SparklesIcon className="w-8 h-8 text-primary" />
-            </div>
+    <div className="min-h-screen bg-gray-50 dark:bg-[#0b1220] pb-10">
+      {/* 1. Header Principal (Sticky & Clean) */}
+      <div className="bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-gray-800 pt-8 pb-8 px-6 sticky top-0 z-20 shadow-sm">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white tracking-tight flex items-center gap-3">
+              <SwatchIcon className="w-8 h-8 text-gray-400" />
+              Gestión de Plantillas
+            </h1>
+            <p className="text-gray-500 mt-1">
+              Diseña y configura los instrumentos de evaluación.
+            </p>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent pb-4">
-            Gestión de Plantillas
-          </h1>
-          <p className="text-default-600 max-w-2xl mx-auto">
-            Administra y personaliza tus plantillas de evaluación y
-            autoevaluación
-          </p>
-        </div>
-
-        {/* Navigation Tabs */}
-        <div className="flex justify-center mb-8">
-          <div className="p-1 bg-default-100/80 dark:bg-default-100/20 backdrop-blur-sm rounded-xl border border-default-200/50">
-            <Tabs
-              aria-label="Tipos de evaluación"
-              classNames={{
-                tabList: "gap-1",
-                cursor: "bg-background shadow-sm",
-                tab: "h-12 px-6 data-[selected=true]:text-foreground",
-                tabContent:
-                  "group-data-[selected=true]:text-foreground text-default-600",
-              }}
-              selectedKey={tabSeleccionado}
-              onSelectionChange={(key) =>
-                setTabSeleccionado(key as "evaluaciones" | "autoevaluaciones")
-              }
-            >
-              <Tab
-                key="evaluaciones"
-                title={
-                  <div className="flex items-center gap-2">
-                    <DocumentTextIcon className="w-4 h-4" />
-                    <span>Evaluaciones</span>
-                    {evaluaciones.length > 0 && (
-                      <Chip
-                        className="text-xs"
-                        color="primary"
-                        size="sm"
-                        variant="flat"
-                      >
-                        {evaluaciones.length}
-                      </Chip>
-                    )}
-                  </div>
-                }
-              />
-              <Tab
-                key="autoevaluaciones"
-                title={
-                  <div className="flex items-center gap-2">
-                    <UserIcon className="w-4 h-4" />
-                    <span>AutoEvaluaciones</span>
-                    {autoevaluaciones.length > 0 && (
-                      <Chip
-                        className="text-xs"
-                        color="secondary"
-                        size="sm"
-                        variant="flat"
-                      >
-                        {autoevaluaciones.length}
-                      </Chip>
-                    )}
-                  </div>
-                }
-              />
-            </Tabs>
-          </div>
-        </div>
-
-        {/* Action Bar */}
-        <div className="flex justify-between items-center mb-6 ">
-          <div className="flex items-center gap-3">
-            <h2 className="text-xl font-semibold text-foreground">
-              {isEvaluaciones ? "Evaluaciones" : "AutoEvaluaciones"}
-            </h2>
-            <Chip
-              color={isEvaluaciones ? "primary" : "secondary"}
-              size="sm"
-              variant="flat"
-            >
-              {lista.length} {lista.length === 1 ? "plantilla" : "plantillas"}
-            </Chip>
-          </div>
-
           <Button
-            className="font-medium"
-            color={isEvaluaciones ? "primary" : "secondary"}
-            startContent={<PlusIcon className="w-4 h-4" />}
-            variant="shadow"
+            className="font-medium shadow-lg shadow-blue-500/20"
+            color="primary"
+            size="lg"
+            startContent={<PlusIcon className="w-5 h-5" />}
             onPress={() =>
               navigate(
                 `/evaluacion-crear?auto=${tabSeleccionado === "autoevaluaciones"}`,
               )
             }
           >
-            Crear {isEvaluaciones ? "Evaluación" : "AutoEvaluación"}
+            {isEvaluaciones ? "Nueva Plantilla" : "Nueva Plantilla "}
           </Button>
         </div>
+      </div>
 
-        {/* Content Area */}
-        <div className="bg-background/60 backdrop-blur-sm rounded-2xl border border-default-200/50 shadow-sm dark:bg-default-50/5">
-          {lista.length === 0 ? (
-            <EmptyState />
-          ) : (
-            <div className="p-6 md:p-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {lista.map((tipo, index) => (
-                  <TipoEvaluacionCard
-                    key={`${tabSeleccionado}-${tipo.id || index}`}
-                    tipo={tipo}
-                    onClick={() =>
-                      navigate("/evaluacion-editar/edicion", {
-                        state: { tipoEvaluacion: tipo },
-                      })
-                    }
-                  />
-                ))}
-              </div>
-            </div>
-          )}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* 2. Tabs de Navegación */}
+        <div className="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
+          <Tabs
+            classNames={{
+              cursor: "w-full bg-primary",
+              tabContent:
+                "group-data-[selected=true]:text-primary font-medium text-gray-500",
+            }}
+            color="primary"
+            selectedKey={tabSeleccionado}
+            variant="underlined"
+            onSelectionChange={(key) => setTabSeleccionado(key as any)}
+          >
+            <Tab
+              key="evaluaciones"
+              title={
+                <div className="flex items-center gap-2">
+                  <DocumentTextIcon className="w-4 h-4" />
+                  <span>Evaluaciones</span>
+                  <Chip color="primary" size="sm" variant="flat">
+                    {evaluaciones.length}
+                  </Chip>
+                </div>
+              }
+            />
+            <Tab
+              key="autoevaluaciones"
+              title={
+                <div className="flex items-center gap-2">
+                  <UserIcon className="w-4 h-4" />
+                  <span>Autoevaluaciones</span>
+                  <Chip color="secondary" size="sm" variant="flat">
+                    {autoevaluaciones.length}
+                  </Chip>
+                </div>
+              }
+            />
+          </Tabs>
         </div>
+
+        {/* 3. Grid de Tarjetas */}
+        {lista.length === 0 ? (
+          <EmptyState />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {lista.map((tipo, index) => (
+              <TemplateCard
+                key={`${tabSeleccionado}-${tipo.id || index}`}
+                tipo={tipo}
+                onClick={() =>
+                  navigate("/evaluacion-editar/edicion", {
+                    state: { tipoEvaluacion: tipo },
+                  })
+                }
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

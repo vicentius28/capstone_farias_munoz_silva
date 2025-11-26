@@ -306,7 +306,9 @@ export default function UsersTable({
   };
 
   const makeUsername = (first: string, last: string) => {
-    const raw = `${String(first || "").trim()} ${String(last || "").trim()}`.trim();
+    const raw =
+      `${String(first || "").trim()} ${String(last || "").trim()}`.trim();
+
     if (!raw) return "";
     const cleaned = raw
       .normalize("NFD")
@@ -314,6 +316,7 @@ export default function UsersTable({
       .replace(/[^a-zA-Z\s]+/g, " ")
       .replace(/\s+/g, " ")
       .trim();
+
     return cleaned
       .split(" ")
       .map((w) => (w ? w[0].toUpperCase() + w.slice(1).toLowerCase() : ""))
@@ -480,7 +483,7 @@ export default function UsersTable({
       setCiclos(cc || []);
       setGrupos(gp || []);
       setJefes(jf || []);
-    } catch { }
+    } catch {}
     setFieldErrors({});
     setPhotoFile(null);
     setPhotoError(null);
@@ -514,6 +517,7 @@ export default function UsersTable({
         body = fd;
       }
       const created = await createUser(body);
+
       addToast({
         title: "Usuario creado",
         description: "El usuario fue creado correctamente.",
@@ -537,6 +541,7 @@ export default function UsersTable({
         is_active: true,
       });
       const targetSearch = (created as any)?.username || payload.username || "";
+
       setSearchTerm(targetSearch);
       invalidateCache();
       await refreshUsers();
@@ -691,7 +696,6 @@ export default function UsersTable({
                 <h2 className="text-xl font-semibold text-foreground">
                   Usuarios
                 </h2>
-
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -817,10 +821,13 @@ export default function UsersTable({
                     value={form.first_name}
                     onChange={(e) => {
                       const v = e.target.value;
+
                       setForm((prev: any) => {
-                        const suggested = (!usernameTouched || !prev.username)
-                          ? makeUsername(v, prev.last_name)
-                          : prev.username;
+                        const suggested =
+                          !usernameTouched || !prev.username
+                            ? makeUsername(v, prev.last_name)
+                            : prev.username;
+
                         return { ...prev, first_name: v, username: suggested };
                       });
                     }}
@@ -833,10 +840,13 @@ export default function UsersTable({
                     value={form.last_name}
                     onChange={(e) => {
                       const v = e.target.value;
+
                       setForm((prev: any) => {
-                        const suggested = (!usernameTouched || !prev.username)
-                          ? makeUsername(prev.first_name, v)
-                          : prev.username;
+                        const suggested =
+                          !usernameTouched || !prev.username
+                            ? makeUsername(prev.first_name, v)
+                            : prev.username;
+
                         return { ...prev, last_name: v, username: suggested };
                       });
                     }}

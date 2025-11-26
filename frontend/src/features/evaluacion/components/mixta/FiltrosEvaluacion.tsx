@@ -41,7 +41,7 @@ export default function FiltrosEvaluacionComponent({
   onLimpiar,
 }: Props) {
   return (
-    <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-xl mb-6">
+    <Card className="bg-background/70 backdrop-blur-sm border border-divider shadow-xl mb-6">
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-3">
@@ -57,10 +57,10 @@ export default function FiltrosEvaluacionComponent({
               </svg>
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-slate-800">
+              <h2 className="text-xl font-semibold text-foreground">
                 Filtros y Búsqueda
               </h2>
-              <p className="text-sm text-slate-600">
+              <p className="text-sm text-default-600 dark:text-default-300">
                 Encuentra evaluaciones específicas
               </p>
             </div>
@@ -92,7 +92,7 @@ export default function FiltrosEvaluacionComponent({
             placeholder="Buscar por nombre o evaluador..."
             startContent={
               <svg
-                className="h-4 w-4 text-slate-400"
+                className="h-4 w-4 text-default-500"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2"
@@ -149,7 +149,7 @@ export default function FiltrosEvaluacionComponent({
 
         {total > 0 && (
           <div className="mt-4 flex items-center justify-between">
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-default-600 dark:text-default-300">
               Mostrando {(paginaActual - 1) * itemsPorPagina + 1} -{" "}
               {Math.min(paginaActual * itemsPorPagina, total)} de {total}{" "}
               evaluaciones

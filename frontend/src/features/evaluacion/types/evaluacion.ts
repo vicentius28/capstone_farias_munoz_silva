@@ -95,6 +95,9 @@ export interface EvaluacionJefe extends EvaluacionBase {
     last_name: string;
     email?: string;
     jefe?: string;
+    foto_thumbnail?: string;
+    ciclo?: string;
+    cargo?: string;
   };
   tipo_evaluacion?: TipoEvaluacion;
   puntaje_total_obtenido?: number;

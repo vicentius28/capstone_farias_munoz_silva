@@ -122,6 +122,7 @@ export const updateUserById = async (
       `${BASE_API_URL}/user/${userId}/`,
       payload,
     );
+
     return response.data;
   } catch (error: any) {
     if (error?.response) {
@@ -134,10 +135,12 @@ export const updateUserById = async (
           ? Object.entries(data)
               .map(([k, v]) => {
                 const text = Array.isArray(v) ? v.join(" | ") : String(v);
+
                 return `${k}: ${text}`;
               })
               .join("; ")
           : String(data));
+
       throw new Error(`Error ${status}: ${message}`);
     }
     if (error?.request) {

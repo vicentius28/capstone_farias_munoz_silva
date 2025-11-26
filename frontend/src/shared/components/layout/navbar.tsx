@@ -1,14 +1,18 @@
-import React, { useEffect } from "react";
-import { Link as HeroLink } from "@heroui/link";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Skeleton } from "@heroui/skeleton";
 import {
   Navbar as HeroUINavbar,
   NavbarBrand,
   NavbarContent,
-  NavbarMenu,
-  NavbarMenuItem,
+  NavbarItem,
 } from "@heroui/navbar";
+import {
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+  DropdownSection,
+} from "@heroui/dropdown";
 import {
   Modal,
   ModalContent,
@@ -17,67 +21,57 @@ import {
   ModalFooter,
   useDisclosure,
 } from "@heroui/modal";
-import {
-  Dropdown,
-  DropdownTrigger,
-  DropdownMenu,
-  DropdownItem,
-} from "@heroui/dropdown";
 import { Avatar } from "@heroui/avatar";
-import { Settings, UserIcon, BarChart } from "lucide-react";
-import { useLocation } from "react-router-dom";
-import { Bars3Icon } from "@heroicons/react/24/outline";
 import { Button } from "@heroui/button";
-import { useState } from "react";
+import {
+  Settings,
+  User as UserIcon,
+  BarChart3,
+  LogOut,
+  Menu,
+} from "lucide-react";
 
+// Imports de tu proyecto
 import { useAuthentication } from "@/services/google/auth";
 import { Logo } from "@/shared/components/Icons/icons";
 import { ThemeSwitch } from "@/shared/components/ui/theme-switch";
-import { siteConfig } from "@/core/config/site";
 import { buildFileUrl } from "@/utils/urlUtils";
 import { useUser } from "@/hooks/useUser";
-import { SidebarDrawer } from "@/shared/components/layout/Sidebar";
-import { sidebarRoutes } from "@/shared/utils/sidebarRoutes";
 import { usePermissions } from "@/hooks/usePermissions";
+import { SidebarDrawer } from "@/shared/components/layout/Sidebar"; // Tu sidebar móvil existente
 
 export const Navbar: React.FC = () => {
-  const { isAuthorized, logout } = useAuthentication();
-  const { user } = useUser();
   const navigate = useNavigate();
+  const { logout } = useAuthentication();
+  const { user } = useUser();
   const { is_staff } = usePermissions();
-
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
-  const location = useLocation();
+  // Estado para el Sidebar Móvil
   const [isSidebarOpen, setSidebarOpen] = useState(false);
+
+  // Estado para Scroll
   const [showNavbar, setShowNavbar] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
 
+  // Lógica de Scroll (Optimizada)
   useEffect(() => {
     const handleScroll = () => {
       const currentY = window.scrollY;
 
+      // Umbral de 80px para evitar saltos pequeños
       if (currentY > lastScrollY && currentY > 80) {
-        setShowNavbar(false); // Ocultar si scroll hacia abajo
+        setShowNavbar(false);
       } else {
-        setShowNavbar(true); // Mostrar si scroll hacia arriba
+        setShowNavbar(true);
       }
-
       setLastScrollY(currentY);
     };
 
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
 
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
-
-  const isSidebarRoute = sidebarRoutes.includes(location.pathname);
-
-  useEffect(() => {
-    if (user) {
-      // User data available
-    }
-  }, [user]);
 
   const handleLogout = async () => {
     logout();
@@ -88,189 +82,207 @@ export const Navbar: React.FC = () => {
     navigate("/perfil", { state: { userId: user?.id } });
   };
 
+  // Nombre y rol visibles
+  const displayName =
+    `${user?.first_name ?? ""} ${user?.last_name ?? ""}`.trim() ||
+    user?.username
   return (
-    <HeroUINavbar
-      className={`top-0 z-50 transition-transform duration-300 bg-default-50 shadow-sm ${
-        showNavbar ? "translate-y-0" : "-translate-y-full"
-      }`}
-      maxWidth="xl"
-      position="sticky"
-    >
-      <NavbarContent className="basis-1/5 sm:basis-full" justify="start">
-        <NavbarBrand className="gap-3 max-w-fit">
-          {isSidebarRoute && (
-            <>
-              <Button
-                className="bg-transparent border-none cursor-pointer"
-                onPress={() => setSidebarOpen(true)}
-              >
-                <Bars3Icon height={24} width={24} />
-              </Button>
-              <SidebarDrawer
-                isOpen={isSidebarOpen}
-                setOpen={() => setSidebarOpen(!isSidebarOpen)}
-              />
-            </>
-          )}
-
-          <HeroLink
-            className="flex justify-start items-center gap-1"
-            color="foreground"
-            href="/"
-          >
-            <Logo />
-            <p className="font-bold text-inherit">
-              Evalink|{new Date().getFullYear()}
-            </p>
-          </HeroLink>
-        </NavbarBrand>
-      </NavbarContent>
-
-      <NavbarContent
-        className="hidden sm:flex basis-1/5 sm:basis-full"
-        justify="end"
+    <>
+      <HeroUINavbar
+        className={`transition-transform duration-300 ease-in-out border-b border-default-200/50 bg-background/80 backdrop-blur-md ${showNavbar ? "translate-y-0" : "-translate-y-full"
+          }`}
+        classNames={{
+          wrapper: "px-4 sm:px-6 h-16",
+        }}
+        maxWidth="full"
+        position="sticky"
       >
-        <ThemeSwitch />
-      </NavbarContent>
+        {/* 1. Izquierda: Menú Móvil + Logo */}
+        <NavbarContent className="basis-1/5 sm:basis-full" justify="start">
+          {/* Botón Hamburguesa (Solo Móvil) */}
+          <div className="md:hidden mr-2">
+            <Button
+              isIconOnly
+              variant="light"
+              onPress={() => setSidebarOpen(true)}
+            >
+              <Menu className="w-6 h-6 text-default-500" />
+            </Button>
+          </div>
 
-      <NavbarContent className="sm:hidden basis-1 pl-4" justify="end">
-        <ThemeSwitch />
-      </NavbarContent>
+          <NavbarBrand
+            className="gap-3 max-w-fit cursor-pointer"
+            onClick={() => navigate("/")}
+          >
+            <div className="bg-blue-600 p-1.5 rounded-lg shadow-sm">
+              <Logo className="text-white" size={20} />
+            </div>
+            <div className="hidden sm:flex flex-col">
+              <p className="font-bold text-inherit leading-none text-lg">
+                Evalink
+              </p>
+              <p className="text-[10px] text-default-400 font-medium uppercase tracking-wide">
+                Gestión {new Date().getFullYear()}
+              </p>
+            </div>
+          </NavbarBrand>
+        </NavbarContent>
 
-      <NavbarMenu>
-        <div className="mx-4 mt-2 flex flex-col gap-2">
-          {siteConfig.navMenuItems.map((item, index) => (
-            <NavbarMenuItem key={`${item.label}-${index}`}>
-              <HeroLink
-                color={
-                  index === 2
-                    ? "primary"
-                    : index === siteConfig.navMenuItems.length - 1
-                      ? "danger"
-                      : "foreground"
-                }
-                href={item.href}
-                size="lg"
-              >
-                {item.label}
-              </HeroLink>
-            </NavbarMenuItem>
-          ))}
-        </div>
-      </NavbarMenu>
+        {/* 2. Centro: Navegación Desktop (Opcional, si no usas Sidebar en Desktop) */}
+        {/* Si usas Sidebar lateral en desktop, esta sección puede quedar vacía o usarse para un buscador global */}
+        <NavbarContent
+          className="hidden md:flex basis-1/5 sm:basis-full"
+          justify="center"
+        >
+          {/* Ejemplo: Buscador Global podría ir aquí */}
+        </NavbarContent>
 
-      <Dropdown placement="bottom-end">
-        <DropdownTrigger>
-          {isAuthorized && user ? (
-            user.foto_thumbnail ? (
+        {/* 3. Derecha: Acciones y Perfil */}
+        <NavbarContent className="gap-2" justify="end">
+          {/* Switch de Tema */}
+          <NavbarItem>
+            <ThemeSwitch />
+          </NavbarItem>
+
+          {/* Dropdown de Usuario */}
+          <Dropdown showArrow placement="bottom-end">
+            <DropdownTrigger>
               <Avatar
                 isBordered
-                alt="Foto de perfil"
                 as="button"
-                className="transition-transform object-top"
-                src={buildFileUrl(user.foto_thumbnail)}
+                className="transition-transform w-8 h-8 sm:w-9 sm:h-9"
+                color="primary"
+                name={displayName}
+                size="sm"
+                src={
+                  user?.foto_thumbnail
+                    ? buildFileUrl(user.foto_thumbnail)
+                    : undefined
+                }
               />
-            ) : (
-              <Button
-                isIconOnly
-                className="h-10 w-10 rounded-full border-2 border-default-200"
-                variant="ghost"
-              >
-                <UserIcon className="w-6 h-6" />
-              </Button>
-            )
-          ) : (
-            <Skeleton className="h-10 w-10 rounded-full" />
-          )}
-        </DropdownTrigger>
-
-        {isAuthorized && user && (
-          <DropdownMenu aria-label="Profile Actions" variant="flat">
-            {is_staff ? (
-              <>
+            </DropdownTrigger>
+            <DropdownMenu
+              aria-label="Profile Actions"
+              className="w-60"
+              variant="flat"
+            >
+              <DropdownSection showDivider>
                 <DropdownItem
-                  key="admin"
-                  onPress={() =>
-                    (window.location.href = `${import.meta.env.VITE_API_URL}/admin/`)
-                  }
+                  key="profile"
+                  className="h-14 gap-2"
+                  textValue="Perfil"
                 >
-                  <div className="flex items-center gap-x-2">
-                    <Settings className="w-4 h-4" />
-                    <span>Administración</span>
+                  <p className="font-semibold">Conectado como</p>
+                  <p className="font-semibold text-primary truncate">
+                    {user?.email}
+                  </p>
+
+                </DropdownItem>
+              </DropdownSection>
+
+              <DropdownSection showDivider>
+                <DropdownItem
+                  key="settings"
+                  textValue="Mi Perfil"
+                  onPress={handleProfileClick}
+                >
+                  <div className="flex items-center gap-2">
+                    <UserIcon className="w-4 h-4" />
+                    <span>Mi Perfil</span>
                   </div>
                 </DropdownItem>
-              </>
-            ) : null}
 
-            {is_staff ? (
-              <DropdownItem
-                key="metabase"
-                onPress={() =>
-                  window.open("https://meta.gsr.cat", "_blank", "noopener")
-                }
-              >
-                <div className="flex items-center gap-x-2">
-                  <BarChart className="w-4 h-4" />
-                  <span>Metabase</span>
-                </div>
-              </DropdownItem>
-            ) : null}
+                {is_staff ? (
+                  <DropdownItem
+                    key="admin"
+                    textValue="Administración"
+                    onPress={() =>
+                      (window.location.href = `${import.meta.env.VITE_API_URL}/admin/`)
+                    }
+                  >
+                    <div className="flex items-center gap-2">
+                      <Settings className="w-4 h-4" />
+                      <span>Administración</span>
+                    </div>
+                  </DropdownItem>
+                ) : null}
+                {is_staff ? (
+                  <DropdownItem
+                    key="analytics"
+                    textValue="Analítica"
+                    onPress={() =>
+                      window.open("https://meta.gsr.cat", "_blank", "noopener")
+                    }
+                  >
+                    <div className="flex items-center gap-2">
+                      <BarChart3 className="w-4 h-4" />
+                      <span>Metabase</span>
+                    </div>
+                  </DropdownItem>
+                ) : null}
+              </DropdownSection>
 
-            <DropdownItem key="perfil" onPress={handleProfileClick}>
-              <div className="flex items-center gap-x-2">
-                <UserIcon className="w-4 h-4" />
-                <span>Perfil</span>
-              </div>
-            </DropdownItem>
-            <DropdownItem
-              key="logout"
-              className="text-danger"
-              color="danger"
-              onPress={onOpen}
-            >
-              Cerrar Sesión
-            </DropdownItem>
-          </DropdownMenu>
-        )}
-      </Dropdown>
-
-      <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
-        <ModalContent>
-          {(onClose) => (
-            <>
-              <ModalHeader className="flex flex-col gap-1 text-lg font-semibold text-red-600">
-                ¿Cerrar sesión?
-              </ModalHeader>
-
-              <ModalBody>
-                <p>¿Estás seguro de que deseas cerrar sesión?</p>
-              </ModalBody>
-
-              <ModalFooter className="flex justify-end gap-2">
-                <Button
-                  className="text-white"
-                  color="secondary"
-                  variant="solid"
-                  onPress={onClose}
-                >
-                  Cancelar
-                </Button>
-
-                <Button
+              <DropdownSection>
+                <DropdownItem
+                  key="logout"
+                  className="text-danger"
                   color="danger"
-                  variant="solid"
-                  onPress={() => {
-                    onClose();
-                    handleLogout();
-                  }}
+                  textValue="Cerrar Sesión"
+                  onPress={onOpen}
                 >
-                  Sí, cerrar sesión
-                </Button>
-              </ModalFooter>
-            </>
-          )}
-        </ModalContent>
-      </Modal>
-    </HeroUINavbar>
+                  <div className="flex items-center gap-2">
+                    <LogOut className="w-4 h-4" />
+                    <span>Cerrar Sesión</span>
+                  </div>
+                </DropdownItem>
+              </DropdownSection>
+            </DropdownMenu>
+          </Dropdown>
+        </NavbarContent>
+
+        {/* Modal de Confirmación Logout */}
+        <Modal
+          backdrop="blur"
+          isOpen={isOpen}
+          size="sm"
+          onOpenChange={onOpenChange}
+        >
+          <ModalContent>
+            {(onClose) => (
+              <>
+                <ModalHeader className="flex flex-col gap-1">
+                  Cerrar Sesión
+                </ModalHeader>
+                <ModalBody>
+                  <p className="text-sm text-default-500">
+                    ¿Estás seguro de que deseas salir de la plataforma?
+                  </p>
+                </ModalBody>
+                <ModalFooter>
+                  <Button variant="light" onPress={onClose}>
+                    Cancelar
+                  </Button>
+                  <Button
+                    color="danger"
+                    onPress={() => {
+                      onClose();
+                      handleLogout();
+                    }}
+                  >
+                    Salir
+                  </Button>
+                </ModalFooter>
+              </>
+            )}
+          </ModalContent>
+        </Modal>
+      </HeroUINavbar>
+
+      {/* Sidebar Drawer para Móvil (Se mantiene tu componente existente) */}
+      <SidebarDrawer
+        isOpen={isSidebarOpen}
+        setOpen={() => setSidebarOpen(!isSidebarOpen)}
+      />
+    </>
   );
 };

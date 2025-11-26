@@ -36,15 +36,18 @@ const useUsersCache = () => {
 
   // Función mejorada para obtener usuarios
   const fetchUsers = useCallback(async (searchQuery?: string) => {
-    if (import.meta.env.DEV) console.log("🔍 Fetching users with query:", searchQuery);
+    if (import.meta.env.DEV)
+      console.log("🔍 Fetching users with query:", searchQuery);
 
     try {
       // Si hay búsqueda, usar el backend; si no, usar caché
       if (searchQuery && searchQuery.trim()) {
-        if (import.meta.env.DEV) console.log("📡 Fetching from backend with search query");
+        if (import.meta.env.DEV)
+          console.log("📡 Fetching from backend with search query");
         const users = await fetchAllUsers(searchQuery.trim());
 
-        if (import.meta.env.DEV) console.log("✅ Search results:", users.length, "users");
+        if (import.meta.env.DEV)
+          console.log("✅ Search results:", users.length, "users");
 
         return users;
       } else {
@@ -102,7 +105,8 @@ const useUsersCache = () => {
             }
           }
         } catch (error) {
-          if (import.meta.env.DEV) console.warn("⚠️ Error al leer caché del localStorage:", error);
+          if (import.meta.env.DEV)
+            console.warn("⚠️ Error al leer caché del localStorage:", error);
           // Limpiar caché corrupto
           localStorage.removeItem(CACHE_CONFIG.STORAGE_KEY);
           localStorage.removeItem(CACHE_CONFIG.TIMESTAMP_KEY);
@@ -110,14 +114,17 @@ const useUsersCache = () => {
         }
 
         // Obtener datos frescos del servidor
-        if (import.meta.env.DEV) console.log("📡 Fetching fresh data from server");
+        if (import.meta.env.DEV)
+          console.log("📡 Fetching fresh data from server");
         const users = await fetchAllUsers();
 
-        if (import.meta.env.DEV) console.log("✅ Fresh data received:", users.length, "users");
+        if (import.meta.env.DEV)
+          console.log("✅ Fresh data received:", users.length, "users");
 
         // Validar que los datos sean válidos
         if (!Array.isArray(users)) {
-          if (import.meta.env.DEV) console.error("❌ Invalid data format received:", users);
+          if (import.meta.env.DEV)
+            console.error("❌ Invalid data format received:", users);
           throw new Error("Formato de datos inválido recibido del servidor");
         }
 
@@ -139,13 +146,15 @@ const useUsersCache = () => {
           );
           if (import.meta.env.DEV) console.log("💾 Cache updated successfully");
         } catch (error) {
-          if (import.meta.env.DEV) console.warn("⚠️ Error al guardar en localStorage:", error);
+          if (import.meta.env.DEV)
+            console.warn("⚠️ Error al guardar en localStorage:", error);
         }
 
         return users;
       }
     } catch (error) {
-      if (import.meta.env.DEV) console.error("❌ Error al obtener usuarios:", error);
+      if (import.meta.env.DEV)
+        console.error("❌ Error al obtener usuarios:", error);
       throw error;
     }
   }, []);
@@ -162,7 +171,8 @@ const useUsersCache = () => {
       try {
         setLoading(true);
         setError(null);
-        if (import.meta.env.DEV) console.log("🔄 Performing search for:", searchTerm);
+        if (import.meta.env.DEV)
+          console.log("🔄 Performing search for:", searchTerm);
 
         const results = await fetchUsers(searchTerm);
 
@@ -176,7 +186,8 @@ const useUsersCache = () => {
         // Si no hay término de búsqueda, también actualizar allUsers
         if (!searchTerm.trim()) {
           setAllUsers(results);
-          if (import.meta.env.DEV) console.log("📊 Total users loaded:", results.length);
+          if (import.meta.env.DEV)
+            console.log("📊 Total users loaded:", results.length);
         }
       } catch (error: any) {
         if (error.name !== "AbortError") {
@@ -186,7 +197,8 @@ const useUsersCache = () => {
             "Error al buscar usuarios";
 
           setError(errorMessage);
-          if (import.meta.env.DEV) console.error("❌ Error en búsqueda:", error);
+          if (import.meta.env.DEV)
+            console.error("❌ Error en búsqueda:", error);
 
           // En caso de error, intentar usar datos del caché como fallback
           if (!searchTerm.trim() && memoryCache) {

@@ -19,7 +19,7 @@ export default function CriteriosEvaluacion({
   criterios,
 }: Props) {
   return (
-    <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-xl">
+    <Card className="bg-background/70 backdrop-blur-sm border border-divider shadow-xl">
       <CardHeader className="pb-4">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
@@ -34,8 +34,10 @@ export default function CriteriosEvaluacion({
             </svg>
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-slate-800">{title}</h2>
-            <p className="text-sm text-slate-600">{subtitle}</p>
+            <h2 className="text-xl font-semibold text-foreground">{title}</h2>
+            <p className="text-sm text-default-600 dark:text-default-300">
+              {subtitle}
+            </p>
           </div>
         </div>
       </CardHeader>
@@ -44,11 +46,13 @@ export default function CriteriosEvaluacion({
           {criterios.map((c, i) => (
             <div
               key={i}
-              className="p-4 bg-gradient-to-br from-white to-slate-50 rounded-xl border border-slate-200 hover:border-blue-300 transition-all duration-200 hover:shadow-md"
+              className="p-4 rounded-xl border border-divider bg-background/80 hover:border-primary/40 transition-all duration-200 hover:shadow-md"
             >
               <div className="text-2xl mb-3">{c.icon ?? "📌"}</div>
-              <h3 className="font-semibold text-slate-800 mb-2">{c.title}</h3>
-              <p className="text-sm text-slate-600">{c.description}</p>
+              <h3 className="font-semibold text-foreground mb-2">{c.title}</h3>
+              <p className="text-sm text-default-600 dark:text-default-300">
+                {c.description}
+              </p>
             </div>
           ))}
         </div>

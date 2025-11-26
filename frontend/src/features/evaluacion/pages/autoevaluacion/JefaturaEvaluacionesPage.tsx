@@ -1,8 +1,16 @@
+// features/evaluacion/jefatura/pages/JefaturaEvaluacionesPage.tsx
+import type {
+  EvaluacionJefe,
+  EstadoEvaluacion,
+} from "@/features/evaluacion/types/evaluacion";
+
 import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, CardBody } from "@heroui/card";
+import { Card, CardHeader, CardBody } from "@heroui/card";
+import { Tabs, Tab } from "@heroui/tabs";
 import { Select, SelectItem } from "@heroui/select";
 import { Button } from "@heroui/button";
+import { Chip } from "@heroui/chip";
 import {
   Table,
   TableHeader,
@@ -11,46 +19,69 @@ import {
   TableRow,
   TableCell,
 } from "@heroui/table";
-import { Tabs, Tab } from "@heroui/tabs";
-import { Chip } from "@heroui/chip";
 import { addToast } from "@heroui/toast";
+
+// Iconos
 import {
   ClipboardDocumentCheckIcon,
   CheckCircleIcon,
-  ExclamationTriangleIcon,
-  DocumentTextIcon,
-  CalendarIcon,
-  ChatBubbleLeftRightIcon,
+  ChatBubbleBottomCenterTextIcon,
+  PencilSquareIcon,
+  Squares2X2Icon,
+  TableCellsIcon,
+  FunnelIcon,
+  ClockIcon,
 } from "@heroicons/react/24/outline";
 
-import "@/features/evaluacion/styles/animations.css";
+// Componentes internos
+import { TimelineEvaluacion } from "@/features/evaluacion/components/flow";
 import { useEvaluacionesJefe } from "@/features/evaluacion/hooks/useEvaluacionesJefe";
-import {
-  EstadoEvaluacionBadge,
-  TimelineEvaluacion,
-} from "@/features/evaluacion/components/flow";
 
-import type {
-  EvaluacionJefe,
-  EstadoEvaluacion,
-} from "@/features/evaluacion/types/evaluacion";
+// --- Componente de Estadística (KPI) ---
+const StatCard = ({ title, value, icon, color, actionLabel }: any) => (
+  <Card className="border border-gray-200 dark:border-gray-800 shadow-sm bg-white dark:bg-gray-900">
+    <CardBody className="p-5 flex items-start justify-between">
+      <div>
+        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+          {title}
+        </p>
+        <div className="mt-2 flex items-baseline gap-2">
+          <span className="text-3xl font-bold text-gray-900 dark:text-white">
+            {value}
+          </span>
+        </div>
+        {actionLabel && (
+          <p className="text-xs text-blue-600 mt-1 font-medium">
+            {actionLabel}
+          </p>
+        )}
+      </div>
+      <div
+        className={`p-3 rounded-xl bg-${color}-50 text-${color}-600 dark:bg-${color}-900/20`}
+      >
+        {icon}
+      </div>
+    </CardBody>
+  </Card>
+);
+
 export default function JefaturaEvaluacionesPage() {
   const navigate = useNavigate();
+
+  // Estados de UI
   const [tab, setTab] = useState<"en-proceso" | "finalizadas">("en-proceso");
-  const [filtroEstado] = useState<EstadoEvaluacion | "todas">("todas");
   const [yearFilter, setYearFilter] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
 
-  // Usar el hook que maneja las evaluaciones de jefatura
+  // Data
   const { evaluaciones, loading, error } = useEvaluacionesJefe({
     soloMisEvaluaciones: true,
     debug: true,
   });
 
-  // Función para determinar el estado de una evaluación
+  // --- Lógica de Negocio: Determinación de Estados ---
   const getEstadoEvaluacion = useCallback(
     (ev: EvaluacionJefe): EstadoEvaluacion => {
-      // Lógica de fallback basada en campos booleanos
       if (ev.firmado || ev.firmado_obs) return "finalizado";
       if (ev.retroalimentacion && ev.cerrado_para_firma) return "firmar";
       if (ev.completado) return "retroalimentar";
@@ -60,54 +91,32 @@ export default function JefaturaEvaluacionesPage() {
     [],
   );
 
-  // Función para filtrar por estado - ACTUALIZADA para 4 estados
-  const filtrarPorEstado = useCallback(
-    (evaluaciones: EvaluacionJefe[], estado: EstadoEvaluacion) => {
-      return evaluaciones.filter((ev) => {
-        const estadoActual = getEstadoEvaluacion(ev);
+  // --- Lógica de Negocio: Estadísticas Calculadas ---
+  const stats = useMemo(() => {
+    const total = evaluaciones.length;
+    const finalizadas = evaluaciones.filter(
+      (e) => getEstadoEvaluacion(e) === "finalizado",
+    ).length;
+    // Métricas accionables para el jefe
+    const porRetroalimentar = evaluaciones.filter(
+      (e) => getEstadoEvaluacion(e) === "retroalimentar",
+    ).length;
+    const porFirmar = evaluaciones.filter(
+      (e) => getEstadoEvaluacion(e) === "firmar",
+    ).length;
+    const enEspera = evaluaciones.filter(
+      (e) => getEstadoEvaluacion(e) === "pendiente",
+    ).length;
 
-        return estadoActual === estado;
-      });
-    },
-    [getEstadoEvaluacion],
-  );
+    return { total, finalizadas, porRetroalimentar, porFirmar, enEspera };
+  }, [evaluaciones, getEstadoEvaluacion]);
 
-  // Filtrar evaluaciones por tab y estado
-  const evaluacionesFiltradas = useMemo(() => {
-    let filtradas = evaluaciones;
-
-    // Filtrar por tab - incluir finalizadas en finalizadas
-    switch (tab) {
-      case "en-proceso":
-        filtradas = filtradas.filter((ev) => {
-          const estado = getEstadoEvaluacion(ev);
-
-          return estado !== "finalizado";
-        });
-        break;
-      case "finalizadas":
-        filtradas = filtradas.filter((ev) => {
-          const estado = getEstadoEvaluacion(ev);
-
-          return estado === "finalizado";
-        });
-        break;
-    }
-
-    // Filtrar por estado específico
-    if (filtroEstado !== "todas") {
-      filtradas = filtrarPorEstado(filtradas, filtroEstado);
-    }
-
-    return filtradas;
-  }, [evaluaciones, tab, filtroEstado, filtrarPorEstado, getEstadoEvaluacion]);
-
+  // --- Filtros ---
   const years = useMemo(() => {
     const setYears = new Set<string>();
 
     evaluaciones.forEach((ev) => {
-      const s = String(ev?.fecha_evaluacion ?? "");
-      const m = s.match(/(\d{4})/);
+      const m = String(ev?.fecha_evaluacion ?? "").match(/(\d{4})/);
 
       if (m) setYears.add(m[1]);
     });
@@ -117,58 +126,50 @@ export default function JefaturaEvaluacionesPage() {
 
   const yearItems = useMemo(
     () => [
-      { key: "all", label: "Todos" },
+      { key: "all", label: "Todos los años" },
       ...years.map((y) => ({ key: y, label: y })),
     ],
     [years],
   );
 
-  const evaluacionesFiltradasPorAnio = useMemo(() => {
-    const base =
-      yearFilter === "all"
-        ? evaluacionesFiltradas
-        : evaluacionesFiltradas.filter((ev) =>
-            String(ev?.fecha_evaluacion ?? "").includes(yearFilter),
-          );
+  const evaluacionesFiltradas = useMemo(() => {
+    // 1. Filtrar por Tab
+    let filtradas = evaluaciones.filter((ev) => {
+      const estado = getEstadoEvaluacion(ev);
 
-    return [...base].sort((a, b) =>
+      return tab === "en-proceso"
+        ? estado !== "finalizado"
+        : estado === "finalizado";
+    });
+
+    // 2. Filtrar por Año
+    if (yearFilter !== "all") {
+      filtradas = filtradas.filter((ev) =>
+        String(ev?.fecha_evaluacion ?? "").includes(yearFilter),
+      );
+    }
+
+    // 3. Ordenar
+    return filtradas.sort((a, b) =>
       String(b?.fecha_evaluacion ?? "").localeCompare(
         String(a?.fecha_evaluacion ?? ""),
       ),
     );
-  }, [evaluacionesFiltradas, yearFilter]);
+  }, [evaluaciones, tab, yearFilter, getEstadoEvaluacion]);
 
-  const counts = useMemo(
-    () => ({
-      enProceso: evaluaciones.filter((ev) => {
-        const estado = getEstadoEvaluacion(ev);
-
-        return estado !== "finalizado";
-      }).length,
-      finalizadas: evaluaciones.filter((ev) => {
-        const estado = getEstadoEvaluacion(ev);
-
-        return estado === "finalizado";
-      }).length,
-    }),
-    [evaluaciones, getEstadoEvaluacion],
-  );
-
+  // --- Acciones ---
   const openEvaluacion = useCallback(
-    (id: number, firmado: boolean) => {
-      // Buscar la evaluación en el array para verificar su estado
+    (id: number) => {
       const evaluacion = evaluaciones.find((ev) => ev.id === id);
 
       if (!evaluacion) return;
 
       const estado = getEstadoEvaluacion(evaluacion);
 
-      // Mostrar mensaje informativo si está en estado pendiente
       if (estado === "pendiente") {
         addToast({
-          title: "Evaluación no disponible",
-          description:
-            "Esta evaluación aún está en proceso. Podrás acceder cuando avance a la siguiente etapa.",
+          title: "Evaluación en curso",
+          description: "El colaborador aún está completando su autoevaluación.",
           color: "warning",
           variant: "solid",
         });
@@ -176,322 +177,273 @@ export default function JefaturaEvaluacionesPage() {
         return;
       }
 
+      // Pasamos el estado de firmado explícitamente si es necesario
+      const firmado = estado === "finalizado";
+
       navigate("/autoevaluacion/jefatura/detalle", { state: { id, firmado } });
     },
     [navigate, evaluaciones, getEstadoEvaluacion],
   );
 
-  // CORREGIDA - usar campos que existen en EvaluacionJefe
+  // Helper para texto (mantenido de tu lógica original)
   const extractTexto = (ev: EvaluacionJefe) =>
     ev?.retroalimentacion ?? ev?.text_destacar ?? ev?.text_mejorar ?? undefined;
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-default-50/30 dark:to-default-900/30">
-        <div className="flex flex-col items-center gap-4">
-          <div className="relative">
-            <div className="w-16 h-16 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
-            <div className="absolute inset-0 animate-ping">
-              <div className="w-full h-full rounded-full bg-primary/10" />
-            </div>
-          </div>
-          <div className="text-center">
-            <p className="text-lg font-medium text-foreground">Cargando</p>
-            <p className="text-sm text-default-500">
-              Obteniendo evaluaciones de jefatura...
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
+  // --- Render ---
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-900 dark:via-blue-950/30 dark:to-indigo-950/50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header Section */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="p-3 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 backdrop-blur-sm">
-              <ClipboardDocumentCheckIcon className="w-8 h-8 text-primary" />
-            </div>
-          </div>
-          <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-2">
-            Mis Evaluaciones
+    <div className="w-full max-w-7xl mx-auto p-6 space-y-8 animate-in fade-in duration-500">
+      {/* 1. HEADER */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            Revisar Mis Evaluaciones
           </h1>
-          <p className="text-default-600 max-w-2xl mx-auto">
-            revisa tus evaluaciones de desempeño
+          <p className="text-gray-500 mt-1">
+            Revisa el proceso de las evaluaciones realizadas por tu jefatura.
           </p>
         </div>
-        {/* Navigation Tabs */}
-        <div className="flex justify-center mb-6">
-          <div className="p-1 bg-default-100/80 dark:bg-default-100/20 backdrop-blur-sm rounded-xl border border-default-200/50">
-            <Tabs
-              aria-label="Evaluaciones de jefatura"
-              classNames={{
-                tabList: "gap-1",
-                cursor: "bg-background shadow-sm",
-                tab: "h-10 px-4 data-[selected=true]:text-foreground",
-                tabContent:
-                  "group-data-[selected=true]:text-foreground text-default-600",
-              }}
-              selectedKey={tab}
-              onSelectionChange={(key) =>
-                setTab(key as "en-proceso" | "finalizadas")
+      </div>
+
+      {/* 2. STATS (Dashboard Accionable) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard
+          actionLabel={
+            stats.porRetroalimentar > 0 ? "Requiere acción inmediata" : null
+          }
+          color="amber"
+          icon={<ChatBubbleBottomCenterTextIcon className="w-6 h-6" />}
+          title="Por Retroalimentar"
+          value={stats.porRetroalimentar}
+        />
+        <StatCard
+          actionLabel={stats.porFirmar > 0 ? "Firma pendiente" : null}
+          color="blue"
+          icon={<PencilSquareIcon className="w-6 h-6" />}
+          title="Por Firmar"
+          value={stats.porFirmar}
+        />
+        <StatCard
+          color="gray"
+          icon={<ClockIcon className="w-6 h-6" />}
+          title="En Espera"
+          value={stats.enEspera}
+        />
+        <StatCard
+          color="green"
+          icon={<CheckCircleIcon className="w-6 h-6" />}
+          title="Finalizadas"
+          value={stats.finalizadas}
+        />
+      </div>
+
+      {/* 3. MAIN CONTENT */}
+      <Card className="shadow-sm border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 min-h-[500px]">
+        <CardHeader className="flex flex-col md:flex-row gap-4 justify-between items-center px-6 py-5 border-b border-gray-100 dark:border-gray-800">
+          {/* Tabs */}
+          <Tabs
+            aria-label="Filtro de estado"
+            classNames={{
+              cursor: "bg-blue-50 dark:bg-blue-900/20",
+              tabContent:
+                "group-data-[selected=true]:text-blue-600 font-medium",
+            }}
+            color="primary"
+            selectedKey={tab}
+            variant="light"
+            onSelectionChange={(k) => setTab(k as any)}
+          >
+            <Tab
+              key="en-proceso"
+              title={
+                <div className="flex items-center gap-2">
+                  <span>En Proceso</span>
+                  <Chip color="primary" size="sm" variant="flat">
+                    {stats.enEspera + stats.porRetroalimentar + stats.porFirmar}
+                  </Chip>
+                </div>
+              }
+            />
+            <Tab
+              key="finalizadas"
+              title={
+                <div className="flex items-center gap-2">
+                  <span>Finalizadas</span>
+                  <Chip color="success" size="sm" variant="flat">
+                    {stats.finalizadas}
+                  </Chip>
+                </div>
+              }
+            />
+          </Tabs>
+
+          {/* Toolbar */}
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            <Select
+              className="w-40"
+              defaultSelectedKeys={["all"]}
+              selectedKeys={[yearFilter]}
+              size="sm"
+              startContent={<FunnelIcon className="w-4 h-4 text-gray-400" />}
+              onSelectionChange={(keys) =>
+                setYearFilter(Array.from(keys)[0] as string)
               }
             >
-              <Tab
-                key="en-proceso"
-                title={
-                  <div className="flex items-center gap-2">
-                    <ChatBubbleLeftRightIcon className="w-4 h-4" />
-                    <span>En Proceso</span>
-                    {counts.enProceso > 0 && (
-                      <Chip
-                        className="text-xs min-w-5 h-5"
-                        color="primary"
-                        size="sm"
-                        variant="flat"
-                      >
-                        {counts.enProceso}
-                      </Chip>
-                    )}
-                  </div>
-                }
-              />
-              <Tab
-                key="finalizadas"
-                title={
-                  <div className="flex items-center gap-2">
-                    <CheckCircleIcon className="w-4 h-4" />
-                    <span>Finalizadas</span>
-                    {counts.finalizadas > 0 && (
-                      <Chip
-                        className="text-xs min-w-5 h-5"
-                        color="success"
-                        size="sm"
-                        variant="flat"
-                      >
-                        {counts.finalizadas}
-                      </Chip>
-                    )}
-                  </div>
-                }
-              />
-            </Tabs>
-          </div>
-        </div>
+              {yearItems.map((item) => (
+                <SelectItem key={item.key}>{item.label}</SelectItem>
+              ))}
+            </Select>
 
-        {/* Content Area */}
-        <div className="bg-background/60 backdrop-blur-sm rounded-2xl border border-default-200/50 shadow-sm dark:bg-default-50/5">
-          {/* Error State */}
-          {error && (
-            <div className="flex flex-col items-center justify-center py-16 px-6">
-              <div className="p-4 rounded-full mb-4 bg-danger/10 text-danger">
-                <ExclamationTriangleIcon className="w-8 h-8" />
-              </div>
-              <h3 className="text-lg font-medium text-foreground mb-2">
-                Error al cargar evaluaciones
-              </h3>
-              <p className="text-sm text-default-500 text-center mb-6 max-w-sm">
-                {error}
+            <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
+              <Button
+                isIconOnly
+                className={
+                  viewMode === "cards" ? "bg-white shadow-sm" : "text-gray-500"
+                }
+                size="sm"
+                variant={viewMode === "cards" ? "solid" : "light"}
+                onPress={() => setViewMode("cards")}
+              >
+                <Squares2X2Icon className="w-5 h-5" />
+              </Button>
+              <Button
+                isIconOnly
+                className={
+                  viewMode === "table" ? "bg-white shadow-sm" : "text-gray-500"
+                }
+                size="sm"
+                variant={viewMode === "table" ? "solid" : "light"}
+                onPress={() => setViewMode("table")}
+              >
+                <TableCellsIcon className="w-5 h-5" />
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+
+        <CardBody className="p-6 bg-gray-50/50 dark:bg-transparent">
+          {loading && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[1, 2, 3].map((i) => (
+                <Card
+                  key={i}
+                  className="h-64 border-none shadow-none bg-gray-100 animate-pulse"
+                >
+                  <CardBody />
+                </Card>
+              ))}
+            </div>
+          )}
+
+          {!loading && error && (
+            <div className="text-center py-10 text-red-500 bg-red-50 rounded-xl border border-red-100">
+              <p>Error: {error}</p>
+            </div>
+          )}
+
+          {!loading && !error && evaluacionesFiltradas.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-20 text-gray-400">
+              <ClipboardDocumentCheckIcon className="w-16 h-16 mb-4 opacity-20" />
+              <p className="text-lg font-medium">
+                No hay evaluaciones en esta vista
               </p>
             </div>
           )}
 
-          {/* Content */}
-          {!error && (
-            <div className="p-6">
-              {evaluacionesFiltradas.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-16 px-6">
-                  <div className="p-4 rounded-full mb-4 bg-default/10 text-default-500">
-                    <DocumentTextIcon className="w-8 h-8" />
+          {!loading &&
+            !error &&
+            evaluacionesFiltradas.length > 0 &&
+            (viewMode === "cards" ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                {evaluacionesFiltradas.map((evaluacion) => (
+                  <div key={evaluacion.id} className="h-full">
+                    {/* Mantenemos tu componente Timeline pero envuelto limpio */}
+                    <TimelineEvaluacion
+                      compact={true}
+                      evaluacion={evaluacion}
+                      extractTexto={extractTexto}
+                      showPersonaName={true} // Importante para jefatura ver el nombre
+                      onOpen={openEvaluacion}
+                    />
                   </div>
-                  <h3 className="text-lg font-medium text-foreground mb-2">
-                    No hay evaluaciones en esta categoría
-                  </h3>
-                  <p className="text-sm text-default-500 text-center mb-6 max-w-sm">
-                    {tab === "en-proceso" &&
-                      "No hay evaluaciones en proceso actualmente."}
-                    {tab === "finalizadas" &&
-                      "No tienes evaluaciones finalizadas aún."}
-                  </p>
-                </div>
-              ) : (
-                <>
-                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <CalendarIcon className="w-5 h-5" />
-                    {tab === "en-proceso"
-                      ? "Evaluaciones en Proceso"
-                      : "Evaluaciones Finalizadas"}
-                  </h3>
-                  {/* Filtros de estado */}
-                  <div className="mb-6">
-                    <Card className="border-0 bg-background/60 backdrop-blur-sm shadow-sm">
-                      <CardBody className="p-4">
-                        <div className="flex flex-wrap items-center gap-4">
-                          <span className="text-sm font-medium text-foreground">
-                            Estados de evaluación:
-                          </span>
-                          <div className="flex flex-wrap gap-2">
-                            {[
-                              "pendiente",
-                              "retroalimentar",
-                              "firmar",
-                              "finalizado",
-                            ].map((estado) => (
-                              <div
-                                key={estado}
-                                className="flex items-center gap-2"
-                              >
-                                <EstadoEvaluacionBadge
-                                  estado={estado as EstadoEvaluacion}
-                                  size="sm"
-                                />
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </CardBody>
-                    </Card>
-                  </div>
-
-                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-6">
-                    <div className="flex items-center gap-3">
-                      <Select
-                        className="w-full md:w-[240px]"
-                        classNames={{
-                          trigger: "h-11",
-                          label: "text-default-600",
-                          value: "text-sm",
-                        }}
-                        items={yearItems}
-                        label="Año"
-                        labelPlacement="outside-left"
-                        selectedKeys={[yearFilter]}
-                        size="md"
-                        onSelectionChange={(keys) => {
-                          const key = Array.from(keys as Set<React.Key>)[0] as
-                            | string
-                            | undefined;
-
-                          setYearFilter(key ?? "all");
-                        }}
-                      >
-                        {(item) => (
-                          <SelectItem key={item.key}>{item.label}</SelectItem>
-                        )}
-                      </Select>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        color={viewMode === "cards" ? "primary" : "default"}
-                        size="sm"
-                        variant={viewMode === "cards" ? "solid" : "flat"}
-                        onPress={() => setViewMode("cards")}
-                      >
-                        Tarjetas
-                      </Button>
-                      <Button
-                        color={viewMode === "table" ? "primary" : "default"}
-                        size="sm"
-                        variant={viewMode === "table" ? "solid" : "flat"}
-                        onPress={() => setViewMode("table")}
-                      >
-                        Tabla
-                      </Button>
-                    </div>
-                  </div>
-                  {viewMode === "cards" ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 items-stretch h-full w-full">
-                      {evaluacionesFiltradasPorAnio.map((evaluacion, index) => (
-                        <div
-                          key={evaluacion.id}
-                          className="animate-fadeInUp h-full"
-                          style={{ animationDelay: `${index * 0.08}s` }}
-                        >
-                          <TimelineEvaluacion
-                            compact={true}
-                            evaluacion={evaluacion}
-                            extractTexto={extractTexto}
-                            showPersonaName={false}
-                            onOpen={openEvaluacion}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <Table
-                      isStriped
-                      aria-label="Listado de evaluaciones de jefatura"
-                      classNames={{ wrapper: "min-h-[400px]" }}
-                      selectedKeys={new Set()}
-                      selectionMode="none"
-                    >
-                      <TableHeader>
-                        <TableColumn>Evaluación</TableColumn>
-                        <TableColumn>Período</TableColumn>
-                        <TableColumn>Estado</TableColumn>
-                        <TableColumn>Acción</TableColumn>
-                      </TableHeader>
-                      <TableBody>
-                        {evaluacionesFiltradasPorAnio.map((ev) => (
-                          <TableRow key={String(ev.id)}>
-                            <TableCell>
-                              {ev?.tipo_evaluacion?.n_tipo_evaluacion ??
-                                "Evaluación"}
-                            </TableCell>
-                            <TableCell>{ev?.fecha_evaluacion ?? ""}</TableCell>
-                            <TableCell>
-                              <Chip
-                                color={
-                                  getEstadoEvaluacion(ev) === "finalizado"
-                                    ? "success"
-                                    : getEstadoEvaluacion(ev) === "firmar"
-                                      ? "primary"
-                                      : getEstadoEvaluacion(ev) ===
-                                          "retroalimentar"
-                                        ? "warning"
-                                        : "default"
-                                }
-                                size="sm"
-                                variant="flat"
-                              >
-                                {getEstadoEvaluacion(ev)}
-                              </Chip>
-                            </TableCell>
-                            <TableCell>
-                              <Button
-                                color={
-                                  getEstadoEvaluacion(ev) === "finalizado"
-                                    ? "success"
-                                    : "primary"
-                                }
-                                size="sm"
-                                variant="flat"
-                                onPress={() =>
-                                  openEvaluacion(
-                                    ev.id,
-                                    !!(ev.firmado || ev.firmado_obs),
-                                  )
-                                }
-                              >
-                                {getEstadoEvaluacion(ev) === "finalizado"
-                                  ? "Ver"
-                                  : "Continuar"}
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  )}
-                </>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
+                ))}
+              </div>
+            ) : (
+              <TablaEvaluaciones
+                getEstado={getEstadoEvaluacion}
+                items={evaluacionesFiltradas}
+                onAction={openEvaluacion}
+              />
+            ))}
+        </CardBody>
+      </Card>
     </div>
   );
 }
+
+// --- Subcomponente Tabla para limpieza ---
+const TablaEvaluaciones = ({ items, getEstado, onAction }: any) => (
+  <Table
+    aria-label="Tabla Jefatura"
+    classNames={{ wrapper: "bg-white p-0 shadow-none" }}
+    shadow="none"
+  >
+    <TableHeader>
+      <TableColumn>COLABORADOR</TableColumn>
+      <TableColumn>PERIODO</TableColumn>
+      <TableColumn>ESTADO ACTUAL</TableColumn>
+      <TableColumn align="end">ACCIÓN</TableColumn>
+    </TableHeader>
+    <TableBody>
+      {items.map((ev: any) => {
+        const estado = getEstado(ev);
+        const colorMap: any = {
+          pendiente: "default",
+          retroalimentar: "warning",
+          firmar: "secondary",
+          finalizado: "success",
+        };
+
+        return (
+          <TableRow key={ev.id}>
+            <TableCell>
+              <div className="font-medium text-gray-900 dark:text-white">
+                {/* Asumiendo que el objeto tiene datos del usuario, si no, usar ID */}
+                {ev.nombre_colaborador || `Colaborador #${ev.user_id || ev.id}`}
+              </div>
+              <div className="text-xs text-gray-500">
+                {ev?.tipo_evaluacion?.n_tipo_evaluacion || "Evaluación General"}
+              </div>
+            </TableCell>
+            <TableCell>{ev.fecha_evaluacion}</TableCell>
+            <TableCell>
+              <Chip
+                className="capitalize"
+                color={colorMap[estado]}
+                size="sm"
+                variant="flat"
+              >
+                {estado}
+              </Chip>
+            </TableCell>
+            <TableCell>
+              <Button
+                color={estado === "finalizado" ? "success" : "primary"}
+                size="sm"
+                variant={estado === "finalizado" ? "flat" : "solid"}
+                onPress={() => onAction(ev.id)}
+              >
+                {estado === "retroalimentar"
+                  ? "Retroalimentar"
+                  : estado === "firmar"
+                    ? "Firmar"
+                    : estado === "finalizado"
+                      ? "Ver Detalle"
+                      : "Ver Estado"}
+              </Button>
+            </TableCell>
+          </TableRow>
+        );
+      })}
+    </TableBody>
+  </Table>
+);

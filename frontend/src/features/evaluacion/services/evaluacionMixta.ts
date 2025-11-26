@@ -1,4 +1,6 @@
 // services/evaluacionMixta.ts
+import type { AsignacionEvaluacion } from "@/features/evaluacion/types/asignar/evaluacion";
+
 import axios from "@/services/google/axiosInstance";
 
 // services/evaluacionMixta.ts
@@ -52,12 +54,36 @@ export type EvaluacionMixta = {
 
     respondidos_auto?: number;
     respondidos_jefe?: number;
+    comparables_total?: number;
+    auto_completado?: boolean;
+    jefe_completado?: boolean;
   };
 };
 
 export async function getEvaluacionMixta(detalleId: number) {
   const { data } = await axios.get<EvaluacionMixta>(
     `/evaluacion/api/evaluaciones-mixtas/${detalleId}/`,
+  );
+
+  return data;
+}
+
+export async function listarEvaluacionesMixtas(params?: {
+  q?: string;
+  tipo?: string;
+  anio?: string;
+  scope?: "me" | "all";
+}): Promise<AsignacionEvaluacion[]> {
+  const search = new URLSearchParams();
+
+  if (params?.q) search.set("q", params.q);
+  if (params?.tipo) search.set("tipo", params.tipo);
+  if (params?.anio) search.set("anio", params.anio);
+  if (params?.scope) search.set("scope", params.scope);
+
+  const qs = search.toString();
+  const { data } = await axios.get<AsignacionEvaluacion[]>(
+    `/evaluacion/api/evaluaciones-mixtas/${qs ? `?${qs}` : ""}`,
   );
 
   return data;

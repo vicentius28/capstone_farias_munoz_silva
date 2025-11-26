@@ -16,7 +16,7 @@ export default function VistaTarjetas({ items, onVerMixta }: Props) {
       {items.map((item) => (
         <Card
           key={item.id}
-          className="bg-white/70 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-300"
+          className="bg-background/70 backdrop-blur-sm border border-divider shadow-xl hover:shadow-2xl transition-all duration-300"
         >
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between w-full">
@@ -26,10 +26,10 @@ export default function VistaTarjetas({ items, onVerMixta }: Props) {
                   {item.persona.last_name.charAt(0)}
                 </div>
                 <div>
-                  <h3 className="font-semibold text-slate-800">
+                  <h3 className="font-semibold text-foreground">
                     {item.persona.first_name} {item.persona.last_name}
                   </h3>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-default-600 dark:text-default-300">
                     {item.asignacion.tipo_evaluacion.n_tipo_evaluacion}
                   </p>
                 </div>
@@ -41,7 +41,7 @@ export default function VistaTarjetas({ items, onVerMixta }: Props) {
           </CardHeader>
           <CardBody className="pt-0">
             <div className="space-y-3">
-              <div className="flex items-center gap-2 text-sm text-slate-600">
+              <div className="flex items-center gap-2 text-sm text-default-600 dark:text-default-300">
                 <svg
                   className="h-4 w-4"
                   fill="none"
@@ -59,7 +59,7 @@ export default function VistaTarjetas({ items, onVerMixta }: Props) {
                   {item.evaluador.last_name}
                 </span>
               </div>
-              <div className="flex items-center gap-2 text-sm text-slate-600">
+              <div className="flex items-center gap-2 text-sm text-default-600 dark:text-default-300">
                 <svg
                   className="h-4 w-4"
                   fill="none"
