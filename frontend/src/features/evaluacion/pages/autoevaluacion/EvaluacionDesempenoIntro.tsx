@@ -1,6 +1,5 @@
 import React from "react";
 import { Button } from "@heroui/button";
-import { Link } from "@heroui/link";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Chip } from "@heroui/chip";
 import { useNavigate } from "react-router-dom";
@@ -26,7 +25,6 @@ export default function EvaluacionDesempenoIntro() {
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
             Evaluación de Desempeño
           </h1>
-          <p className="text-gray-500 mt-1 text-lg">Ciclo </p>
         </div>
         <Chip
           color="primary"
@@ -90,7 +88,7 @@ export default function EvaluacionDesempenoIntro() {
             <div className="relative border-l-2 border-gray-100 dark:border-gray-700 ml-3 space-y-8 my-2">
               {/* Paso 1 */}
               <div className="ml-6 relative">
-                <span className="absolute -left-[31px] top-0 flex items-center justify-center w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full ring-4 ring-white dark:ring-gray-900">
+                <span className="absolute -left-[41px] top-0 flex items-center justify-center w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full ring-4 ring-white dark:ring-gray-900">
                   <span className="text-blue-600 dark:text-blue-300 font-bold text-xs">
                     01
                   </span>
@@ -105,7 +103,7 @@ export default function EvaluacionDesempenoIntro() {
               </div>
               {/* Paso 2 */}
               <div className=" ml-6 relative">
-                <span className="absolute -left-[31px] top-0 flex items-center justify-center w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded-full ring-4 ring-white dark:ring-gray-900 ">
+                <span className="absolute -left-[41px] top-0 flex items-center justify-center w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded-full ring-4 ring-white dark:ring-gray-900 ">
                   <span className="text-purple-600 dark:text-purple-300 font-bold text-xs">
                     02
                   </span>
@@ -162,14 +160,7 @@ export default function EvaluacionDesempenoIntro() {
         <InformationCircleIcon className="w-6 h-6 text-gray-400" />
         <p className="text-sm text-gray-600 dark:text-gray-400">
           ¿Tienes dudas sobre el proceso?{" "}
-          <Link
-            isExternal
-            className="text-blue-600 font-medium hover:underline"
-            href="/manual-evaluacion.pdf"
-          >
-            Descarga el manual
-          </Link>{" "}
-          o contacta a Recursos Humanos.
+          puedes contactar a Recursos Humanos.
         </p>
       </div>
     </div>
