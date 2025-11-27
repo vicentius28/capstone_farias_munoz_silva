@@ -14,6 +14,7 @@ from evaluacion.utils.assignment_notifications import enviar_notificaciones_masi
 User = get_user_model()
 
 
+
 class UsuarioViewSet(viewsets.ModelViewSet):
     queryset = User.objects.select_related('ciclo', 'empresa').filter(
         empresa__id__in=[1, 2, 3],
