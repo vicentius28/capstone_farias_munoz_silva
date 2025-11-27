@@ -191,8 +191,10 @@ export const Navbar: React.FC = () => {
                     <span>Mi Perfil</span>
                   </div>
                 </DropdownItem>
+              </DropdownSection>
 
-                {is_staff ? (
+              {is_staff ? (
+                <DropdownSection showDivider>
                   <DropdownItem
                     key="admin"
                     textValue="Administración"
@@ -205,8 +207,6 @@ export const Navbar: React.FC = () => {
                       <span>Administración</span>
                     </div>
                   </DropdownItem>
-                ) : null}
-                {is_staff ? (
                   <DropdownItem
                     key="analytics"
                     textValue="Analítica"
@@ -219,8 +219,8 @@ export const Navbar: React.FC = () => {
                       <span>Metabase</span>
                     </div>
                   </DropdownItem>
-                ) : null}
-              </DropdownSection>
+                </DropdownSection>
+              ) : null}
 
               <DropdownSection>
                 <DropdownItem

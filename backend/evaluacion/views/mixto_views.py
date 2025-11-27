@@ -1,5 +1,5 @@
 # evaluacion/views/mixto_views.py
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 
@@ -60,7 +60,11 @@ class EvaluacionMixtaViewSet(viewsets.ViewSet):
             "persona",
             "evaluador",
         )
-        detalles = base_qs.filter(evaluador=request.user) if scope != "all" else base_qs.all()
+        group_obj = getattr(request.user, "group", None)
+        can_view_all = bool(getattr(group_obj, "is_staff", False) or getattr(request.user, "is_superuser", False))
+        if scope == "all" and not can_view_all:
+            return Response({"detail": "No autorizado"}, status=status.HTTP_403_FORBIDDEN)
+        detalles = base_qs.all() if (scope == "all" and can_view_all) else base_qs.filter(evaluador=request.user)
 
         agrupados = {}
         for detalle in detalles:
@@ -169,14 +173,17 @@ class EvaluacionMixtaViewSet(viewsets.ViewSet):
         return Response(data)
 
     def retrieve(self, request, pk=None):
-        # 1) Detalle (jefatura) - CORREGIDO: filtrar por evaluador
+        group_obj = getattr(request.user, "group", None)
+        can_view_any = bool(getattr(group_obj, "is_staff", False) or getattr(request.user, "is_superuser", False))
+        lookup = {"pk": pk}
+        if not can_view_any:
+            lookup["evaluador"] = request.user
         detalle = get_object_or_404(
             JefeEvaluacionAsignadaDetalle.objects.select_related(
                 "asignacion", "asignacion__tipo_evaluacion",
                 "persona", "evaluador"
             ),
-            pk=pk,
-            evaluador=request.user  # ✅ FILTRO POR JEFE AGREGADO
+            **lookup
         )
         asign_jefe = detalle.asignacion
         tipo_jefe = asign_jefe.tipo_evaluacion
