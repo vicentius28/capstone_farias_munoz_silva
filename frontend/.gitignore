@@ -32,6 +32,5 @@ pnpm-lock.yaml
 yarn.lock
 bun.lockb
 
-Dockerfile
 nginx.conf
 .dockerignore
