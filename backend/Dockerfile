@@ -45,5 +45,5 @@ RUN chmod +x start.sh
 # Directorios necesarios
 RUN mkdir -p /app/staticfiles
 
-EXPOSE $PORT
+EXPOSE 8000
 CMD ["./start.sh"]
