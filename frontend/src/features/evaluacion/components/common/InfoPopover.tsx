@@ -1,25 +1,45 @@
 import { Popover, PopoverTrigger, PopoverContent } from "@heroui/popover";
 import { Info } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface InfoPopoverProps {
   content: string;
+  className?: string;
 }
 
-export default function InfoPopover({ content }: InfoPopoverProps) {
+export default function InfoPopover({ content, className }: InfoPopoverProps) {
   return (
-    <div className="ml-6 sm:ml-8 lg:ml-10 mb-2">
-      <Popover placement="bottom-start" showArrow={true}>
-        <PopoverTrigger>
-          <div className="group inline-flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-br from-blue-50 to-indigo-100 hover:from-blue-100 hover:to-indigo-200 border border-blue-200/60 hover:border-blue-300/80 rounded-full cursor-help transition-all duration-300 ease-out hover:scale-110 hover:shadow-md">
-            <Info className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-blue-600 group-hover:text-blue-700 transition-colors duration-200" />
-          </div>
-        </PopoverTrigger>
-        <PopoverContent className="max-w-xs sm:max-w-sm p-3 sm:p-4 bg-white/95 backdrop-blur-sm border border-default-200/50 rounded-xl shadow-lg">
-          <p className="text-xs sm:text-sm text-default-700 leading-relaxed font-medium break-words">
-            {content}
-          </p>
-        </PopoverContent>
-      </Popover>
-    </div>
+    <Popover placement="top" showArrow={true} offset={10}>
+      <PopoverTrigger>
+        <button
+          type="button"
+          aria-label="Más información"
+          className={cn(
+            // Layout base
+            "group inline-flex items-center justify-center rounded-full transition-all duration-200 outline-none",
+            // Tamaño
+            "w-6 h-6",
+            // Colores: Gris sutil por defecto -> Indigo suave en hover
+            "text-slate-400 hover:text-indigo-600 hover:bg-indigo-50",
+            // Accesibilidad
+            "focus-visible:ring-2 focus-visible:ring-indigo-500",
+            className
+          )}
+        >
+          <Info className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />
+        </button>
+      </PopoverTrigger>
+      
+      <PopoverContent className="max-w-xs p-4 bg-white/95 backdrop-blur-md border border-slate-200 shadow-xl rounded-2xl dark:bg-slate-900/95 dark:border-slate-800">
+        <div className="space-y-2">
+            <h4 className="font-semibold text-xs uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                Información
+            </h4>
+            <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed font-medium">
+                {content}
+            </p>
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }

@@ -1,12 +1,10 @@
-import { useState, ReactNode } from "react";
+import { useState, ReactNode, useEffect, useMemo } from "react";
 import { Button } from "@heroui/button";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+import { cn } from "@/lib/utils";
 
 import { Respuesta } from "@/features/evaluacion/types/asignar/evaluacion";
-import {
-  AreaEvaluacion,
-  Competencia,
-} from "@/features/evaluacion/types/evaluacion";
+import { AreaEvaluacion } from "@/features/evaluacion/types/evaluacion";
 
 interface PaginationProps {
   estructura: any;
@@ -14,6 +12,8 @@ interface PaginationProps {
   titulo: string;
   respuestas?: Respuesta[];
   guardando?: boolean;
+  // Callback opcional para cuando se termina la última área
+  onFinalizar?: () => void;
 }
 
 export default function Pagination({
@@ -23,181 +23,165 @@ export default function Pagination({
   guardando = false,
 }: PaginationProps) {
   const [paginaActual, setPaginaActual] = useState(0);
-  const totalPaginas = estructura.areas.length;
+  const totalPaginas = estructura?.areas?.length || 0;
+  
+  // Protección: Si el índice se sale de rango, usar el último válido o undefined de forma controlada
+  const areaActual = estructura?.areas?.[paginaActual];
 
-  const areaActual = estructura.areas[paginaActual];
+  // Scroll al top suave cuando cambia la página
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [paginaActual]);
 
-  // Función corregida para calcular el progreso de un área específica
-  const calcularProgresoArea = (area: AreaEvaluacion): number => {
-    const totalIndicadoresArea = area.competencias.reduce(
-      (acc: number, comp: Competencia) => acc + comp.indicadores.length,
-      0,
+  // --- LÓGICA DE PROGRESO ---
+  const { isAreaCompleta } = useMemo(() => {
+    // Si no hay área (ej: carga inicial o error), retornamos valores seguros
+    if (!areaActual) return { progresoActual: 0, isAreaCompleta: false };
+
+    // 1. Total de indicadores en esta área
+    const totalIndicadores = areaActual.competencias.reduce(
+      (acc: number, comp: AreaEvaluacion["competencias"][0]) => acc + comp.indicadores.length, 0
     );
 
-    // Corrección: contar indicadores únicos del área que tienen respuesta
-    const indicadoresRespondidosArea = area.competencias.reduce((acc, comp) => {
-      return (
-        acc +
-        comp.indicadores.filter((ind) => {
-          const respuesta = respuestas.find((r) => r.indicador === ind.id);
+    if (totalIndicadores === 0) return { progresoActual: 100, isAreaCompleta: true };
 
-          return respuesta && respuesta.puntaje > 0;
-        }).length
-      );
-    }, 0);
+    // 2. Contar indicadores respondidos
+    let respondidosCount = 0;
 
-    return totalIndicadoresArea > 0
-      ? Math.round((indicadoresRespondidosArea / totalIndicadoresArea) * 100)
-      : 0;
-  };
+    areaActual.competencias.forEach((comp: any) => {
+        comp.indicadores.forEach((ind: any) => {
+            // Buscamos si existe ALGUNA respuesta válida para este indicador
+            const tieneRespuesta = respuestas.some(r => r.indicador == ind.id && r.puntaje > 0);
+            if (tieneRespuesta) respondidosCount++;
+        });
+    });
 
-  // Verificar si el área actual está completa
-  const areaActualCompleta = calcularProgresoArea(areaActual) === 100;
+    // 3. Cálculos finales
+    const isAreaCompleta = respondidosCount >= totalIndicadores;
+    const porcentaje = Math.round((respondidosCount / totalIndicadores) * 100);
 
-  // Determinar si se puede avanzar
-  const puedeAvanzar =
-    !guardando && areaActualCompleta && paginaActual < totalPaginas - 1;
+    return { 
+        progresoActual: porcentaje > 100 ? 100 : porcentaje, 
+        isAreaCompleta 
+    };
+  }, [areaActual, respuestas]);
 
-  const avanzar = () => {
-    if (puedeAvanzar) {
-      setPaginaActual(paginaActual + 1);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+  
+  // --- LÓGICA DE NAVEGACIÓN ---
+  const esUltimaPagina = paginaActual === totalPaginas - 1;
+  const puedeRetroceder = paginaActual > 0 && !guardando;
+  
+  // CORRECCIÓN SOLICITADA:
+  // Añadimos '!esUltimaPagina' a la condición.
+  // Esto hará que el botón se deshabilite automáticamente al llegar al final,
+  // evitando que el usuario intente "avanzar" más allá o causar conflictos con el botón de "Finalizar Evaluación".
+  const puedeAvanzar = !guardando && isAreaCompleta && !esUltimaPagina;
+
+  // Cálculo del progreso global para la barra superior
+  const progresoGlobal = totalPaginas > 0 
+    ? ((paginaActual + (isAreaCompleta ? 1 : 0)) / totalPaginas) * 100 
+    : 0;
+
+  const handleSiguiente = () => {
+    if (!esUltimaPagina) {
+        setPaginaActual(p => p + 1);
     }
   };
 
-  const retroceder = () => {
-    if (paginaActual > 0 && !guardando) {
-      setPaginaActual(paginaActual - 1);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  };
+  // Si no hay datos, no renderizar nada para evitar errores
+  if (!areaActual) return null;
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-default-200 to-default-100/50">
-      {/* Contenido principal */}
-      <div className="max-w-5xl mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-6 lg:py-8 pb-20 sm:pb-24 lg:pb-28">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans selection:bg-indigo-100 dark:selection:bg-indigo-900/30">
+      
+      {/* --- CONTENIDO PRINCIPAL --- */}
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8 pb-32">
         <div
           key={`area-${paginaActual}`}
-          className="animate-in fade-in-0 slide-in-from-right-4 duration-500"
+          className="animate-in fade-in slide-in-from-right-8 duration-500 ease-out"
         >
           {renderBloque(areaActual)}
         </div>
-      </div>
+      </main>
 
-      {/* Navegación flotante mejorada */}
-      <div className="fixed bottom-0 left-0 right-0 z-50">
-        {/* Fondo con glassmorphism */}
-        <div className="bg-default/40 backdrop-blur-xl border-t border-default-200/30 shadow-2xl">
-          <div className="max-w-5xl mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-2 sm:py-3 lg:py-4">
-            <div className="flex items-center justify-between gap-2 sm:gap-4">
-              {/* Botón Anterior */}
-              <Button
-                className={`
-                  group relative overflow-hidden rounded-lg sm:rounded-xl transition-all duration-300 flex-shrink-0
-                  ${
-                    paginaActual === 0 || guardando
-                      ? "bg-default-300 text-default-800 cursor-not-allowed"
-                      : "bg-gradient-to-r from-primary-500 to-primary-700 text-default hover:from-primary-600 hover:to-primary-700 hover:shadow-lg hover:shadow-primary-500/25 hover:-translate-y-0.5"
-                  }
-                `}
-                isDisabled={paginaActual === 0 || guardando}
-                size="sm"
-                onPress={retroceder}
-              >
-                <div className="flex items-center gap-1 sm:gap-2 px-1 sm:px-2">
-                  <ChevronLeftIcon className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <span className="hidden sm:inline font-medium text-sm">
-                    Anterior
-                  </span>
+      {/* --- BARRA DE NAVEGACIÓN (DOCK) --- */}
+      <footer className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+        
+        {/* Barra de Progreso Lineal Superior */}
+        <div className="absolute top-0 left-0 right-0 h-1 bg-slate-100 dark:bg-slate-800">
+            <div 
+                className="h-full bg-indigo-600 transition-all duration-700 ease-out"
+                style={{ width: `${progresoGlobal}%` }}
+            />
+        </div>
+
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4">
+          <div className="flex items-center justify-between gap-4">
+            
+            {/* 1. BOTÓN ANTERIOR */}
+            <Button
+              onPress={() => setPaginaActual(p => p - 1)}
+              isDisabled={!puedeRetroceder}
+              className={cn(
+                "bg-indigo-600 text-white hover:bg-indigo-700 hover:scale-105 shadow-indigo-100",
+                !puedeRetroceder && "opacity-40 cursor-not-allowed"
+              )}
+              startContent={<ChevronLeftIcon className="w-5 h-5" />}
+            >
+              Anterior
+            </Button>
+
+            {/* 2. INDICADOR CENTRAL (Stepper) */}
+            <div className="flex flex-col items-center">
+                <span className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-0.5">
+                    Área {paginaActual + 1} de {totalPaginas}
+                </span>
+                <div className="flex gap-1.5 mt-1">
+                    {estructura?.areas?.map((_: any, idx: number) => {
+                        const isActive = idx === paginaActual;
+                        const isPast = idx < paginaActual;
+                        return (
+                            <div 
+                                key={idx}
+                                className={cn(
+                                    "h-1.5 rounded-full transition-all duration-300",
+                                    isActive ? "w-6 bg-indigo-600" :
+                                    isPast ? "w-1.5 bg-indigo-200" :
+                                    "w-1.5 bg-slate-200 dark:bg-slate-700"
+                                )}
+                            />
+                        )
+                    })}
                 </div>
-                {paginaActual > 0 && !guardando && (
-                  <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-                )}
-              </Button>
-
-              {/* Indicador central mejorado */}
-              <div className="flex items-center gap-2 sm:gap-3 flex-1 justify-center">
-                <div className="bg-default-100/80 backdrop-blur-sm rounded-lg sm:rounded-xl px-2 sm:px-3 lg:px-4 py-1.5 sm:py-2 lg:py-2.5">
-                  <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm lg:text-base font-semibold text-default-700">
-                    <span>{paginaActual + 1}</span>
-                    <span className="text-default-400">/</span>
-                    <span>{totalPaginas}</span>
-                  </div>
-                </div>
-
-                {/* Indicadores de página con estado de completado */}
-                <div className="flex gap-1 sm:gap-1.5">
-                  {Array.from(
-                    { length: Math.min(totalPaginas, 5) },
-                    (_, index) => {
-                      const pageIndex =
-                        totalPaginas <= 5
-                          ? index
-                          : paginaActual < 3
-                            ? index
-                            : paginaActual > totalPaginas - 3
-                              ? totalPaginas - 5 + index
-                              : paginaActual - 2 + index;
-
-                      const areaProgreso = calcularProgresoArea(
-                        estructura.areas[pageIndex],
-                      );
-                      const areaCompleta = areaProgreso === 100;
-
-                      return (
-                        <div
-                          key={pageIndex}
-                          className={`w-1 h-1 sm:w-1.5 sm:h-1.5 lg:w-2 lg:h-2 rounded-full transition-all duration-300 ${
-                            pageIndex === paginaActual
-                              ? "bg-primary-600 scale-125"
-                              : areaCompleta
-                                ? "bg-success-500 scale-100"
-                                : "bg-default-400 scale-100"
-                          }`}
-                        />
-                      );
-                    },
-                  )}
-                </div>
-              </div>
-
-              {/* Botón Siguiente */}
-              <Button
-                className={`
-                  group relative overflow-hidden rounded-lg sm:rounded-xl transition-all duration-300 flex-shrink-0
-                  ${
-                    !puedeAvanzar
-                      ? "bg-default-300 text-default-800 cursor-not-allowed"
-                      : "bg-gradient-to-r from-primary-500 to-primary-600 text-white hover:from-primary-600 hover:to-primary-700 hover:shadow-lg hover:shadow-primary-500/25 hover:-translate-y-0.5"
-                  }
-                `}
-                isDisabled={!puedeAvanzar}
-                size="sm"
-                title={
-                  guardando
-                    ? "Espera a que se guarden los cambios"
-                    : !areaActualCompleta
-                      ? "Completa el área actual para continuar"
-                      : paginaActual === totalPaginas - 1
-                        ? "Última área"
-                        : "Siguiente área"
-                }
-                onPress={avanzar}
-              >
-                <div className="flex items-center gap-1 sm:gap-2 px-1 sm:px-2">
-                  <span className="hidden sm:inline font-medium text-sm">
-                    {guardando ? "Guardando..." : "Siguiente"}
-                  </span>
-                  <ChevronRightIcon className="w-4 h-4 sm:w-5 sm:h-5" />
-                </div>
-                {puedeAvanzar && (
-                  <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-                )}
-              </Button>
             </div>
+
+            {/* 3. BOTÓN SIGUIENTE / FINALIZAR */}
+            <Button
+              onPress={handleSiguiente}
+              isDisabled={!puedeAvanzar}
+              className={cn(
+                "font-semibold shadow-md transition-all duration-200 min-w-[120px]",
+                puedeAvanzar 
+                    ? "bg-indigo-600 text-white hover:bg-indigo-700 hover:scale-105 shadow-indigo-100" 
+                    : "bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-600 border border-slate-200 dark:border-slate-700 cursor-not-allowed"
+              )}
+              endContent={
+                // Ocultamos el icono si estamos guardando O si es la última página (para que se vea limpio)
+                (guardando || esUltimaPagina) ? null : <ChevronRightIcon className="w-4 h-4" />
+              }
+            >
+              {guardando 
+                ? "Guardando..." 
+                : esUltimaPagina
+                    ? "Última Área" // Texto informativo en lugar de acción
+                    : "Siguiente"
+              }
+            </Button>
+
           </div>
         </div>
-      </div>
+      </footer>
+
     </div>
   );
 }

@@ -76,8 +76,8 @@ def _generar_pdf_response(evaluacion, request):
     porcentaje_total = float(getattr(evaluacion, 'logro_obtenido', 0) or 0)
     nivel_logro = ("Destacado" if porcentaje_total >= 90 else
                    "Competente" if porcentaje_total >= 80 else
-                   "Adecuado" if porcentaje_total >= 60 else
-                   "Por mejorar")
+                   "Inicial" if porcentaje_total >= 70 else
+                   "Insatisfactorio")
     eval_name = getattr(evaluacion.tipo_evaluacion, "n_tipo_evaluacion", evaluacion.tipo_evaluacion_id)
 
     ev_nom_fn = getattr(evaluacion.persona, "get_full_name", None)
@@ -953,7 +953,7 @@ class MisEvaluacionesJefaturaViewSet(viewsets.ModelViewSet):
     
     def create(self, request, *args, **kwargs):
         """
-        Deshabilitar creación
+        Deshabilitar creación   
         """
         return Response({
             'error': 'No se permite crear evaluaciones desde este endpoint.'

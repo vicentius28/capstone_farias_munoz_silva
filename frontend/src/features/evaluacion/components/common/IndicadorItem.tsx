@@ -1,9 +1,9 @@
 import { RadioGroup } from "@heroui/radio";
-import clsx from "clsx";
+import { CheckCircle2 } from "lucide-react"; // Iconos más limpios
 import { JSX } from "react";
+import { cn } from "@/lib/utils"; // Usando la utilidad que creamos/discutimos antes
 
 import InfoPopover from "./InfoPopover";
-
 import { NivelLogro } from "@/features/evaluacion/types/evaluacion";
 
 interface RadioNivelProps {
@@ -39,59 +39,77 @@ export default function IndicadorItem({
   const isCompleted = estaRespondido(indicador.id);
 
   return (
-    <article className="group relative default/95 hover:default transition-all duration-300 hover:shadow-lg hover:shadow-black/5">
-      {/* Status indicator bar - Thinner for small screens */}
-      <div
-        className={clsx(
-          "absolute left-0 top-0 bottom-0 w-1 xs:w-1.5 transition-all duration-300",
-          isCompleted
-            ? "bg-gradient-to-b from-emerald-400 to-emerald-600"
-            : "bg-gradient-to-b from-amber-400 to-amber-600",
-        )}
-      />
+    <article
+      className={cn(
+        "group relative rounded-xl border transition-all duration-200 ease-in-out scroll-mt-24",
+        // Estados de la tarjeta (SaaS Style)
+        isCompleted
+          ? "bg-slate-50/50 border-emerald-200 shadow-sm" // Completado: Sutil, verde muy suave
+          : "bg-white border-slate-200 hover:border-primary-300 hover:shadow-md", // Pendiente: Blanco limpio
+        "focus-within:ring-2 focus-within:ring-primary-100 focus-within:border-primary-400" // Accesibilidad
+      )}
+    >
+      <div className="p-5 sm:p-6">
+        {/* Header: Número + Título + Estado */}
+        <header className="flex gap-4 mb-6">
+          {/* Badge del Número */}
+          <div
+            className={cn(
+              "flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold transition-colors",
+              isCompleted
+                ? "bg-emerald-100 text-emerald-700"
+                : "bg-slate-100 text-slate-600 group-hover:bg-primary-50 group-hover:text-primary-700"
+            )}
+          >
+            {indicador.numero}
+          </div>
 
-      <div className="pl-3 xs:pl-4 sm:pl-6 pr-2 xs:pr-3 sm:pr-4 py-3 xs:py-4 sm:py-6">
-        {/* Header section - Optimized for ultra small screens */}
-        <header className="flex items-start justify-between gap-2 xs:gap-3 mb-2 xs:mb-3 sm:mb-4">
-          <div className="flex items-start gap-2 xs:gap-3 flex-1 min-w-0">
-            {/* Indicator number - Smaller for ultra small screens */}
-            <div className="flex-shrink-0 w-5 h-5 xs:w-6 xs:h-6 sm:w-8 sm:h-8 bg-primary-100 text-primary-700 rounded-md xs:rounded-lg flex items-center justify-center">
-              <span className="text-xs xs:text-sm sm:text-base font-bold">
-                {indicador.numero}
-              </span>
-            </div>
-
-            {/* Title and definition - Better text sizing */}
-            <div className="flex-1 min-w-0">
-              <h3 className="text-sm xs:text-base sm:text-lg font-semibold text-slate-800 leading-tight mb-1 xs:mb-2 break-words">
+          <div className="flex-1 min-w-0 pt-1">
+            <div className="flex justify-between items-start gap-4">
+              <h3 className={cn(
+                "text-base sm:text-lg font-semibold leading-tight transition-colors",
+                isCompleted ? "text-slate-700" : "text-slate-900"
+              )}>
                 {indicador.indicador}
               </h3>
-
-              {indicador.definicion && (
-                <div className="flex items-start gap-1 xs:gap-2">
-                  <InfoPopover content={indicador.definicion} />
-                  <p className="text-xs xs:text-sm text-slate-600 leading-relaxed break-words">
-                    {indicador.definicion.length > 80
-                      ? `${indicador.definicion.substring(0, 80)}...`
-                      : indicador.definicion}
-                  </p>
+              
+              {/* Icono de Estado (Check visual) */}
+              {isCompleted && (
+                <div className="animate-in fade-in zoom-in duration-300">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-500" />
                 </div>
               )}
             </div>
+
+            {/* Definición / Contexto */}
+            {indicador.definicion && (
+              <div className="mt-2 flex items-center gap-2 text-slate-500">
+                 {/* Popover más discreto */}
+                <div className="opacity-70 hover:opacity-100 transition-opacity">
+                   <InfoPopover content={indicador.definicion} />
+                </div>
+                <p className="text-sm leading-relaxed line-clamp-2 hover:line-clamp-none transition-all cursor-default">
+                   {indicador.definicion}
+                </p>
+              </div>
+            )}
           </div>
         </header>
 
-        {/* Radio options section - Optimized spacing */}
-        <section className="space-y-1 xs:space-y-2 sm:space-y-3">
+        {/* Zona de Interacción (Radios) */}
+        <section className={cn(
+            "rounded-lg transition-all duration-300",
+            !isCompleted && "bg-slate-50/50 p-4" // Highlight sutil para la zona de acción si no está respondida
+        )}>
           <RadioGroup
-            className="gap-1 xs:gap-2 sm:gap-3"
+            className="grid gap-3" // Grid gap consistente
             value={puntajeActual.toString()}
             onValueChange={(value) =>
               manejarCambioPuntaje(indicador.id, parseInt(value))
             }
           >
             {indicador.nvlindicadores.map((nivel) => (
-              <div key={nivel.nvl} className="w-full">
+              <div key={nivel.nvl} className="w-full relative z-10">
                 {renderRadioNivel({
                   radioKey: `${indicador.id}-${nivel.nvl}`,
                   value: nivel.puntaje.toString(),
@@ -104,9 +122,6 @@ export default function IndicadorItem({
           </RadioGroup>
         </section>
       </div>
-
-      {/* Hover effect overlay */}
-      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
     </article>
   );
 }

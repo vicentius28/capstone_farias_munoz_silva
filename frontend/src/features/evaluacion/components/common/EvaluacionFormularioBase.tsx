@@ -1,13 +1,78 @@
 import { ReactNode } from "react";
-import { CheckCircleIcon } from "lucide-react";
-
+import { Loader2, Cloud } from "lucide-react"; 
 import { useEvaluacionFormularioBase } from "./hooks/useEvaluacionFormularioBase";
+import { cn } from "@/lib/utils";
 
 interface EvaluacionFormularioBaseProps {
   evaluacionId: number;
   tipoEvaluacion: "autoevaluacion" | "evaluacion";
   renderPaginacion: (props: any) => ReactNode;
 }
+
+// 1. Componente de UI para el Estado de Carga (Skeleton)
+const FormularioSkeleton = () => (
+  <div className="w-full max-w-5xl mx-auto px-4 py-8 space-y-8 animate-pulse">
+    {/* Header Skeleton */}
+    <div className="space-y-4">
+      <div className="h-8 w-1/3 bg-slate-200 dark:bg-slate-800 rounded-lg" />
+      <div className="h-4 w-2/3 bg-slate-100 dark:bg-slate-800/50 rounded-md" />
+    </div>
+    {/* Content Skeleton */}
+    <div className="grid gap-6">
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="h-40 bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800" />
+      ))}
+    </div>
+  </div>
+);
+
+// 2. Indicador de Guardado (Elevado para no tapar la paginación)
+const AutoSaveIndicator = ({ 
+  guardando, 
+  guardadoExitoso 
+}: { 
+  guardando: boolean; 
+  guardadoExitoso: boolean 
+}) => {
+  // Solo mostramos si está pasando algo
+  if (!guardando && !guardadoExitoso) return null;
+
+  return (
+    <div 
+      className={cn(
+        // POSICIÓN CLAVE:
+        // 'bottom-24': Lo sube 96px, suficiente para limpiar la barra de paginación.
+        // 'left-6': Lo ponemos a la izquierda para equilibrar el indicador de progreso que está a la derecha.
+        // O si prefieres todo a la derecha, usa 'right-6' pero apilado. Aquí sugiero izquierda para balancear.
+        "fixed bottom-24 left-4 sm:bottom-28 sm:left-8 z-40 transition-all duration-500 ease-out transform",
+        guardando ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0",
+        guardadoExitoso && "translate-y-0 opacity-100"
+      )}
+    >
+      <div className={cn(
+        "flex items-center gap-3 px-4 py-2.5 rounded-full shadow-xl border backdrop-blur-md text-xs font-bold uppercase tracking-wider transition-colors duration-300",
+        // Estilo adaptativo (Light/Dark)
+        guardando 
+          ? "bg-white/90 border-indigo-100 text-indigo-600 dark:bg-slate-900/90 dark:border-indigo-900 dark:text-indigo-400" 
+          : "bg-emerald-50/90 border-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:border-emerald-900/50 dark:text-emerald-400"
+      )}>
+        {guardando && (
+          <>
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            <span>Sincronizando...</span>
+          </>
+        )}
+        
+        {!guardando && guardadoExitoso && (
+          <>
+            <Cloud className="w-3.5 h-3.5" />
+            <span>Guardado en la nube</span>
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
 
 export default function EvaluacionFormularioBase({
   evaluacionId,
@@ -26,53 +91,30 @@ export default function EvaluacionFormularioBase({
 
   if (loading || !estructura) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-3 border-primary-200 border-t-primary-600 rounded-full animate-spin" />
-          <p className="text-sm text-default-600 font-medium">
-            Cargando evaluación...
-          </p>
-        </div>
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+        <FormularioSkeleton />
       </div>
     );
   }
 
   return (
-    <div className="relative min-h-screen">
-      {renderPaginacion({
-        evaluacionId,
-        estructura,
-        respuestas,
-        actualizarPuntaje,
-        paginaActual,
-        tipoEvaluacion,
-        // ✅ PASAR ESTADO DE GUARDANDO
-        guardando,
-      })}
+    <div className="relative min-h-screen bg-slate-50 dark:bg-slate-950 font-sans selection:bg-indigo-100 dark:selection:bg-indigo-900/30">
+      
+      <main className="w-full mx-auto transition-all duration-300 ease-in-out">
+        {renderPaginacion({
+          evaluacionId,
+          estructura,
+          respuestas,
+          actualizarPuntaje,
+          paginaActual,
+          tipoEvaluacion,
+          guardando,
+        })}
+      </main>
 
-      {/* Indicador de guardado automático */}
-      <div className="fixed bottom-16 sm:bottom-20 lg:bottom-24 left-1/2 transform -translate-x-1/2 z-50">
-        {guardando && (
-          <div className="bg-white/95 backdrop-blur-sm px-3 py-2 sm:px-4 sm:py-2.5 rounded-full shadow-lg border border-primary-100/50 text-xs sm:text-sm flex items-center gap-2 sm:gap-3 animate-bounce">
-            <div className="relative">
-              <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-full border-2 border-primary-200 border-t-primary-500 animate-spin" />
-            </div>
-            <span className="text-primary-700 font-medium whitespace-nowrap">
-              Guardando...
-            </span>
-          </div>
-        )}
-        {guardadoExitoso && (
-          <div className="bg-white/95 backdrop-blur-sm px-3 py-2 sm:px-4 sm:py-2.5 rounded-full shadow-lg border border-success-100/50 text-xs sm:text-sm flex items-center gap-2 sm:gap-3 animate-pulse">
-            <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-success-500 flex items-center justify-center">
-              <CheckCircleIcon className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-white" />
-            </div>
-            <span className="text-success-700 font-medium whitespace-nowrap">
-              Guardado
-            </span>
-          </div>
-        )}
-      </div>
+      {/* Indicador Flotante (Ahora a la IZQUIERDA y ELEVADO) */}
+      <AutoSaveIndicator guardando={guardando} guardadoExitoso={guardadoExitoso} />
+      
     </div>
   );
 }
