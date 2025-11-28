@@ -9,9 +9,9 @@ from .gcs_storage_config import *
 DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = [
-    "gsr.cat",
-    "www.gsr.cat",
-    "back.gsr.cat",
+    "eva-link.com",
+    "www.eva-link.com",
+    "back.eva-link.com",
     "comunidadeducativadigital.cl",
     "www.comunidadeducativadigital.cl",
     "back.comunidadeducativadigital.cl",
@@ -42,9 +42,9 @@ CSRF_TRUSTED_ORIGINS = [
     "https://comunidadeducativadigital.cl",
     "https://back.comunidadeducativadigital.cl",
     "https://www.comunidadeducativadigital.cl",
-    "https://back.gsr.cat",
-    "https://www.gsr.cat",
-    "https://gsr.cat",
+    "https://back.eva-link.com",
+    "https://www.eva-link.com",
+    "https://eva-link.com",
     "https://localhost",  # <-- añadido para uso desde WebView/Capacitor
 ]
 
@@ -82,9 +82,9 @@ CORS_ALLOWED_ORIGINS = [
     "https://comunidadeducativadigital.cl",
     "https://back.comunidadeducativadigital.cl",
     "https://www.comunidadeducativadigital.cl",
-    "https://back.gsr.cat",
-    "https://www.gsr.cat",
-    "https://gsr.cat",
+    "https://back.eva-link.com",
+    "https://www.eva-link.com",
+    "https://eva-link.com",
     "https://localhost",  # <-- añadido
 ]
 # Permitir orígenes de apps híbridas (Capacitor/Ionic)

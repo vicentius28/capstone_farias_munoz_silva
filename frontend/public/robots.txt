@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://www.gsr.cat/sitemap.xml
+Sitemap: https://www.eva-link.com/sitemap.xml

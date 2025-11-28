@@ -4,8 +4,8 @@ CORS_ALLOWED_ORIGINS = [
     "https://backendcomunidad-production.up.railway.app",
     "https://www.comunidadeducativadigital.cl",
     "https://comunidadeducativadigital.cl",
-    "https://www.gsr.cat",
-    "https://gsr.cat",
+    "https://www.eva-link.com",
+    "https://eva-link.com",
 ]
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
@@ -13,8 +13,8 @@ CSRF_TRUSTED_ORIGINS = [
     "https://backendcomunidad-production.up.railway.app",
     "https://www.comunidadeducativadigital.cl",
     "https://comunidadeducativadigital.cl",
-    "https://www.gsr.cat",
-    "https://gsr.cat",
+    "https://www.eva-link.com",
+    "https://eva-link.com",
 ]
 
 CORS_ALLOW_CREDENTIALS = True

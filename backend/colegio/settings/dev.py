@@ -20,13 +20,13 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # CSRF Origins - MUY PERMISIVO para debugging
 CSRF_TRUSTED_ORIGINS = [
-    "https://www.gsr.cat",
-    "https://gsr.cat",
+    "https://www.eva-link.com",
+    "https://eva-link.com",
     "https://www.comunidadeducativadigital.cl",
     "https://comunidadeducativadigital.cl",
     "http://localhost:5173",
     "https://localhost",
-    "https://back.gsr.cat",
+    "https://back.eva-link.com",
     "http://localhost:8000",
     
 ]
@@ -76,9 +76,9 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://localhost:8000",   # si haces llamadas desde 5173 a 8000 con fetch, no hace falta, pero no molesta
-    "https://www.gsr.cat",
-    "https://gsr.cat",
-    "https://back.gsr.cat",
+    "https://www.eva-link.com",
+    "https://eva-link.com",
+    "https://back.eva-link.com",
     "https://localhost",
     "https://backendcomunidad-production.up.railway.app",
 ]

@@ -1,6 +1,6 @@
 from decouple import config
 
-FRONTEND_URL = config('FRONTEND_URL')  # Ej. https://app.gsr.cat/
+FRONTEND_URL = config('FRONTEND_URL')  # Ej. https://app.eva-link.com/
 
 LOGIN_URL = FRONTEND_URL + "/login"
 LOGIN_REDIRECT_URL = FRONTEND_URL
