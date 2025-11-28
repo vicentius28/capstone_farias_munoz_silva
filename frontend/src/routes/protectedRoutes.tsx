@@ -312,7 +312,7 @@ export const protectedRoutes: RouteObject[] = [
       },
 
       {
-        path: "evaluacion-jefatura/autoevaluaciones-subordinados",
+        path: "evaluacion-jefatura/autoevaluaciones-equipo",
         element: (
           <ProtectedRoute permiso={PERMISSIONS.DIRECTIVO.EVALUAR_DESEMPENO}>
             {withSuspense(AutoevaluacionesSubordinadosPage)}

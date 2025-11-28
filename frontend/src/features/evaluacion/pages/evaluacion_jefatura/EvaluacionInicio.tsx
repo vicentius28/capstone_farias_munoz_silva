@@ -409,7 +409,7 @@ export default function EvaluacionInicioPage() {
           color="primary"
           startContent={<UsersIcon className="w-5 h-5" />}
           onPress={() =>
-            navigate("/evaluacion-jefatura/autoevaluaciones-subordinados")
+            navigate("/evaluacion-jefatura/autoevaluaciones-equipo")
           }
         >
           Autoevaluaciones de mi equipo

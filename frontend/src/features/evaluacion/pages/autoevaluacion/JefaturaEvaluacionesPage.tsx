@@ -207,6 +207,12 @@ export default function JefaturaEvaluacionesPage() {
       {/* 2. STATS (Dashboard Accionable) */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
+          color="gray"
+          icon={<ClockIcon className="w-6 h-6" />}
+          title="En Espera"
+          value={stats.enEspera}
+        />
+        <StatCard
           actionLabel={
             stats.porRetroalimentar > 0 ? "Requiere acción inmediata" : null
           }
@@ -215,18 +221,14 @@ export default function JefaturaEvaluacionesPage() {
           title="Por Retroalimentar"
           value={stats.porRetroalimentar}
         />
+
+
         <StatCard
           actionLabel={stats.porFirmar > 0 ? "Firma pendiente" : null}
           color="blue"
           icon={<PencilSquareIcon className="w-6 h-6" />}
           title="Por Aceptar"
           value={stats.porFirmar}
-        />
-        <StatCard
-          color="gray"
-          icon={<ClockIcon className="w-6 h-6" />}
-          title="En Espera"
-          value={stats.enEspera}
         />
         <StatCard
           color="green"
