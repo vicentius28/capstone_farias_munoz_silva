@@ -219,7 +219,7 @@ export default function JefaturaEvaluacionesPage() {
           actionLabel={stats.porFirmar > 0 ? "Firma pendiente" : null}
           color="blue"
           icon={<PencilSquareIcon className="w-6 h-6" />}
-          title="Por Firmar"
+          title="Por Aceptar"
           value={stats.porFirmar}
         />
         <StatCard

@@ -181,7 +181,7 @@ export async function firmarEvaluacion(
   } catch (error: any) {
     return {
       success: false,
-      message: error.response?.data?.error || "Error al firmar evaluación",
+      message: error.response?.data?.error || "Error al aceptar evaluación",
     };
   }
 }
@@ -207,7 +207,7 @@ export async function firmarEvaluacionConObservaciones(
       success: false,
       message:
         error.response?.data?.error ||
-        "Error al firmar evaluación con observaciones",
+        "Error al aceptar evaluación con observaciones",
     };
   }
 }

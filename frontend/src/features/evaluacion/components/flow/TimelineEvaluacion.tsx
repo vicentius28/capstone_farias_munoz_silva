@@ -47,8 +47,8 @@ function getTimelineSteps(evaluacion: EvaluacionJefe): TimelineStep[] {
     },
     {
       id: "firmar",
-      title: "Firmar Evaluación",
-      description: "La evaluación está lista para ser firmada",
+      title: "Aceptar Evaluación",
+      description: "La evaluación está lista para ser aceptada",
       completed: !!evaluacion.cerrado_para_firma,
       date: evaluacion.fecha_ultima_modificacion || undefined,
       icon: "🔒",
@@ -57,7 +57,7 @@ function getTimelineSteps(evaluacion: EvaluacionJefe): TimelineStep[] {
     {
       id: "finalizado",
       title: "Finalizado",
-      description: "La evaluación ha sido firmada y finalizada",
+      description: "La evaluación ha sido Aceptada y finalizada",
       completed: !!(evaluacion.firmado || evaluacion.firmado_obs),
       date: evaluacion.fecha_firma || undefined,
       icon: "✅",

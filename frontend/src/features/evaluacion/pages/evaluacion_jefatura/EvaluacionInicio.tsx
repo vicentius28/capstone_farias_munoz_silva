@@ -68,7 +68,7 @@ const ProcessTimeline = ({ stats }: { stats: any }) => {
     },
     {
       id: "firma",
-      label: "Por Firmar",
+      label: "Por Aceptar",
       count: stats.cerradasFirma,
       icon: <PencilSquareIcon className="w-5 h-5" />,
       color: "orange",

@@ -25,7 +25,7 @@ const JefaturaEvaluacionGrid = memo(function JefaturaEvaluacionGrid({
       <EmptyState>
         {firmado
           ? "✅ Aún no hay evaluaciones finalizadas."
-          : "📝 No tienes evaluaciones por firmar."}
+          : "📝 No tienes evaluaciones por aceptar."}
       </EmptyState>
     );
   }

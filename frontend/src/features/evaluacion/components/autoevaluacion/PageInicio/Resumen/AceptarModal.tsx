@@ -31,15 +31,15 @@ export default function AceptarModal({
     >
       <ModalContent>
         <ModalHeader className="text-lg font-semibold">
-          Confirmar firma de evaluación
+          Confirmar aceptación de evaluación
         </ModalHeader>
         <ModalBody>
           <p className="text-default-700">
-            ¿Confirmas que deseas aceptar y firmar esta evaluación?
+            ¿Confirmas que deseas aceptar esta evaluación?
           </p>
           <p className="text-xs text-default-500">
-            Esta acción registrará tu firma. Si necesitas dejar una observación,
-            usa “Firmar con Observaciones”.
+            Esta acción registrará tu aceptación. Si necesitas dejar una observación,
+            usa “Aceptar con Observaciones”.
           </p>
         </ModalBody>
         <ModalFooter>
@@ -51,7 +51,7 @@ export default function AceptarModal({
             isLoading={!!loading}
             onPress={onConfirm}
           >
-            Confirmar firma
+            Confirmar aceptación
           </Button>
         </ModalFooter>
       </ModalContent>

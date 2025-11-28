@@ -62,7 +62,7 @@ const JefaturaEvaluacionCard = memo(function JefaturaEvaluacionCard({
 
   return (
     <button
-      aria-label={`Ver ${firmado ? "resumen final" : "evaluación por firmar"} ${item.tipo_evaluacion?.n_tipo_evaluacion ?? item.id}`}
+      aria-label={`Ver ${firmado ? "resumen final" : "evaluación por aceptar"} ${item.tipo_evaluacion?.n_tipo_evaluacion ?? item.id}`}
       className="group w-full rounded-2xl border border-default-200/50 bg-background/80 p-5 text-start outline-none backdrop-blur-sm transition-all duration-300 hover:scale-[1.02] hover:border-primary/30 hover:bg-background hover:shadow-lg focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:border-default-100/20 dark:bg-default-50/5"
       type="button"
       onClick={handleClick}
@@ -169,7 +169,7 @@ const JefaturaEvaluacionCard = memo(function JefaturaEvaluacionCard({
                 ? "Ver resumen"
                 : estaFirmadoConObs
                   ? "Ver observaciones"
-                  : "Revisar y firmar"}
+                  : "Revisar y aceptar"}
             </span>
             <svg
               aria-hidden="true"
