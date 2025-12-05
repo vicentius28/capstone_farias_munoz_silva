@@ -9,6 +9,8 @@ import {
   IndicadorHandlers,
   NivelHandlers,
 } from "@/features/evaluacion/types/plantilla/plantilla";
+import { fetchEvaluacionById } from "@/features/evaluacion/services/plantilla/evaluacion";
+
 
 export function useEditarTipoEvaluacion() {
   const location = useLocation();
@@ -16,18 +18,42 @@ export function useEditarTipoEvaluacion() {
   const [showModal, setShowModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isAutoevaluacion, setIsAutoevaluacion] = useState(false);
-
-  // ⬇️ nuevo estado
-  const [isPonderada, setIsPonderada] = useState(
-    // si quieres levantarlo desde query param (?pond=true)
-    new URLSearchParams(location.search).get("pond") === "true",
-  );
-
   const tipoEvaluacion = location.state?.tipoEvaluacion;
   const id = tipoEvaluacion?.id;
 
+  
+  useEffect(() => {
+    const initData = async () => {
+      if (!tipoEvaluacion) return;
+
+      // CASO A: Vienes de la lista optimizada (objeto ligero sin áreas)
+      if (tipoEvaluacion.id && (!tipoEvaluacion.areas || tipoEvaluacion.areas.length === 0)) {
+        // Mostramos loading (puedes agregar un estado local si quieres)
+        const fullData = await fetchEvaluacionById(tipoEvaluacion.id);
+        
+        if (fullData) {
+          setNombre(fullData.n_tipo_evaluacion);
+          setAreas(fullData.areas || []); // Aseguramos array
+          setIsAutoevaluacion(fullData.auto);
+        }
+      } 
+      // CASO B: Ya tienes los datos completos (raro ahora, pero por seguridad)
+      else {
+        setNombre(tipoEvaluacion.n_tipo_evaluacion);
+        setAreas(tipoEvaluacion.areas);
+        setIsAutoevaluacion(tipoEvaluacion.auto);
+      }
+    };
+
+    initData();
+  }, [tipoEvaluacion, id]); // Dependencias
+
+
+
+
+
   const {
-    nombreTipoEvaluacion,
+    n_tipo_evaluacion,
     setNombre,
     areas,
     setAreas,
@@ -51,21 +77,17 @@ export function useEditarTipoEvaluacion() {
       setNombre(tipoEvaluacion.n_tipo_evaluacion);
       setAreas(tipoEvaluacion.areas);
       setIsAutoevaluacion(tipoEvaluacion.auto);
-      setIsPonderada(tipoEvaluacion.ponderada);
     }
   }, [tipoEvaluacion, setNombre, setAreas]);
 
-  const onTogglePonderada = (checked: boolean) => {
-    setIsPonderada(checked);
-  };
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const payload = {
-      n_tipo_evaluacion: nombreTipoEvaluacion,
+      n_tipo_evaluacion: n_tipo_evaluacion,
       auto: isAutoevaluacion,
-      ponderada: isPonderada,
       areas: areas.map((area) => ({
         n_area: area.n_area,
         ponderacion: area.ponderacion,
@@ -183,13 +205,11 @@ export function useEditarTipoEvaluacion() {
     showModal,
     isEditing,
     isAutoevaluacion,
-    isPonderada,
-    nombreTipoEvaluacion,
+    n_tipo_evaluacion,
     areas,
     // Handlers
     handleSubmit,
     onToggleAutoevaluacion,
-    onTogglePonderada,
     handleAreaChange,
     handleNombreChange,
     handleEnableEditing,

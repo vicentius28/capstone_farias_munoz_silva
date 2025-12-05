@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8">
+    <title>Informe de Resultados</title>
+    <style>
+        /* --- CONFIGURACIÓN DE PÁGINA (PRINT) --- */
+        @page {
+            margin: 1.5cm;
+            size: A4;
+        }
+
+        /* --- RESET & ESTRUCTURA --- */
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #334155; /* Slate 700 */
+            background: #fff;
+            font-size: 11px; /* Ligeramente más pequeño para que quepa más info */
+            line-height: 1.5;
+            -webkit-print-color-adjust: exact; /* Importante para que salgan los fondos */
+            print-color-adjust: exact;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        /* --- UTILIDADES DE SALTO DE PÁGINA (UX CRÍTICO) --- */
+        .page-break {
+            page-break-before: always;
+        }
+
+        .no-break {
+            page-break-inside: avoid; /* Evita que el elemento se parta por la mitad */
+        }
+
+        /* --- HEADER MEJORADO --- */
+        .header-table {
+            width: 100%;
+            margin-bottom: 40px;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 20px;
+        }
+
+        .report-label {
+            font-size: 10px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .user-name {
+            font-size: 26px;
+            font-weight: 800;
+            color: #0f172a;
+            margin: 0;
+            letter-spacing: -0.5px;
+        }
+
+        .pill-type {
+            background-color: #e0e7ff; /* Indigo 100 */
+            color: #4338ca; /* Indigo 700 */
+            padding: 5px 12px;
+            border-radius: 20px; /* Redondo */
+            font-weight: 700;
+            font-size: 10px;
+            display: inline-block;
+            text-transform: uppercase;
+        }
+
+        /* --- KPI CARDS (Dashboard Clean) --- */
+        .kpi-container {
+            display: table; /* Fallback para PDFs antiguos */
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 15px 0;
+            margin: 0 -15px 40px -15px;
+        }
+
+        .kpi-card {
+            display: table-cell;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            vertical-align: middle;
+            width: 33.33%;
+        }
+
+        .kpi-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #64748b;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .kpi-value {
+            font-size: 28px;
+            font-weight: 800;
+            color: #1e293b;
+            line-height: 1;
+        }
+
+        .kpi-sub {
+            font-size: 12px;
+            color: #94a3b8;
+            font-weight: 400;
+        }
+
+        /* --- BARRAS DE PROGRESO --- */
+        .progress-bg {
+            background: #e2e8f0;
+            height: 6px;
+            border-radius: 99px;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, #4f46e5 0%, #6366f1 100%);
+            height: 100%;
+            border-radius: 99px;
+        }
+
+        /* --- TABLA RESUMEN --- */
+        .summary-box {
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); /* Sombra suave */
+        }
+
+        .summary-header {
+            background: #f8fafc;
+            padding: 12px 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #475569;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .summary-table td {
+            padding: 12px 20px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .summary-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* --- DETALLE (Áreas y Competencias) --- */
+        
+        /* Bloque contenedor para evitar rupturas feas */
+        .competencia-block {
+            margin-bottom: 25px;
+            page-break-inside: avoid; /* INTENTA mantener la competencia junta */
+        }
+
+        .area-header {
+            margin-top: 30px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #0f172a; /* Línea negra sólida, más elegante */
+            display: flex; /* Nota: Flex puede fallar en algunos motores PDF, usar table si falla */
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .area-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .competencia-title {
+            background-color: #f1f5f9;
+            color: #334155;
+            padding: 8px 12px;
+            font-size: 12px;
+            font-weight: 700;
+            border-radius: 6px 6px 0 0; /* Solo bordes superiores */
+            border: 1px solid #e2e8f0;
+            border-bottom: none;
+            margin-top: 10px;
+        }
+
+        .detail-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #e2e8f0;
+            border-radius: 0 0 6px 6px;
+            margin-bottom: 5px;
+        }
+
+        /* IMPORTANTE: Repetir cabecera si salta página */
+        thead {
+            display: table-header-group; 
+        }
+
+        tr {
+            page-break-inside: avoid; /* Evita partir una fila a la mitad */
+        }
+
+        .detail-table th {
+            text-align: left;
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #64748b;
+            background: #fff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 10px 15px;
+            font-weight: 600;
+        }
+
+        .detail-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: top;
+        }
+
+        .indicator-number {
+            color: #cbd5e1;
+            font-weight: 800;
+            font-size: 12px;
+        }
+
+        .indicator-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+
+        .indicator-def {
+            font-size: 11px;
+            color: #64748b;
+            line-height: 1.4;
+            margin-bottom: 8px;
+        }
+
+        /* Badge de Resultado Moderno */
+        .result-pill {
+            display: inline-block;
+            padding: 4px 10px;
+            background: #eff6ff;
+            color: #2563eb;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            border: 1px solid #dbeafe;
+        }
+        
+        /* Círculo de puntaje minimalista */
+        .score-box {
+            background: #fff;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            width: 40px;
+            height: 40px;
+            display: table-cell;
+            vertical-align: middle;
+            text-align: center;
+            font-weight: 800;
+            color: #0f172a;
+            font-size: 14px;
+        }
+
+        /* --- FEEDBACK --- */
+        .feedback-box {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 10px;
+            page-break-inside: avoid;
+        }
+        
+        .feedback-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+
+        .text-content {
+            font-size: 12px;
+            color: #475569;
+            text-align: justify;
+        }
+
+        /* Footer sutil */
+        .footer {
+            margin-top: 40px;
+            border-top: 1px solid #f1f5f9;
+            padding-top: 15px;
+            text-align: right;
+            font-size: 9px;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <table class="header-table">
+            <tr>
+                <td style="vertical-align: bottom;">
+                    <div class="report-label">Informe de Resultados</div>
+                    <div class="user-name">{{ evaluacion.persona.get_full_name }}</div>
+                </td>
+                <td style="text-align: right; vertical-align: bottom;">
+                    <div class="pill-type">{{ tipo_evaluacion }}</div>
+                    <div style="font-size: 11px; color: #94a3b8; margin-top: 5px;">
+                        {{ evaluacion.fecha_evaluacion }}
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <div class="kpi-container no-break">
+            <div class="kpi-card">
+                <div class="kpi-label">Puntaje Global</div>
+                <div class="kpi-value">{{ puntaje_total_obtenido }}</div>
+                <div class="kpi-sub">de {{ puntaje_total_maximo }} puntos posibles</div>
+            </div>
+            
+            <div class="kpi-card">
+                <div class="kpi-label">Rendimiento Total</div>
+                <div class="kpi-value">{{ porcentaje_total|floatformat:1 }}%</div>
+                <div style="margin-top: 8px; padding: 0 20px;">
+                    <div class="progress-bg">
+                        <div class="progress-bar" style="width: {{ porcentaje_total|floatformat:1 }}%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-label">Nivel Alcanzado</div>
+                <div class="kpi-value" style="color: #4f46e5;">{{ nivel_logro }}</div>
+                <div class="kpi-sub">Clasificación final</div>
+            </div>
+        </div>
+
+        {% if areas %}
+        <div class="summary-box no-break">
+            <div class="summary-header">Resumen de Desempeño por Áreas</div>
+            <table class="summary-table">
+                {% for a in areas %}
+                <tr>
+                    <td style="width: 40%; font-weight: 600; color: #334155;">{{ a.area.n_area }}</td>
+                    <td style="width: 45%;">
+                        <div class="progress-bg">
+                            <div class="progress-bar" style="width: {{ a.porcentaje|floatformat:1 }}%;"></div>
+                        </div>
+                    </td>
+                    <td style="width: 15%; text-align: right; font-weight: 700; color: #0f172a;">
+                        {{ a.porcentaje|floatformat:1 }}%
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        {% endif %}
+
+        <div class="page-break"></div>
+
+        {% for a in areas %}
+        
+            <div class="no-break">
+                <div class="area-header">
+                    <span class="area-title">{{ forloop.counter }}. {{ a.area.n_area }}</span>
+                    <span style="font-weight: 800; color: #4f46e5; font-size: 16px;">{{ a.porcentaje|floatformat:1 }}%</span>
+                </div>
+            </div>
+
+            {% if a.competencias %}
+                {% for c in a.competencias %}
+                
+                <div class="competencia-block">
+                    <div class="competencia-title">{{ c.competencia.name }}</div>
+                    
+                    <table class="detail-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">#</th>
+                                <th>Indicador y Evaluación</th>
+                                <th style="width: 80px; text-align: center;">Puntaje</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ind in c.indicadores %}
+                            <tr>
+                                <td class="indicator-number">{{ ind.indicador.numero }}</td>
+                                <td>
+                                    <div class="indicator-title">{{ ind.indicador.indicador }}</div>
+                                    {% if ind.indicador.definicion %}
+                                        <div class="indicator-def">{{ ind.indicador.definicion }}</div>
+                                    {% endif %}
+                                    
+                                    
+                                </td>
+                                <td style="text-align: center; vertical-align: middle;">
+                                    <div style="display:inline-block;">
+                                        <div class="score-box">{{ ind.puntaje_obtenido }}</div>
+                                        <div style="font-size: 9px; color: #94a3b8; margin-top: 4px;">de {{ ind.puntaje_maximo }}</div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                {% endfor %}
+            {% endif %}
+            
+            <div style="margin-bottom: 30px;"></div>
+        {% endfor %}
+
+
+        {% if text_destacar or text_mejorar %}
+            <div class="no-break" style="margin-top: 20px;">
+                <div class="area-title" style="font-size: 16px; margin-bottom: 15px;">Retroalimentación</div>
+                
+                <table style="width: 100%; border-spacing: 0 10px; border-collapse: separate;">
+                    {% if text_destacar %}
+                    <tr>
+                        <td class="feedback-box" style="border-left: 4px solid #10b981;">
+                            <div class="feedback-title" style="color: #059669;">
+                                <span>✦ Fortalezas</span>
+                            </div>
+                            <div class="text-content">
+                                {{ text_destacar }}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endif %}
+
+                    {% if text_mejorar %}
+                    <tr>
+                        <td class="feedback-box" style="border-left: 4px solid #f59e0b;">
+                            <div class="feedback-title" style="color: #d97706;">
+                                <span>⚠ Oportunidades de Mejora</span>
+                            </div>
+                            <div class="text-content">
+                                {{ text_mejorar }}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </div>
+        {% endif %}
+
+        <div class="footer">
+            Generado automáticamente por la plataforma · {{ today|date:"Y-m-d" }}
+        </div>
+
+    </div>
+</body>
+</html>

@@ -3,12 +3,20 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models import Max
 
 class TipoEvaluacion(models.Model):
-    n_tipo_evaluacion = models.CharField(max_length=255, unique=True)
+    n_tipo_evaluacion = models.CharField(max_length=255)
     auto = models.BooleanField(default=False)
     ponderada = models.BooleanField(default=False)
     class Meta:
         verbose_name = "TipoEvaluacion"
         verbose_name_plural = "Tipo Evaluaciones"
+
+# 2. AGREGAMOS LA RESTRICCIÓN COMPUESTA
+        constraints = [
+            models.UniqueConstraint(
+                fields=['n_tipo_evaluacion', 'auto'], 
+                name='unique_nombre_por_tipo_evaluacion'
+            )
+        ]
     def __str__(self):
         return self.n_tipo_evaluacion
 

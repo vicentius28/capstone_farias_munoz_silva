@@ -211,7 +211,7 @@ export const Navbar: React.FC = () => {
                     key="analytics"
                     textValue="Analítica"
                     onPress={() =>
-                      window.open("https://meta.eva-link.com", "_blank", "noopener")
+                      window.open("https://meta.gsr.cat", "_blank", "noopener")
                     }
                   >
                     <div className="flex items-center gap-2">

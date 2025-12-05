@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.db import transaction
 
-from evaluacion.models import JefeEvaluacionAsignada, JefeEvaluacionAsignadaDetalle, EvaluacionJefe
+from evaluacion.models import JefeEvaluacionAsignada, EvaluacionJefe
 from evaluacion.serializers import EvaluacionAsignadaSerializer, MostrarEvaluacionAsignadaSerializer
 from evaluacion.serializers.tipo_evaluacion_read import TipoEvaluacionParaAutoevaluacionSerializer
 from evaluacion.utils.assignment_notifications import enviar_notificacion_evaluacion_asignada_jefe

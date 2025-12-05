@@ -26,7 +26,7 @@ export const useFormularioTipoEvaluacion = () => {
   const [erroresFormulario, setErroresFormulario] = useState<string[]>([]);
 
   const {
-    nombreTipoEvaluacion,
+    n_tipo_evaluacion,
     setNombre,
     areas,
     setAreas,
@@ -83,7 +83,7 @@ export const useFormularioTipoEvaluacion = () => {
     }
 
     const payload = {
-      n_tipo_evaluacion: nombreTipoEvaluacion,
+      n_tipo_evaluacion: n_tipo_evaluacion,
       auto: isAutoevaluacion,
       ponderada: isPonderada,
       areas: areas.map((area) => ({
@@ -182,7 +182,7 @@ export const useFormularioTipoEvaluacion = () => {
     showSuccessModal,
     formSubmitted,
     erroresFormulario,
-    nombreTipoEvaluacion,
+    n_tipo_evaluacion,
     areas,
     isPonderada,
     onTogglePonderada,

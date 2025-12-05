@@ -22,7 +22,8 @@ export function getGenerarPdfUrl(
       return `${apiBase}/evaluaciones-jefe/${id}/generar_pdf/`;
     }
     if (String(personaId) === String(currentUserId)) {
-      return `${apiBase}/mis-evaluaciones/${id}/generar_pdf/`;
+      // ✅ CORREGIDO: Apuntar al endpoint de autoevaluaciones
+      return `${apiBase}/autoevaluaciones/${id}/generar_pdf/`;
     }
   }
 
@@ -34,7 +35,8 @@ function buildUrls(
   prefer?: "jefe" | "mis",
 ): { primary: string; fallback: string } {
   const jefe = `${API_BASE}/evaluaciones-jefe/${id}/generar_pdf/`;
-  const mis = `${API_BASE}/mis-evaluaciones/${id}/generar_pdf/`;
+  // ✅ CORREGIDO: Endpoint correcto para autoevaluaciones
+  const mis = `${API_BASE}/autoevaluaciones/${id}/generar_pdf/`;
 
   if (prefer === "mis") return { primary: mis, fallback: jefe };
   if (prefer === "jefe") return { primary: jefe, fallback: mis };
@@ -64,36 +66,45 @@ export async function descargarPDFInteligente(options: {
 }): Promise<{ used: "jefe" | "mis" } | never> {
   const { evaluacionId, evaluacion, currentUserId, prefer } = options;
 
-  const hinted = evaluacion
-    ? getGenerarPdfUrl(evaluacion, currentUserId)
-    : null;
+  // Si se prefiere explícitamente "mis", intentamos forzar esa ruta primero
+  // independientemente de lo que diga el objeto evaluacion (que a veces es incompleto)
+  let hinted = null;
+  
+  if (prefer === "mis") {
+     hinted = `${API_BASE}/autoevaluaciones/${evaluacionId}/generar_pdf/`;
+  } else if (evaluacion) {
+     hinted = getGenerarPdfUrl(evaluacion, currentUserId);
+  }
+
   const urls = hinted
     ? {
         primary: hinted,
         fallback: hinted.includes("evaluaciones-jefe")
-          ? `${API_BASE}/mis-evaluaciones/${evaluacionId}/generar_pdf/`
+          ? `${API_BASE}/autoevaluaciones/${evaluacionId}/generar_pdf/`
           : `${API_BASE}/evaluaciones-jefe/${evaluacionId}/generar_pdf/`,
       }
     : buildUrls(evaluacionId, prefer);
 
   try {
-    const used = urls.primary.includes("mis-evaluaciones") ? "mis" : "jefe";
+    // Detectar qué tipo se usó basado en la URL
+    const used = urls.primary.includes("autoevaluaciones") ? "mis" : "jefe";
 
     await fetchPdf(
       urls.primary,
-      `${used === "jefe" ? "evaluacion_jefe" : "mi_evaluacion"}_${evaluacionId}.pdf`,
+      `${used === "jefe" ? "evaluacion_jefe" : "mi_autoevaluacion"}_${evaluacionId}.pdf`,
     );
 
     return { used };
   } catch (error: any) {
     const status = error?.response?.status;
 
+    // Si falla (ej: 404), intentar con la URL de respaldo
     if (status === 404 && urls.fallback) {
-      const used = urls.fallback.includes("mis-evaluaciones") ? "mis" : "jefe";
+      const used = urls.fallback.includes("autoevaluaciones") ? "mis" : "jefe";
 
       await fetchPdf(
         urls.fallback,
-        `${used === "jefe" ? "evaluacion_jefe" : "mi_evaluacion"}_${evaluacionId}.pdf`,
+        `${used === "jefe" ? "evaluacion_jefe" : "mi_autoevaluacion"}_${evaluacionId}.pdf`,
       );
 
       return { used };

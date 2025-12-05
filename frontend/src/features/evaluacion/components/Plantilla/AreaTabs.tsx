@@ -26,7 +26,7 @@ interface Props {
 
 export default function AreaTabs({
   isEditing,
-  areas,
+  areas = [], // ✅ CORRECCIÓN 1: Valor por defecto en props
   onAreaChange,
   onAddArea,
   onRemoveArea,
@@ -39,8 +39,11 @@ export default function AreaTabs({
 
   const handleAddArea = () => {
     onAddArea();
-    setActiveAreaIndex(areas.length); // cambiar a la nueva pestaña
+    setActiveAreaIndex(areas.length);
   };
+
+  // ✅ CORRECCIÓN 2: Validación de seguridad. Si no hay áreas, no renderizamos nada o un placeholder.
+  if (!areas) return null;
 
   return (
     <div>
@@ -48,9 +51,10 @@ export default function AreaTabs({
         Áreas de Evaluación
       </h2>
 
-      {/* Grid de botones que simula tabs */}
+      {/* Grid de botones */}
       <div className="flex flex-wrap gap-3 mt-4">
-        {areas.map((area, areaIndex) => (
+        {/* ✅ CORRECCIÓN 3: Optional chaining por seguridad extra */}
+        {areas?.map((area, areaIndex) => (
           <Button
             key={areaIndex}
             className={`px-4 py-2 rounded-md border text-sm font-medium transition-all
@@ -68,7 +72,8 @@ export default function AreaTabs({
       </div>
 
       {/* Contenido del área activa */}
-      {areas[activeAreaIndex] && (
+      {/* ✅ CORRECCIÓN 4: Verificar que el área en el índice activo realmente existe */}
+      {areas[activeAreaIndex] ? (
         <div className="space-y-4 mt-6">
           <div className="flex flex-wrap gap-4">
             <div className="flex-1 min-w-[200px]">
@@ -81,7 +86,7 @@ export default function AreaTabs({
                 name="n_area"
                 placeholder="Ej: I.CUMPLIMIENTO"
                 type="text"
-                value={areas[activeAreaIndex].n_area}
+                value={areas[activeAreaIndex].n_area || ""} // Evitar controlled/uncontrolled warning
                 variant="faded"
                 onChange={(e) => onAreaChange(activeAreaIndex, e)}
               />
@@ -89,7 +94,6 @@ export default function AreaTabs({
 
             <div className="w-40">
               <Input
-                // no usamos required para evitar validaciones molestas
                 endContent={
                   <span className="text-default-500 text-sm pr-1">%</span>
                 }
@@ -109,8 +113,6 @@ export default function AreaTabs({
                     Math.max(parseInt(e.target.value || "0", 10), 0),
                     100,
                   );
-
-                  // solo si el handler existe
                   updatePonderacion?.(activeAreaIndex, value);
                 }}
               />
@@ -144,11 +146,16 @@ export default function AreaTabs({
           <CompetenciaTabs
             areaIndex={activeAreaIndex}
             competenciaHandlers={competenciaHandlers}
-            competencias={areas[activeAreaIndex].competencias}
+            competencias={areas[activeAreaIndex].competencias || []} // ✅ Seguridad extra
             indicadorHandlers={indicadorHandlers}
             isEditing={isEditing}
             nivelHandlers={nivelHandlers}
           />
+        </div>
+      ) : (
+        // Estado vacío si estamos cargando o no hay áreas seleccionadas
+        <div className="mt-8 p-8 border-2 border-dashed border-gray-200 rounded-xl text-center text-gray-400">
+           {areas.length === 0 ? "No hay áreas definidas." : "Selecciona un área."}
         </div>
       )}
     </div>

@@ -7,7 +7,7 @@ import { cloneNiveles } from "@/features/evaluacion/constants/defaults";
 import { buildDemoAutoevaluacion } from "@/features/evaluacion/services/autofill";
 
 interface EvaluacionState {
-  nombreTipoEvaluacion: string;
+  n_tipo_evaluacion: string;
   areas: AreaEvaluacion[];
   activeAreaIndex: number;
   activeCompetenciaIndex: number;
@@ -80,23 +80,23 @@ interface EvaluacionState {
 }
 
 const useEvaluacionStore = create<EvaluacionState>((set) => ({
-  nombreTipoEvaluacion: "",
+  n_tipo_evaluacion: "",
   areas: [JSON.parse(JSON.stringify(defaultArea))],
   activeAreaIndex: 0,
   activeCompetenciaIndex: 0,
   activeIndicadorIndex: 0,
 
-  setNombre: (nombre) => set({ nombreTipoEvaluacion: nombre }),
+  setNombre: (nombre) => set({ n_tipo_evaluacion: nombre }),
   setAreas: (areas) => set({ areas }),
   setActiveAreaIndex: (i) => set({ activeAreaIndex: i }),
   setActiveCompetenciaIndex: (i) => set({ activeCompetenciaIndex: i }),
   setActiveIndicadorIndex: (i) => set({ activeIndicadorIndex: i }),
 
   validarFormulario: () => {
-    const { nombreTipoEvaluacion, areas } = useEvaluacionStore.getState();
+    const { n_tipo_evaluacion, areas } = useEvaluacionStore.getState();
     let errores: string[] = [];
 
-    if (!nombreTipoEvaluacion.trim()) {
+    if (!n_tipo_evaluacion.trim()) {
       errores.push("El nombre de la evaluación es obligatorio.");
     }
 
@@ -316,10 +316,10 @@ const useEvaluacionStore = create<EvaluacionState>((set) => ({
 
   autorellenarAutoevaluacion: () =>
     set(() => {
-      const { nombreTipoEvaluacion, areas } = buildDemoAutoevaluacion();
+      const { n_tipo_evaluacion, areas } = buildDemoAutoevaluacion();
 
       return {
-        nombreTipoEvaluacion,
+        n_tipo_evaluacion,
         areas,
         activeAreaIndex: 0,
         activeCompetenciaIndex: 0,
@@ -328,7 +328,7 @@ const useEvaluacionStore = create<EvaluacionState>((set) => ({
     }),
   resetEvaluacion: () =>
     set({
-      nombreTipoEvaluacion: "",
+      n_tipo_evaluacion: "",
       areas: [JSON.parse(JSON.stringify(defaultArea))],
       activeAreaIndex: 0,
       activeCompetenciaIndex: 0,

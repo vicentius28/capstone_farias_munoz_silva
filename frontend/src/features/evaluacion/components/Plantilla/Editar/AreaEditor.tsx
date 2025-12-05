@@ -19,7 +19,7 @@ const EditarTipoEvaluacion = () => {
     isEditing,
     isAutoevaluacion,
 
-    nombreTipoEvaluacion,
+    n_tipo_evaluacion,
     areas,
     handleSubmit,
     onToggleAutoevaluacion,
@@ -77,7 +77,7 @@ const EditarTipoEvaluacion = () => {
           <NombreEvaluacionInput
             isAutoevaluacion={isAutoevaluacion}
             isEditing={isEditing}
-            value={nombreTipoEvaluacion}
+            value={n_tipo_evaluacion}
             onChange={handleNombreChange}
             onToggleAutoevaluacion={onToggleAutoevaluacion}
           />

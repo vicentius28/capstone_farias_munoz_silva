@@ -4,6 +4,7 @@ from evaluacion.serializers.plantilla import (
     CompetenciaSerializer,
     IndicadorSerializer,
     NivelLogroSerializer,
+    TipoEvaluacionListSerializer,
 )
 from evaluacion.serializers.asignar import (
     AutoEvaluacionAsignadaSerializer,

@@ -29,14 +29,14 @@ const crearArea = (): AreaEvaluacion => ({
 });
 
 export default function useFormularioEvaluacion() {
-  const [nombreTipoEvaluacion, setNombreTipoEvaluacion] = useState("");
+  const [n_tipo_evaluacion, setn_tipo_evaluacion] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [areas, setAreas] = useState<AreaEvaluacion[]>([crearArea()]);
 
-  const handleNombreTipoEvaluacionChange = (
+  const handlen_tipo_evaluacionChange = (
     e: React.ChangeEvent<HTMLInputElement>,
   ) => {
-    setNombreTipoEvaluacion(e.target.value);
+    setn_tipo_evaluacion(e.target.value);
   };
 
   const handleAreaChange = (
@@ -138,14 +138,14 @@ export default function useFormularioEvaluacion() {
   };
 
   const resetFormulario = () => {
-    setNombreTipoEvaluacion("");
+    setn_tipo_evaluacion("");
     setAreas([crearArea()]);
   };
 
   return {
-    nombreTipoEvaluacion,
-    setNombreTipoEvaluacion,
-    handleNombreTipoEvaluacionChange,
+    n_tipo_evaluacion,
+    setn_tipo_evaluacion,
+    handlen_tipo_evaluacionChange,
     error,
     setError,
     areas,

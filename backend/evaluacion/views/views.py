@@ -1,10 +1,9 @@
 from rest_framework import viewsets
 from evaluacion.models import TipoEvaluacion, EvaluacionAsignada
 from evaluacion.models.autoevaluacion import Autoevaluacion
-from evaluacion.serializers import TipoEvaluacionSerializer, AutoEvaluacionAsignadaSerializer
+from evaluacion.serializers import TipoEvaluacionSerializer, AutoEvaluacionAsignadaSerializer ,TipoEvaluacionListSerializer
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.generics import ListAPIView
 from django.contrib.auth import get_user_model
 from evaluacion.serializers import UsuarioSerializer
 from evaluacion.serializers.tipo_evaluacion_read import TipoEvaluacionParaAutoevaluacionSerializer
@@ -26,9 +25,30 @@ class TipoEvaluacionViewSet(viewsets.ModelViewSet):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     queryset = TipoEvaluacion.objects.all()
-    serializer_class = TipoEvaluacionSerializer
+    
+    def get_serializer_class(self):
+        """
+        Usa el serializador ligero para listas (carga instantánea)
+        y el pesado para detalles/edición.
+        """
+        if self.action == 'list':
+            return TipoEvaluacionListSerializer
+        return TipoEvaluacionSerializer
 
-
+    def get_queryset(self):
+        """
+        Optimización de base de datos:
+        Solo hacemos JOINs/Prefetch de la estructura profunda cuando
+        realmente necesitamos el detalle (retrieve, update).
+        Esto evita el problema N+1 en el listado.
+        """
+        if self.action in ['retrieve', 'update', 'partial_update']:
+            return TipoEvaluacion.objects.prefetch_related(
+                'areas__competencias__indicadores__nvlindicadores'
+            )
+        
+        # Para 'list', devolvemos el queryset base (rápido)
+        return super().get_queryset().order_by('n_tipo_evaluacion')
 class EvaluacionAsignadaViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]

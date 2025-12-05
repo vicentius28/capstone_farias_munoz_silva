@@ -26,7 +26,7 @@ export default function NombreEvaluacionInput({
     <div className="mb-6 mt-14 space-y-1">
       <label
         className="text-sm font-medium text-default-700"
-        htmlFor="nombreTipoEvaluacion"
+        htmlFor="n_tipo_evaluacion"
       >
         Nombre del Tipo de Evaluación
       </label>
@@ -34,9 +34,9 @@ export default function NombreEvaluacionInput({
         isRequired
         className={showError ? "border border-red-500" : ""}
         color={showError ? "danger" : color}
-        id="nombreTipoEvaluacion"
+        id="n_tipo_evaluacion"
         isDisabled={!isEditing}
-        name="nombreTipoEvaluacion"
+        name="n_tipo_evaluacion"
         placeholder="Ej: Evaluación Docente 2025"
         type="text"
         value={value}

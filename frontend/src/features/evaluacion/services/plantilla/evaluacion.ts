@@ -3,6 +3,11 @@ import { TipoEvaluacion } from "@/features/evaluacion/types/evaluacion";
 
 export const BASE_API_URL = import.meta.env.VITE_API_URL + "/evaluacion/api/";
 
+/**
+ * Obtiene la lista ligera de plantillas (Optimizada).
+ * Nota: Los objetos devueltos NO contienen 'areas' ni 'competencias'.
+ * Usado solo para el listado / tarjetas.
+ */
 export const fetchEvaluacion = async (): Promise<TipoEvaluacion[]> => {
   try {
     const response = await api.get<TipoEvaluacion[]>(
@@ -17,6 +22,11 @@ export const fetchEvaluacion = async (): Promise<TipoEvaluacion[]> => {
   }
 };
 
+/**
+ * Obtiene el detalle completo de una plantilla por ID.
+ * Incluye toda la estructura anidada (Áreas -> Competencias -> Indicadores).
+ * Usado al entrar a editar.
+ */
 export const fetchEvaluacionById = async (
   id: number,
 ): Promise<TipoEvaluacion | null> => {
@@ -27,7 +37,7 @@ export const fetchEvaluacionById = async (
 
     return response.data;
   } catch (error) {
-    console.error("Error obteniendo el tipo de evaluación:", error);
+    console.error(`❌ Error obteniendo el detalle de la evaluación ID ${id}:`, error);
 
     return null;
   }

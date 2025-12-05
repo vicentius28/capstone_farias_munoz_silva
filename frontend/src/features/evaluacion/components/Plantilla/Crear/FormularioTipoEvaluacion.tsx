@@ -14,7 +14,7 @@ const FormularioTipoEvaluacion = () => {
     showSuccessModal,
     formSubmitted,
     erroresFormulario,
-    nombreTipoEvaluacion,
+    n_tipo_evaluacion,
     areas,
     onToggleAutoevaluacion,
 
@@ -54,7 +54,7 @@ const FormularioTipoEvaluacion = () => {
                 "El nombre de la evaluación es obligatorio.",
               )
             }
-            value={nombreTipoEvaluacion}
+            value={n_tipo_evaluacion}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               setNombre(e.target.value)
             }

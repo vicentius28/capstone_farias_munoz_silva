@@ -57,7 +57,7 @@ export function buildAreasFromSpec(spec: AutoFillSpec): AreaEvaluacion[] {
 // Caso demo (adaptado a tus áreas) con mezcla de cantidad + lista detallada
 // ────────────────────────────────────────────────────────────────────────────────
 export function buildDemoAutoevaluacion(): {
-  nombreTipoEvaluacion: string;
+  n_tipo_evaluacion: string;
   areas: AreaEvaluacion[];
 } {
   const spec: AutoFillSpec = [
@@ -184,7 +184,7 @@ export function buildDemoAutoevaluacion(): {
   ];
 
   return {
-    nombreTipoEvaluacion: "Autoevaluación",
+    n_tipo_evaluacion: "Autoevaluación",
     areas: buildAreasFromSpec(spec),
   };
 }
@@ -193,6 +193,6 @@ export function buildDemoAutoevaluacion(): {
 export function buildAutoevaluacionCustom(
   nombre: string,
   spec: AutoFillSpec,
-): { nombreTipoEvaluacion: string; areas: AreaEvaluacion[] } {
-  return { nombreTipoEvaluacion: nombre, areas: buildAreasFromSpec(spec) };
+): { n_tipo_evaluacion: string; areas: AreaEvaluacion[] } {
+  return { n_tipo_evaluacion: nombre, areas: buildAreasFromSpec(spec) };
 }

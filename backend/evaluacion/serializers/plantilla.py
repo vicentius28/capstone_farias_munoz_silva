@@ -34,6 +34,12 @@ class AreaEvaluacionSerializer(serializers.ModelSerializer):
 
 MISSING = object()
 
+class TipoEvaluacionListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TipoEvaluacion
+        fields = ['id', 'n_tipo_evaluacion', 'auto', 'ponderada'] 
+        # NOTA: NO incluimos 'areas' aquí. Esto hace que la query sea rapidísima.
+
 class TipoEvaluacionSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     areas = AreaEvaluacionSerializer(many=True, required=False)

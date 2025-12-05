@@ -1,74 +1,112 @@
+import logging
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
+from rest_framework.decorators import action
 from evaluacion.models import Autoevaluacion
 from evaluacion.serializers import AutoevaluacionSerializer
-import logging
+from evaluacion.mixins import PDFGenerationMixin 
 
 logger = logging.getLogger(__name__)
 
-class AutoevaluacionViewSet(viewsets.ModelViewSet):
+# ✅ Definimos la utilidad localmente para evitar errores de importación
+def parse_bool(val, default=None):
+    if val is None:
+        return default
+    v = str(val).lower()
+    if v in ("true", "1", "t", "yes", "y"):  return True
+    if v in ("false", "0", "f", "no", "n"):  return False
+    return default
+
+class AutoevaluacionViewSet(PDFGenerationMixin, viewsets.ModelViewSet):
+    """
+    ViewSet para que los usuarios gestionen sus propias autoevaluaciones.
+    Incluye generación de PDF via Mixin.
+    """
     serializer_class = AutoevaluacionSerializer
     permission_classes = [permissions.IsAuthenticated]
+    http_method_names = ['get', 'put', 'patch', 'post']
 
     def get_queryset(self):
-        queryset = Autoevaluacion.objects.filter(persona=self.request.user).order_by('-fecha_inicio')
-        completado = self.request.query_params.get('completado')
-
+        qs = Autoevaluacion.objects.filter(persona=self.request.user).order_by('-fecha_inicio')
+        
+        # Filtro booleano robusto usando la función definida arriba
+        completado = parse_bool(self.request.query_params.get('completado'))
         if completado is not None:
-            if completado.lower() in ['true', '1']:
-                queryset = queryset.filter(completado=True)
-            elif completado.lower() in ['false', '0']:
-                queryset = queryset.filter(completado=False)
+            qs = qs.filter(completado=completado)
 
-        return queryset
+        return qs
 
     def perform_create(self, serializer):
         serializer.save(persona=self.request.user)
-
-    def retrieve(self, request, *args, **kwargs):
-        instance = get_object_or_404(self.get_queryset(), pk=kwargs['pk'])
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data)
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
         instance = get_object_or_404(self.get_queryset(), pk=kwargs['pk'])
 
-        # ✅ LOGGING DETALLADO PARA CAPTURAR ERRORES
         try:
             serializer = self.get_serializer(instance, data=request.data, partial=partial)
-            
-            # Agregar contexto para validación de snapshot
+            # Contexto para validaciones complejas en el serializer
             serializer.context['autoevaluacion'] = instance
             
             if not serializer.is_valid():
-                logger.error(f"Error de validación en autoevaluación {instance.id}: {serializer.errors}")
+                logger.error(f"Validación fallida Autoevaluación {instance.id}: {serializer.errors}")
                 return Response({
                     'error': 'Datos inválidos',
-                    'details': serializer.errors,
-                    'debug_info': {
-                        'autoevaluacion_id': instance.id,
-                        'tiene_snapshot': bool(instance.estructura_json),
-                        'version_plantilla': instance.version_plantilla
-                    }
+                    'details': serializer.errors
                 }, status=status.HTTP_400_BAD_REQUEST)
             
+            # Guardado estándar
             self.perform_update(serializer)
             
-            # ✅ USAR MÉTODO DEL MODELO QUE USA SNAPSHOT
-            instance.calcular_logro()
+            # Recálculos de negocio posteriores al guardado
+            if hasattr(instance, 'calcular_logro'):
+                instance.calcular_logro()
             
-            # Actualizar campos de texto
-            instance.text_mejorar = request.data.get('text_mejorar', '')
-            instance.text_destacar = request.data.get('text_destacar', '')
-            instance.save()
+            # Actualización explícita de campos de texto si vienen en el payload
+            updated_fields = []
+            if 'text_mejorar' in request.data:
+                instance.text_mejorar = request.data['text_mejorar']
+                updated_fields.append('text_mejorar')
             
-            return Response(self.get_serializer(instance).data)
+            if 'text_destacar' in request.data:
+                instance.text_destacar = request.data['text_destacar']
+                updated_fields.append('text_destacar')
+            
+            if updated_fields:
+                instance.save(update_fields=updated_fields)
+            
+            return Response(serializer.data)
             
         except Exception as e:
-            logger.error(f"Error inesperado en autoevaluación {instance.id}: {str(e)}")
+            logger.error(f"Error crítico en Autoevaluación {instance.id}: {str(e)}", exc_info=True)
             return Response({
-                'error': 'Error interno del servidor',
+                'error': 'Error interno del servidor al procesar la autoevaluación',
+                'message': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(detail=True, methods=['get'])
+    def generar_pdf(self, request, pk=None):
+        """Genera y descarga el PDF de la autoevaluación"""
+        autoevaluacion = self.get_object()
+        
+        try:
+            # Generar PDF
+            pdf_content = EvaluacionPDFGenerator.generate_autoevaluacion_pdf(autoevaluacion.id)
+            
+            # Generar nombre de archivo robusto
+            filename = EvaluacionPDFGenerator.generate_pdf_filename(autoevaluacion)
+            
+            # Crear respuesta HTTP con el PDF
+            response = HttpResponse(pdf_content, content_type='application/pdf')
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            
+            logger.info(f"PDF generado exitosamente para autoevaluación {autoevaluacion.id}")
+            return response
+            
+        except Exception as e:
+            logger.error(f"Error generando PDF para autoevaluación {autoevaluacion.id}: {str(e)}")
+            return Response({
+                'error': 'Error generando PDF',
                 'message': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
