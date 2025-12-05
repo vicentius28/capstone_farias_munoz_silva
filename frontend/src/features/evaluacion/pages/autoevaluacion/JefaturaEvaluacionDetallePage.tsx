@@ -593,7 +593,7 @@ export default function JefaturaEvaluacionDetallePage() {
 
       addToast({
         title: "Evaluación denegada",
-        description: "Se ha enviado el motivo de denegación a la jefatura.",
+        description: "Se ha enviado el motivo de aceptación con observación a la jefatura.",
         color: "warning",
         variant: "solid",
       });
