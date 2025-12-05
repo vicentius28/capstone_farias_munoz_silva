@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useOutletContext } from "react-router-dom";
 import { Spinner } from "@heroui/spinner";
 import { Button } from "@heroui/button";
 import { Card, CardBody, CardHeader } from "@heroui/card";
@@ -12,17 +12,32 @@ import {
   LightBulbIcon,
   CheckBadgeIcon,
   ArrowRightIcon,
+  ChevronLeftIcon,
 } from "@heroicons/react/24/outline";
 
 // Mantenemos los componentes funcionales complejos
+import { useEffect } from "react";
+
 import { useEvaluacionesMixtas } from "@/features/evaluacion/hooks/useEvaluacionesMixtas";
 import FiltrosEvaluacionComponent from "@/features/evaluacion/components/mixta/FiltrosEvaluacion";
 import VistaTarjetas from "@/features/evaluacion/components/mixta/VistaTarjetas";
 import VistaTabla from "@/features/evaluacion/components/mixta/VistaTabla";
+import { DefaultLayoutContext } from "@/shared";
 
 export default function EvaluacionMixtaIntro() {
   const navigate = useNavigate();
+  const { setActionButton } = useOutletContext<DefaultLayoutContext>();
 
+  useEffect(() => {
+    setActionButton({
+      label: "Volver",
+      to: "/",
+      color: "primary",
+      startContent: <ChevronLeftIcon className="w-4 h-4" />,
+    });
+
+    return () => setActionButton(null);
+  }, [setActionButton]);
   // Hook de lógica de negocio
   const {
     loading,

@@ -1,7 +1,6 @@
 // Re-export individual components
 export { default as BaseModal } from "./BaseModal";
 export { InfoModal } from "./InfoModal";
-export { default as LazyBackButton } from "@/shared/components/ui/Button/LazyBackButton";
 export { default as PaginationFooter } from "./PaginationFooter";
 export { default as SearchBar } from "./SearchBar";
 export { default as TableComponent } from "./TableComponent";

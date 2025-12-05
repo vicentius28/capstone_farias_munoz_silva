@@ -1,5 +1,9 @@
 import { Button } from "@heroui/button";
-import { useNavigate, useSearchParams } from "react-router-dom"; // Hook para URL params
+import {
+  useNavigate,
+  useOutletContext,
+  useSearchParams,
+} from "react-router-dom"; // Hook para URL params
 import { useState, useEffect, useMemo } from "react";
 import { Card, CardBody } from "@heroui/card";
 import { Spinner } from "@heroui/spinner";
@@ -17,10 +21,12 @@ import {
   MagnifyingGlassIcon,
   Squares2X2Icon,
   ListBulletIcon,
+  ChevronLeftIcon,
 } from "@heroicons/react/24/outline";
 
 import { fetchEvaluacion } from "@/features/evaluacion/services/plantilla/evaluacion";
 import { TipoEvaluacion } from "@/features/evaluacion/types/evaluacion";
+import { DefaultLayoutContext } from "@/shared";
 
 // --- Sub-componente: Item en Vista Lista ---
 const TemplateListItem = ({
@@ -148,6 +154,19 @@ const TemplateGridItem = ({
 );
 
 export default function EditarEvaluacionPage() {
+  const { setActionButton } = useOutletContext<DefaultLayoutContext>();
+
+  useEffect(() => {
+    setActionButton({
+      label: "Volver",
+      to: "/",
+      color: "primary",
+      startContent: <ChevronLeftIcon className="w-4 h-4" />,
+    });
+
+    return () => setActionButton(null);
+  }, [setActionButton]);
+
   const navigate = useNavigate();
   // 1. Manejo de estado por URL (Persistencia)
   const [searchParams, setSearchParams] = useSearchParams();

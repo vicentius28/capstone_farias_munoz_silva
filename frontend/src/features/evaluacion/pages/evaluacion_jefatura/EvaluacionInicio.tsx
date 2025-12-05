@@ -1,6 +1,8 @@
+import type { DefaultLayoutContext } from "@/shared/components/layout/default";
+
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
-import { Card, CardHeader, CardBody } from "@heroui/card";
+import { useNavigate, useOutletContext } from "react-router-dom";
+import { Card, CardBody } from "@heroui/card";
 import { Chip } from "@heroui/chip";
 import { Button } from "@heroui/button";
 import { Select, SelectItem } from "@heroui/select";
@@ -20,13 +22,17 @@ import {
   ClipboardDocumentListIcon,
   ClockIcon,
   UsersIcon,
-  FunnelIcon,
   Squares2X2Icon,
   TableCellsIcon,
   ChatBubbleBottomCenterTextIcon,
   PencilSquareIcon,
-  HandRaisedIcon,
+  CheckCircleIcon,
+  MagnifyingGlassIcon,
+  FunnelIcon,
+  XMarkIcon,
+  ChevronLeftIcon,
 } from "@heroicons/react/24/outline";
+import { motion, AnimatePresence } from "framer-motion"; // Opcional: para suavidad, si no usas framer, quita los motion.div
 
 import axios from "@/services/google/axiosInstance";
 
@@ -38,105 +44,168 @@ type EvalAsignacion = {
   tipo_evaluacion?: { id: number; n_tipo_evaluacion?: string };
   total_asignadas?: number;
   total_pendientes?: number;
-  total_completadas?: number;
-  total_pendientes_firma?: number;
-  total_con_reunion?: number;
-  total_con_retroalimentacion?: number;
+  total_en_proceso?: number;
   total_cerradas_firma?: number;
   total_firmadas?: number;
+  progreso_real?: number;
 };
 
-// --- Componente: Timeline de Proceso (El KPI que te gusta) ---
-const ProcessTimeline = ({ stats }: { stats: any }) => {
+// --- COMPONENTE 1: Timeline de Estados Interactivo (Filtro) ---
+const ProcessTimelineFilter = ({
+  stats,
+  activeFilter,
+  onFilterChange,
+}: any) => {
   const steps = [
     {
-      id: "pendientes",
+      id: "pendiente",
       label: "Pendientes",
       count: stats.pendientes,
       icon: <ClockIcon className="w-5 h-5" />,
-      color: "amber", // Tailwind color name base
+      color: "amber",
       desc: "Sin iniciar",
     },
     {
-      id: "gestion",
+      id: "proceso",
       label: "En Gestión",
-      // Agrupamos retroalimentación y completadas (esperando reunión)
-      count: stats.conRetroalimentacion + stats.completadas + stats.conReunion,
+      count: stats.enProceso,
       icon: <ChatBubbleBottomCenterTextIcon className="w-5 h-5" />,
       color: "blue",
-      desc: "Retroalimentación",
+      desc: "Retro / Reunión",
     },
     {
       id: "firma",
-      label: "Por Aceptar",
+      label: "Por Firmar",
       count: stats.cerradasFirma,
       icon: <PencilSquareIcon className="w-5 h-5" />,
-      color: "orange",
-      desc: "Reunión OK",
+      color: "purple",
+      desc: "Esperando cierre",
     },
     {
-      id: "finalizadas",
+      id: "finalizada",
       label: "Finalizadas",
       count: stats.firmadas,
-      icon: <HandRaisedIcon className="w-5 h-5" />,
+      icon: <CheckCircleIcon className="w-5 h-5" />,
       color: "emerald",
-      desc: "Proceso cerrado",
+      desc: "Completo",
     },
   ];
 
   return (
-    <Card className="border border-gray-200 dark:border-gray-800 shadow-sm bg-white dark:bg-gray-900 w-full overflow-visible">
-      <CardBody className="p-6 md:p-8">
-        <div className="flex flex-col md:flex-row justify-between items-center relative gap-8 md:gap-0">
-          {/* Línea conectora (Fondo) */}
-          <div className="hidden md:block absolute top-1/2 left-0 w-full h-0.5 bg-gray-100 dark:bg-gray-800 -z-0 -translate-y-4" />
+    <div className="w-full mb-8">
+      {/* Línea conectora de fondo */}
+      <div className="relative">
+        <div className="hidden md:block absolute top-1/2 left-0 w-full h-1 bg-gray-100 dark:bg-zinc-800 -translate-y-1/2 rounded-full z-0" />
 
-          {steps.map((step, idx) => {
-            const isLast = idx === steps.length - 1;
-            const hasData = step.count > 0;
+        <div className="flex flex-col md:flex-row justify-between gap-4 relative z-10">
+          {steps.map((step) => {
+            const isActive = activeFilter === step.id;
+            const isInactive = activeFilter !== "all" && !isActive;
 
             return (
-              <div
+              <button
                 key={step.id}
-                className="relative z-10 flex flex-col items-center text-center flex-1 w-full md:w-auto"
+                className={`
+                    group flex-1 flex flex-col items-center p-4 rounded-2xl transition-all duration-300 outline-none
+                    ${
+                      isActive
+                        ? "bg-white dark:bg-zinc-800 shadow-lg scale-105 ring-2 ring-offset-2 ring-blue-500 z-20"
+                        : "hover:bg-gray-50 dark:hover:bg-zinc-800/50"
+                    }
+                    ${isInactive ? "opacity-50 grayscale hover:grayscale-0 hover:opacity-100" : "opacity-100"}
+                  `}
+                onClick={() => onFilterChange(isActive ? "all" : step.id)}
               >
-                {/* Círculo del Icono */}
+                {/* Icono Circular */}
                 <div
                   className={`
-                                    w-14 h-14 rounded-2xl flex items-center justify-center mb-3 shadow-sm transition-all duration-300
-                                    ${
-                                      hasData
-                                        ? `bg-${step.color}-500 text-white shadow-${step.color}-200 scale-105`
-                                        : `bg-gray-50 text-gray-300 dark:bg-gray-800 dark:text-gray-600 border border-gray-100 dark:border-gray-700`
-                                    }
-                                `}
+                      w-12 h-12 rounded-full flex items-center justify-center mb-3 shadow-sm transition-colors duration-300
+                      ${
+                        isActive
+                          ? `bg-${step.color}-500 text-white shadow-${step.color}-200`
+                          : `bg-white border-2 border-${step.color}-100 text-${step.color}-500 group-hover:bg-${step.color}-50`
+                      }
+                    `}
                 >
                   {step.icon}
                 </div>
 
-                {/* Contenido */}
-                <div className="flex flex-col gap-1">
+                {/* Contadores y Texto */}
+                <div className="text-center">
                   <span
-                    className={`text-2xl font-bold ${hasData ? `text-${step.color}-600` : "text-gray-300"}`}
+                    className={`text-2xl font-bold block leading-none mb-1 ${isActive ? "text-gray-900 dark:text-white" : "text-gray-600 dark:text-gray-400"}`}
                   >
                     {step.count}
                   </span>
-                  <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                  <span
+                    className={`text-sm font-semibold ${isActive ? `text-${step.color}-600` : "text-gray-500"}`}
+                  >
                     {step.label}
                   </span>
-                  <span className="text-xs text-gray-400">{step.desc}</span>
                 </div>
 
-                {/* Flecha conectora para móvil (opcional) o desktop */}
-                {!isLast && (
-                  <div className="md:hidden mt-4 text-gray-300">↓</div>
+                {/* Indicador de Selección (Puntito) */}
+                {isActive && (
+                  <motion.div
+                    className={`mt-2 w-1.5 h-1.5 rounded-full bg-${step.color}-500`}
+                    layoutId="active-dot"
+                  />
                 )}
-              </div>
+              </button>
             );
           })}
         </div>
-      </CardBody>
-    </Card>
+      </div>
+    </div>
+  );
+};
+
+// --- COMPONENTE 2: Selector de Años (Timeline Horizontal) ---
+const YearTimelineSelector = ({ years, selectedYear, onChange }: any) => {
+  if (years.length === 0) return null;
+
+  return (
+    <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
+      <button
+        className={`
+            px-4 py-2 rounded-full text-sm font-semibold transition-all whitespace-nowrap
+            ${
+              selectedYear === "all"
+                ? "bg-gray-900 text-white shadow-md dark:bg-white dark:text-black"
+                : "bg-gray-100 text-gray-500 hover:bg-gray-200 dark:bg-zinc-800 dark:text-gray-400"
+            }
+        `}
+        onClick={() => onChange("all")}
+      >
+        Histórico
+      </button>
+
+      <div className="h-6 w-px bg-gray-300 dark:bg-zinc-700 mx-2" />
+
+      {years.map((year: string) => (
+        <button
+          key={year}
+          className={`
+            px-4 py-2 rounded-full text-sm font-semibold transition-all relative whitespace-nowrap
+            ${
+              selectedYear === year
+                ? "bg-blue-600 text-white shadow-md shadow-blue-500/30 pl-8 pr-4"
+                : "bg-white border border-gray-200 text-gray-600 hover:border-blue-300 hover:text-blue-600 dark:bg-zinc-900 dark:border-zinc-700 dark:text-gray-300"
+            }
+          `}
+          onClick={() => onChange(year)}
+        >
+          {selectedYear === year && (
+            <motion.span
+              animate={{ scale: 1 }}
+              className="absolute left-2.5 top-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full"
+              initial={{ scale: 0 }}
+            />
+          )}
+          {year}
+        </button>
+      ))}
+    </div>
   );
 };
 
@@ -144,142 +213,114 @@ export default function EvaluacionInicioPage() {
   const [asignaciones, setAsignaciones] = useState<EvalAsignacion[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { setActionButton } = useOutletContext<DefaultLayoutContext>();
 
-  // Filtros
+  // Estados de Filtros
   const [yearFilter, setYearFilter] = useState<string>("all");
-  const [tipoFilter, setTipoFilter] = useState<string>("all");
   const [estadoFilter, setEstadoFilter] = useState<
-    "all" | "pendiente" | "retroalimentacion" | "reunion" | "firmada"
+    "all" | "pendiente" | "proceso" | "firma" | "finalizada"
   >("all");
+  const [tipoFilter, setTipoFilter] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
 
   // Helpers
-  const fechaFormateada = useCallback(
-    (ym: string) =>
-      new Date(`${ym}-01T00:00:00`).toLocaleDateString("es-CL", {
-        year: "numeric",
-        month: "long",
-      }),
-    [],
-  );
+  const fechaFormateada = useCallback((ym: string) => {
+    if (!ym) return "";
+
+    return new Date(`${ym}-01T00:00:00`).toLocaleDateString("es-CL", {
+      month: "long",
+      year: "numeric",
+    });
+  }, []);
 
   const normalizePeriodo = useCallback((s?: string | null) => {
     if (!s) return "";
     const m = String(s).match(/(\d{4})-(\d{2})/);
 
-    return m
-      ? `${m[1]}-${m[2]}`
-      : String(s).length >= 7
-        ? String(s).slice(0, 7)
-        : String(s);
+    return m ? `${m[1]}-${m[2]}` : String(s).slice(0, 7);
   }, []);
 
-  // Estadísticas para el Timeline
-  const estadisticasGlobales = useMemo(() => {
-    const totales = asignaciones.reduce(
-      (acc, item) => {
-        acc.total += item.total_asignadas || 0;
-        acc.completadas += item.total_completadas || 0;
-        acc.pendientes += item.total_pendientes || 0;
-        acc.conReunion += item.total_con_reunion || 0;
-        acc.conRetroalimentacion += item.total_con_retroalimentacion || 0;
-        acc.cerradasFirma += item.total_cerradas_firma || 0;
-        acc.firmadas += item.total_firmadas || 0;
-
-        return acc;
-      },
-      {
-        total: 0,
-        completadas: 0,
-        pendientes: 0,
-        conReunion: 0,
-        conRetroalimentacion: 0,
-        cerradasFirma: 0,
-        firmadas: 0,
-      },
-    );
-
-    return totales;
-  }, [asignaciones]);
-
-  // Filtros Listas
+  // Items para Filtros
   const years = useMemo(() => {
-    const setYears = new Set<string>();
+    const ySet = new Set<string>();
 
     asignaciones.forEach((a) => {
-      const m = String(a?.fecha_evaluacion ?? "").match(/(\d{4})/);
+      const y = a.fecha_evaluacion?.split("-")[0];
 
-      if (m) setYears.add(m[1]);
+      if (y) ySet.add(y);
     });
 
-    return Array.from(setYears).sort((a, b) => Number(b) - Number(a));
+    return Array.from(ySet).sort().reverse();
   }, [asignaciones]);
-
-  const yearItems = useMemo(
-    () => [
-      { key: "all", label: "Todos los años" },
-      ...years.map((y) => ({ key: y, label: y })),
-    ],
-    [years],
-  );
 
   const tipoItems = useMemo(() => {
-    const map = new Map<string, string>();
+    const tMap = new Map();
 
     asignaciones.forEach((a) => {
-      const id = a?.tipo_evaluacion?.id;
-      const name = a?.tipo_evaluacion?.n_tipo_evaluacion ?? "Evaluación";
-
-      if (id !== undefined && id !== null) map.set(String(id), name);
+      if (a.tipo_evaluacion?.id)
+        tMap.set(
+          String(a.tipo_evaluacion.id),
+          a.tipo_evaluacion.n_tipo_evaluacion,
+        );
     });
-    const arr = Array.from(map.entries())
-      .map(([key, label]) => ({ key, label }))
-      .sort((x, y) => x.label.localeCompare(y.label));
 
-    return [{ key: "all", label: "Todos los tipos" }, ...arr];
+    return [
+      { key: "all", label: "Todos los tipos" },
+      ...Array.from(tMap.entries()).map(([k, v]) => ({ key: k, label: v })),
+    ];
   }, [asignaciones]);
 
-  // Filtrado de Datos
-  const asignacionesFiltradas = useMemo(() => {
-    let arr = asignaciones;
-
-    if (yearFilter !== "all")
-      arr = arr.filter((i) =>
-        String(i.fecha_evaluacion ?? "").includes(yearFilter),
-      );
-    if (tipoFilter !== "all")
-      arr = arr.filter(
-        (i) => String(i?.tipo_evaluacion?.id ?? "") === tipoFilter,
-      );
-    if (estadoFilter !== "all") {
-      arr = arr.filter((i) => {
-        switch (estadoFilter) {
-          case "firmada":
-            return (i.total_firmadas ?? 0) > 0;
-          case "reunion":
-            return (i.total_cerradas_firma ?? 0) > 0;
-          case "retroalimentacion":
-            return (
-              (i.total_con_retroalimentacion ?? 0) +
-                (i.total_completadas ?? 0) >
-              0
-            );
-          case "pendiente":
-            return (i.total_pendientes ?? 0) + (i.total_con_reunion ?? 0) > 0;
-          default:
-            return true;
-        }
-      });
-    }
-
-    return [...arr].sort((a, b) =>
-      String(b?.fecha_evaluacion ?? "").localeCompare(
-        String(a?.fecha_evaluacion ?? ""),
-      ),
+  // KPIs Globales (Siempre visibles, calculados ANTES de filtrar para mostrar el universo completo en el timeline)
+  const estadisticasGlobales = useMemo(() => {
+    return asignaciones.reduce(
+      (acc, item) => ({
+        pendientes: acc.pendientes + (item.total_pendientes || 0),
+        enProceso: acc.enProceso + (item.total_en_proceso || 0),
+        cerradasFirma: acc.cerradasFirma + (item.total_cerradas_firma || 0),
+        firmadas: acc.firmadas + (item.total_firmadas || 0),
+      }),
+      { pendientes: 0, enProceso: 0, cerradasFirma: 0, firmadas: 0 },
     );
+  }, [asignaciones]);
+
+  // Lógica de Filtrado Principal
+  const asignacionesFiltradas = useMemo(() => {
+    return asignaciones
+      .filter((item) => {
+        // 1. Filtro Año
+        if (
+          yearFilter !== "all" &&
+          !item.fecha_evaluacion.startsWith(yearFilter)
+        )
+          return false;
+
+        // 2. Filtro Tipo
+        if (
+          tipoFilter !== "all" &&
+          String(item.tipo_evaluacion?.id) !== tipoFilter
+        )
+          return false;
+
+        // 3. Filtro Estado (Interactivo desde el Timeline)
+        if (estadoFilter !== "all") {
+          switch (estadoFilter) {
+            case "pendiente":
+              return (item.total_pendientes || 0) > 0;
+            case "proceso":
+              return (item.total_en_proceso || 0) > 0;
+            case "firma":
+              return (item.total_cerradas_firma || 0) > 0;
+            case "finalizada":
+              return (item.total_firmadas || 0) > 0;
+          }
+        }
+
+        return true;
+      })
+      .sort((a, b) => b.fecha_evaluacion.localeCompare(a.fecha_evaluacion));
   }, [asignaciones, yearFilter, tipoFilter, estadoFilter]);
 
-  // Carga de Datos
+  // Carga de Datos (Lógica corregida de la respuesta anterior)
   useEffect(() => {
     (async () => {
       setLoading(true);
@@ -288,90 +329,93 @@ export default function EvaluacionInicioPage() {
           axios.get("/evaluacion/api/mostrar-asignacion"),
           axios.get("/evaluacion/api/evaluaciones-jefe"),
         ]);
-
         const cards = cardsRes.data || [];
         const evals = evalsRes.data || [];
+        const grupos: Record<string, any> = {};
 
-        const stats: Record<string, any> = {};
-        const ensureBucket = (key: string) => {
-          if (!stats[key])
-            stats[key] = {
-              total: 0,
-              completadas: 0,
+        cards.forEach((c: any) => {
+          const key = `${c?.tipo_evaluacion?.id}|${normalizePeriodo(c?.fecha_evaluacion)}`;
+
+          grupos[key] = {
+            ...c,
+            stats: {
+              totalReal: 0,
               pendientes: 0,
-              conReunion: 0,
-              conRetroalimentacion: 0,
+              enProceso: 0,
               cerradasFirma: 0,
               firmadas: 0,
-            };
-        };
-
-        for (const e of evals) {
-          const keyId = `${e?.tipo_evaluacion?.id}|${normalizePeriodo(e?.fecha_evaluacion)}`;
-          const keyName = `${(e?.tipo_evaluacion?.n_tipo_evaluacion ?? "").toLowerCase()}|${normalizePeriodo(e?.fecha_evaluacion)}`;
-
-          ensureBucket(keyId);
-          ensureBucket(keyName);
-
-          stats[keyId].total += 1;
-          stats[keyName].total += 1;
-
-          const firmada = !!(
-            e?.firmado ||
-            e?.firmado_obs ||
-            e?.estado_firma === "firmado" ||
-            e?.estado_firma === "firmado_obs"
-          );
-          const cerradaParaFirma = !!e?.cerrado_para_firma;
-          const retro = !!(
-            e?.retroalimentacion || e?.retroalimentacion_completada
-          );
-          const reunion = !!(e?.reunion_realizada || e?.reunion);
-          const completada = !!e?.completado;
-
-          if (firmada) {
-            stats[keyId].firmadas += 1;
-            stats[keyName].firmadas += 1;
-          } else if (cerradaParaFirma) {
-            stats[keyId].cerradasFirma += 1;
-            stats[keyName].cerradasFirma += 1;
-          } else if (retro) {
-            stats[keyId].conRetroalimentacion += 1;
-            stats[keyName].conRetroalimentacion += 1;
-          } else if (reunion) {
-            stats[keyId].conReunion += 1;
-            stats[keyName].conReunion += 1;
-          } else if (completada) {
-            stats[keyId].completadas += 1;
-            stats[keyName].completadas += 1;
-          } else {
-            stats[keyId].pendientes += 1;
-            stats[keyName].pendientes += 1;
-          }
-        }
-
-        const enriched = cards.map((c: any) => {
-          const keyId = `${c?.tipo_evaluacion?.id}|${normalizePeriodo(c?.fecha_evaluacion)}`;
-          const keyName = `${(c?.tipo_evaluacion?.n_tipo_evaluacion ?? "").toLowerCase()}|${normalizePeriodo(c?.fecha_evaluacion)}`;
-          const s = stats[keyId] ?? stats[keyName];
-
-          return {
-            ...c,
-            total_asignadas: s?.total ?? c.personas?.length ?? 0,
-            total_completadas: s?.completadas ?? 0,
-            total_pendientes: s?.pendientes ?? c.personas?.length ?? 0,
-            total_con_reunion: s?.conReunion ?? 0,
-            total_con_retroalimentacion: s?.conRetroalimentacion ?? 0,
-            total_cerradas_firma: s?.cerradasFirma ?? 0,
-            total_firmadas: s?.firmadas ?? 0,
+              acumuladoPuntos: 0,
+            },
           };
         });
 
-        setAsignaciones(enriched);
+        evals.forEach((e: any) => {
+          const keyId = `${e?.tipo_evaluacion?.id}|${normalizePeriodo(e?.fecha_evaluacion)}`;
+          let grupo = grupos[keyId];
+
+          if (!grupo) {
+            const matchKey = Object.keys(grupos).find((k) =>
+              k.includes(normalizePeriodo(e?.fecha_evaluacion)),
+            );
+
+            if (matchKey) grupo = grupos[matchKey];
+          }
+
+          if (grupo) {
+            let puntos = 0;
+            const firmada = !!(
+              e?.firmado || e?.estado_firma?.includes("firmado")
+            );
+            const cerradaFirma = !!e?.cerrado_para_firma;
+            const enGestion = !!(
+              e?.retroalimentacion ||
+              e?.reunion_realizada ||
+              e?.completado
+            );
+
+            grupo.stats.totalReal += 1;
+
+            if (firmada) {
+              grupo.stats.firmadas++;
+              puntos = 4;
+            } else if (cerradaFirma) {
+              grupo.stats.cerradasFirma++;
+              puntos = 3;
+            } else if (enGestion) {
+              grupo.stats.enProceso++;
+              puntos = 2;
+            } else {
+              grupo.stats.pendientes++;
+              puntos = 0;
+            }
+            grupo.stats.acumuladoPuntos += puntos;
+          }
+        });
+
+        const processed = Object.values(grupos).map((g: any) => {
+          const totalDocentes = g.stats.totalReal;
+          const totalPosible = totalDocentes * 4;
+          const porcentaje =
+            totalPosible > 0
+              ? (g.stats.acumuladoPuntos / totalPosible) * 100
+              : 0;
+
+          return {
+            ...g,
+            total_asignadas: totalDocentes,
+            total_pendientes: g.stats.pendientes,
+            total_en_proceso: g.stats.enProceso,
+            total_cerradas_firma: g.stats.cerradasFirma,
+            total_firmadas: g.stats.firmadas,
+            progreso_real: Math.round(porcentaje),
+          };
+        });
+
+        setAsignaciones(processed);
       } catch (err) {
         addToast({
           title: "Error",
-          description: "Error cargando asignaciones",
+          description: "No se pudieron cargar los datos.",
           color: "danger",
         });
       } finally {
@@ -380,210 +424,229 @@ export default function EvaluacionInicioPage() {
     })();
   }, []);
 
-  const openTabla = (item: EvalAsignacion) => {
-    navigate("/evaluacion-jefatura/tabla", {
-      state: {
-        id: item.id,
-        fecha_evaluacion: item.fecha_evaluacion,
-        personas: item.personas,
-        tipo_evaluacion: item.tipo_evaluacion,
-        data: item,
-      },
+  useEffect(() => {
+    setActionButton({
+      label: "Volver menú",
+      to: "/",
+      color: "primary",
+      startContent: <ChevronLeftIcon className="w-4 h-4" />,
     });
+
+    return () => setActionButton(null);
+  }, [setActionButton]);
+
+  const openTabla = (item: EvalAsignacion) => {
+    navigate("/evaluacion-jefatura/tabla", { state: { ...item } });
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto p-6 space-y-8 animate-in fade-in duration-500">
-      {/* 1. Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <div className="w-full max-w-7xl mx-auto p-4 md:p-8 space-y-8 animate-in fade-in duration-500 min-h-screen bg-gray-50/50 dark:bg-black">
+      {/* 1. Header & Actions */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            Panel de Evaluaciones
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
+            Campaña de Evaluación
           </h1>
           <p className="text-gray-500 mt-1">
-            Visión global del proceso y campañas activas.
+            Gestiona y evalua a tu equipo de trabajo tiempo real.
           </p>
         </div>
         <Button
-          className="font-medium shadow-md shadow-blue-500/20"
-          color="primary"
+          className="bg-indigo-700 text-white shadow-lg hover:scale-105 transition-transform"
           startContent={<UsersIcon className="w-5 h-5" />}
           onPress={() =>
             navigate("/evaluacion-jefatura/autoevaluaciones-equipo")
           }
         >
-          Autoevaluaciones de mi equipo
+          Mi Equipo
         </Button>
       </div>
 
-      {/* 2. Process Timeline KPI (La visualización que preferías) */}
+      {/* 2. Timeline Interactivo (Filtro Estado) */}
       {!loading && asignaciones.length > 0 && (
-        <ProcessTimeline stats={estadisticasGlobales} />
+        <ProcessTimelineFilter
+          activeFilter={estadoFilter}
+          stats={estadisticasGlobales}
+          onFilterChange={setEstadoFilter}
+        />
       )}
 
-      {/* 3. Filtros y Contenido */}
-      <Card className="border border-gray-200 dark:border-gray-800 shadow-sm bg-white dark:bg-gray-900 min-h-[500px]">
-        {/* Toolbar */}
-        <CardHeader className="flex flex-col md:flex-row gap-4 justify-between items-center px-6 py-5 border-b border-gray-100 dark:border-gray-800">
-          <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+      {/* 3. Toolbar: Año (Timeline) y Tipo (Select) */}
+      <div className="flex flex-col lg:flex-row justify-between items-center gap-4 bg-white dark:bg-zinc-900 p-3 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm sticky top-4 z-30 backdrop-blur-md bg-white/80 dark:bg-zinc-900/80">
+        {/* Filtro de Años Horizontal */}
+        <div className="flex-1 w-full lg:w-auto overflow-hidden">
+          <YearTimelineSelector
+            selectedYear={yearFilter}
+            years={years}
+            onChange={setYearFilter}
+          />
+        </div>
+
+        {/* Controles Secundarios (Tipo y Vistas) */}
+        <div className="flex items-center gap-3 w-full lg:w-auto justify-end border-l border-gray-200 dark:border-zinc-700 pl-4">
+          {/* Filtro Tipo (Mantenemos select porque pueden ser muchos tipos) */}
+          <div className="relative">
             <Select
-              className="w-40"
-              selectedKeys={[yearFilter]}
-              size="sm"
-              startContent={<FunnelIcon className="w-4 h-4 text-gray-400" />}
-              onSelectionChange={(k) =>
-                setYearFilter(Array.from(k)[0] as string)
-              }
-            >
-              {yearItems.map((item) => (
-                <SelectItem key={item.key}>{item.label}</SelectItem>
-              ))}
-            </Select>
-            <Select
-              className="w-48"
+              aria-label="Tipo"
+              className="w-44"
+              placeholder="Tipo Evaluación"
               selectedKeys={[tipoFilter]}
               size="sm"
-              onSelectionChange={(k) =>
-                setTipoFilter(Array.from(k)[0] as string)
+              startContent={<FunnelIcon className="w-4 h-4 text-gray-400" />}
+              variant="flat"
+              onSelectionChange={(keys) =>
+                setTipoFilter(String(Array.from(keys)[0] || "all"))
               }
             >
               {tipoItems.map((item) => (
-                <SelectItem key={item.key}>{item.label}</SelectItem>
-              ))}
-            </Select>
-            <Select
-              className="w-40"
-              selectedKeys={[estadoFilter]}
-              size="sm"
-              onSelectionChange={(k) =>
-                setEstadoFilter(Array.from(k)[0] as any)
-              }
-            >
-              {[
-                { key: "all", label: "Todos los estados" },
-                { key: "pendiente", label: "Pendiente" },
-                { key: "retroalimentacion", label: "En Gestión" },
-                { key: "firmada", label: "Firmada" },
-              ].map((item) => (
-                <SelectItem key={item.key}>{item.label}</SelectItem>
+                <SelectItem key={item.key} textValue={item.key}>
+                  {item.label}
+                </SelectItem>
               ))}
             </Select>
           </div>
 
-          <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
+          <div className="flex bg-gray-100 dark:bg-zinc-800 p-1 rounded-lg shrink-0">
             <Button
               isIconOnly
-              className={
-                viewMode === "cards" ? "bg-white shadow-sm" : "text-gray-500"
-              }
+              className={viewMode === "cards" ? "bg-white shadow-sm" : ""}
               size="sm"
               variant={viewMode === "cards" ? "solid" : "light"}
               onPress={() => setViewMode("cards")}
             >
-              <Squares2X2Icon className="w-5 h-5" />
+              <Squares2X2Icon className="w-4 h-4" />
             </Button>
             <Button
               isIconOnly
-              className={
-                viewMode === "table" ? "bg-white shadow-sm" : "text-gray-500"
-              }
+              className={viewMode === "table" ? "bg-white shadow-sm" : ""}
               size="sm"
               variant={viewMode === "table" ? "solid" : "light"}
               onPress={() => setViewMode("table")}
             >
-              <TableCellsIcon className="w-5 h-5" />
+              <TableCellsIcon className="w-4 h-4" />
             </Button>
           </div>
-        </CardHeader>
+        </div>
+      </div>
 
-        <CardBody className="p-6 bg-gray-50/50 dark:bg-transparent">
-          {/* Loading */}
-          {loading && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-              {[1, 2, 3].map((i) => (
-                <Card
-                  key={i}
-                  className="h-64 border-none bg-gray-200 animate-pulse"
-                >
-                  <CardBody />
-                </Card>
-              ))}
+      {/* 4. Grid de Resultados */}
+      <div className="min-h-[400px]">
+        {/* State: Cargando */}
+        {loading && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="h-72 bg-gray-200 dark:bg-zinc-800 rounded-3xl animate-pulse"
+              />
+            ))}
+          </div>
+        )}
+
+        {/* State: Vacío */}
+        {!loading && asignacionesFiltradas.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-20 text-center animate-in zoom-in duration-300">
+            <div className="bg-gray-100 dark:bg-zinc-800 p-6 rounded-full mb-4">
+              <MagnifyingGlassIcon className="w-10 h-10 text-gray-400" />
             </div>
-          )}
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Sin resultados
+            </h3>
+            <p className="text-gray-500 max-w-xs mx-auto mb-6">
+              No hay evaluaciones que coincidan con los filtros seleccionados.
+            </p>
+            <Button
+              color="primary"
+              startContent={<XMarkIcon className="w-4 h-4" />}
+              variant="flat"
+              onPress={() => {
+                setYearFilter("all");
+                setEstadoFilter("all");
+                setTipoFilter("all");
+              }}
+            >
+              Limpiar Filtros
+            </Button>
+          </div>
+        )}
 
-          {/* Empty */}
-          {!loading && asignacionesFiltradas.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-24 text-gray-400">
-              <ClipboardDocumentListIcon className="w-16 h-16 mb-4 opacity-20" />
-              <p className="text-lg font-medium">No se encontraron campañas</p>
-            </div>
-          )}
-
-          {/* Grid */}
-          {!loading &&
-            asignacionesFiltradas.length > 0 &&
-            (viewMode === "cards" ? (
-              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+        {/* State: Datos */}
+        {!loading && asignacionesFiltradas.length > 0 && (
+          <AnimatePresence mode="popLayout">
+            {viewMode === "cards" ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {asignacionesFiltradas.map((item) => (
-                  <CampanaCard
+                  <motion.div
                     key={item.id}
-                    fechaFormateada={fechaFormateada}
-                    item={item}
-                    onClick={() => openTabla(item)}
-                  />
+                    layout
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <CampanaCard
+                      fechaFormateada={fechaFormateada}
+                      item={item}
+                      onClick={() => openTabla(item)}
+                    />
+                  </motion.div>
                 ))}
               </div>
             ) : (
-              <TablaCampanas
-                items={asignacionesFiltradas}
-                onClick={openTabla}
-              />
-            ))}
-        </CardBody>
-      </Card>
+              <motion.div animate={{ opacity: 1 }} initial={{ opacity: 0 }}>
+                <TablaCampanas
+                  items={asignacionesFiltradas}
+                  onClick={openTabla}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        )}
+      </div>
     </div>
   );
 }
 
-// --- Componentes Auxiliares (Cards y Tablas) ---
-
+// --- CARD CON LÓGICA DE PROGRESO Y COLORES ---
 const CampanaCard = ({ item, fechaFormateada, onClick }: any) => {
-  const total = item.total_asignadas ?? 0;
-  const firmadas = item.total_firmadas ?? 0;
-  const progreso = total > 0 ? (firmadas / total) * 100 : 0;
+  const progreso = item.progreso_real || 0;
 
-  // Simplificamos métricas internas para que no compitan con el KPI principal
-  const pendientes =
-    (item.total_pendientes ?? 0) + (item.total_con_reunion ?? 0);
-  const gestion =
-    (item.total_con_retroalimentacion ?? 0) +
-    (item.total_completadas ?? 0) +
-    (item.total_cerradas_firma ?? 0);
+  // Agrupamos gestión para visualización compacta
+  const gestionTotal =
+    (item.total_en_proceso || 0) + (item.total_cerradas_firma || 0);
+
+  const getProgressColor = (p: number) => {
+    if (p >= 100) return "success";
+    if (p >= 50) return "primary";
+    if (p > 0) return "warning";
+
+    return "default";
+  };
 
   return (
     <Card
       isPressable
-      className="border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md hover:border-blue-300 transition-all bg-white dark:bg-gray-900 h-full"
+      className="group bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 rounded-3xl h-full w-full"
       onPress={onClick}
     >
-      <CardBody className="p-0">
-        <div className="p-5 border-b border-gray-100 dark:border-gray-800">
-          <div className="flex justify-between items-start mb-2">
-            <div className="p-2 bg-blue-600 rounded-lg text-white shadow-md shadow-blue-200 dark:shadow-none">
+      <CardBody className="p-0 flex flex-col h-full">
+        <div className="p-6">
+          <div className="flex justify-between items-start mb-4">
+            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-2xl text-blue-600 dark:text-blue-400">
               <ClipboardDocumentListIcon className="w-6 h-6" />
             </div>
             <Chip
-              color={progreso === 100 ? "success" : "primary"}
-              size="sm"
+              className="bg-gray-100 dark:bg-zinc-800 text-gray-600 font-semibold text-xs"
               variant="flat"
             >
-              {progreso === 100 ? "Completada" : "En Curso"}
+              {item.total_asignadas} Docentes
             </Chip>
           </div>
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white line-clamp-1">
-            {item.tipo_evaluacion?.n_tipo_evaluacion ?? "Evaluación General"}
+
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1 line-clamp-1">
+            {item.tipo_evaluacion?.n_tipo_evaluacion ?? "Evaluación"}
           </h3>
-          <div className="flex items-center gap-2 mt-1 text-gray-500 text-sm">
+          <div className="flex items-center gap-2 text-sm text-gray-500">
             <CalendarDaysIcon className="w-4 h-4" />
             <span className="capitalize">
               {fechaFormateada(item.fecha_evaluacion)}
@@ -591,33 +654,59 @@ const CampanaCard = ({ item, fechaFormateada, onClick }: any) => {
           </div>
         </div>
 
-        {/* Mini Stats Internos */}
-        <div className="grid grid-cols-3 divide-x divide-gray-100 dark:divide-gray-800 py-3">
-          <div className="text-center">
-            <p className="text-lg font-bold text-amber-600">{pendientes}</p>
-            <p className="text-[10px] uppercase text-gray-400">Pend</p>
+        {/* Separador */}
+        <div className="h-px w-full bg-gray-50 dark:bg-zinc-800" />
+
+        {/* Grilla Stats */}
+        <div className="grid grid-cols-3 divide-x divide-gray-50 dark:divide-zinc-800">
+          <div className="p-3 text-center">
+            <span className="text-amber-500 font-bold text-lg block">
+              {item.total_pendientes}
+            </span>
+            <span className="text-[10px] text-gray-400 uppercase font-bold">
+              Pendientes
+            </span>
           </div>
-          <div className="text-center">
-            <p className="text-lg font-bold text-blue-600">{gestion}</p>
-            <p className="text-[10px] uppercase text-gray-400">Gestión</p>
+          <div className="p-3 text-center">
+            <span className="text-blue-500 font-bold text-lg block">
+              {gestionTotal}
+            </span>
+            <span className="text-[10px] text-gray-400 uppercase font-bold">
+              Gestión
+            </span>
           </div>
-          <div className="text-center">
-            <p className="text-lg font-bold text-emerald-600">{firmadas}</p>
-            <p className="text-[10px] uppercase text-gray-400">Fin</p>
+          <div className="p-3 text-center">
+            <span className="text-emerald-500 font-bold text-lg block">
+              {item.total_firmadas}
+            </span>
+            <span className="text-[10px] text-gray-400 uppercase font-bold">
+              Fin
+            </span>
           </div>
         </div>
 
-        <div className="px-5 pb-5 pt-2">
+        {/* Footer Progreso */}
+        <div className="p-6 pt-4 mt-auto bg-gray-50/30 dark:bg-zinc-800/20">
+          <div className="flex justify-between items-end mb-2">
+            <span className="text-xs font-bold text-gray-400 uppercase">
+              Avance
+            </span>
+            <span
+              className={`text-sm font-bold ${progreso === 100 ? "text-emerald-600" : "text-gray-900 dark:text-white"}`}
+            >
+              {progreso}%
+            </span>
+          </div>
           <Progress
-            classNames={{ indicator: "rounded-full" }}
-            color={progreso === 100 ? "success" : "primary"}
+            className="h-2"
+            classNames={{ track: "bg-gray-200 dark:bg-zinc-700" }}
+            color={getProgressColor(progreso)}
             size="sm"
             value={progreso}
           />
-          <div className="flex justify-between text-xs mt-2 text-gray-400">
-            <span>Progreso: {Math.round(progreso)}%</span>
-            <span className="flex items-center gap-1 text-blue-600 font-medium group-hover:underline">
-              Ver detalles <ArrowRightIcon className="w-3 h-3" />
+          <div className="mt-4 text-right">
+            <span className="text-sm font-medium text-blue-600 group-hover:underline flex items-center justify-end gap-1">
+              Gestionar <ArrowRightIcon className="w-3 h-3" />
             </span>
           </div>
         </div>
@@ -626,50 +715,64 @@ const CampanaCard = ({ item, fechaFormateada, onClick }: any) => {
   );
 };
 
+// --- Tabla Simple (Sin cambios mayores) ---
 const TablaCampanas = ({ items, onClick }: any) => (
-  <Table
-    aria-label="Tabla campañas"
-    classNames={{ wrapper: "p-0" }}
-    shadow="none"
-  >
-    <TableHeader>
-      <TableColumn>NOMBRE</TableColumn>
-      <TableColumn>PERIODO</TableColumn>
-      <TableColumn>TOTAL</TableColumn>
-      <TableColumn>PENDIENTES</TableColumn>
-      <TableColumn>FINALIZADAS</TableColumn>
-      <TableColumn align="end">ACCIÓN</TableColumn>
-    </TableHeader>
-    <TableBody>
-      {items.map((item: any) => (
-        <TableRow key={item.id}>
-          <TableCell className="font-medium text-gray-900">
-            {item.tipo_evaluacion?.n_tipo_evaluacion ?? "Evaluación"}
-          </TableCell>
-          <TableCell>{item.fecha_evaluacion}</TableCell>
-          <TableCell>{item.total_asignadas}</TableCell>
-          <TableCell>
-            <span className="text-amber-600 font-medium">
-              {(item.total_pendientes ?? 0) + (item.total_con_reunion ?? 0)}
-            </span>
-          </TableCell>
-          <TableCell>
-            <span className="text-emerald-600 font-medium">
-              {item.total_firmadas}
-            </span>
-          </TableCell>
-          <TableCell>
-            <Button
-              color="primary"
-              size="sm"
-              variant="solid"
-              onPress={() => onClick(item)}
-            >
-              Gestionar
-            </Button>
-          </TableCell>
-        </TableRow>
-      ))}
-    </TableBody>
-  </Table>
+  <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-sm border border-gray-200 dark:border-zinc-800 overflow-hidden">
+    <Table removeWrapper aria-label="Tabla">
+      <TableHeader>
+        <TableColumn>NOMBRE</TableColumn>
+        <TableColumn>FECHA</TableColumn>
+        <TableColumn align="center">DOCENTES</TableColumn>
+        <TableColumn>ESTADO</TableColumn>
+        <TableColumn>AVANCE</TableColumn>
+        <TableColumn>ACCIÓN</TableColumn>
+      </TableHeader>
+      <TableBody>
+        {items.map((item: any) => (
+          <TableRow
+            key={item.id}
+            className="hover:bg-gray-50 dark:hover:bg-zinc-800/50 cursor-pointer"
+            onClick={() => onClick(item)}
+          >
+            <TableCell className="font-bold">
+              {item.tipo_evaluacion?.n_tipo_evaluacion}
+            </TableCell>
+            <TableCell>{item.fecha_evaluacion}</TableCell>
+            <TableCell>
+              <Chip size="sm" variant="flat">
+                {item.total_asignadas}
+              </Chip>
+            </TableCell>
+            <TableCell>
+              {item.progreso_real === 100 ? (
+                <Chip color="success" size="sm" variant="dot">
+                  Finalizado
+                </Chip>
+              ) : (
+                <Chip color="primary" size="sm" variant="dot">
+                  En Curso
+                </Chip>
+              )}
+            </TableCell>
+            <TableCell>
+              <div className="flex items-center gap-2">
+                <Progress
+                  className="w-20"
+                  color="primary"
+                  size="sm"
+                  value={item.progreso_real}
+                />
+                <span className="text-xs font-bold">{item.progreso_real}%</span>
+              </div>
+            </TableCell>
+            <TableCell>
+              <Button size="sm" variant="light">
+                Ver
+              </Button>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  </div>
 );

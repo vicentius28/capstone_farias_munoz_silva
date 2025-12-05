@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useOutletContext } from "react-router-dom";
 import { Spinner } from "@heroui/spinner";
 import { addToast } from "@heroui/toast";
 import {
@@ -9,6 +9,7 @@ import {
   FileText,
   History,
   LayoutDashboard,
+  ChevronLeftIcon,
 } from "lucide-react";
 
 import axios from "@/services/google/axiosInstance";
@@ -25,6 +26,8 @@ import { AccionesEvaluacionFlow } from "@/features/evaluacion/components/flow/Ac
 import { TimelineEvaluacion } from "@/features/evaluacion/components/flow/TimelineEvaluacion";
 
 import type { EvaluacionJefe } from "@/features/evaluacion/types/evaluacion";
+
+import { DefaultLayoutContext } from "@/shared";
 
 // --- 1. Componente de Loading (Clean Slate) ---
 const LoadingScreen = () => (
@@ -177,6 +180,19 @@ export default function EvaluacionPage() {
   const [tipo, setTipo] = useState<string>("");
   const [evaluacionActual, setEvaluacionActual] =
     useState<EvaluacionJefe | null>(null);
+
+  const { setActionButton } = useOutletContext<DefaultLayoutContext>();
+
+  useEffect(() => {
+    setActionButton({
+      label: "Volver",
+      to: "/evaluacion-jefatura/tabla",
+      color: "primary",
+      startContent: <ChevronLeftIcon className="w-4 h-4" />,
+    });
+
+    return () => setActionButton(null);
+  }, [setActionButton]);
 
   const navigate = useNavigate();
   const { state } = useLocation();

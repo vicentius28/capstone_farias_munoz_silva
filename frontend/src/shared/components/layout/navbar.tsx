@@ -23,6 +23,8 @@ import {
 } from "@heroui/modal";
 import { Avatar } from "@heroui/avatar";
 import { Button } from "@heroui/button";
+// Importamos componente de teclado para el estilo visual
+// Opcional para el buscador
 import {
   Settings,
   User as UserIcon,
@@ -30,15 +32,15 @@ import {
   LogOut,
   Menu,
 } from "lucide-react";
+// Para el punto de notificación
 
 // Imports de tu proyecto
 import { useAuthentication } from "@/services/google/auth";
-import { Logo } from "@/shared/components/Icons/icons";
 import { ThemeSwitch } from "@/shared/components/ui/theme-switch";
 import { buildFileUrl } from "@/utils/urlUtils";
 import { useUser } from "@/hooks/useUser";
 import { usePermissions } from "@/hooks/usePermissions";
-import { SidebarDrawer } from "@/shared/components/layout/Sidebar"; // Tu sidebar móvil existente
+import { SidebarDrawer } from "@/shared/components/layout/Sidebar";
 
 export const Navbar: React.FC = () => {
   const navigate = useNavigate();
@@ -47,20 +49,17 @@ export const Navbar: React.FC = () => {
   const { is_staff } = usePermissions();
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
-  // Estado para el Sidebar Móvil
   const [isSidebarOpen, setSidebarOpen] = useState(false);
-
-  // Estado para Scroll
   const [showNavbar, setShowNavbar] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
 
-  // Lógica de Scroll (Optimizada)
+  // Lógica de Scroll (Suavizada)
   useEffect(() => {
     const handleScroll = () => {
       const currentY = window.scrollY;
 
-      // Umbral de 80px para evitar saltos pequeños
-      if (currentY > lastScrollY && currentY > 80) {
+      if (currentY > lastScrollY && currentY > 60) {
+        // Umbral reducido
         setShowNavbar(false);
       } else {
         setShowNavbar(true);
@@ -82,78 +81,80 @@ export const Navbar: React.FC = () => {
     navigate("/perfil", { state: { userId: user?.id } });
   };
 
-  // Nombre y rol visibles
   const displayName =
     `${user?.first_name ?? ""} ${user?.last_name ?? ""}`.trim() ||
     user?.username;
+  const displayEmail = user?.email || "";
 
   return (
     <>
       <HeroUINavbar
-        className={`transition-transform duration-300 ease-in-out border-b border-default-200/50 bg-background/80 backdrop-blur-md ${
-          showNavbar ? "translate-y-0" : "-translate-y-full"
+        // CAMBIO: Fondo más transparente (backdrop-blur-lg) y borde sutil
+        className={`transition-all duration-500 ease-in-out border-b border-gray-200/50 dark:border-white/5 bg-white/70 dark:bg-[#0c0c0e]/70 backdrop-blur-xl ${
+          showNavbar
+            ? "translate-y-0 opacity-100"
+            : "-translate-y-full opacity-0"
         }`}
         classNames={{
-          wrapper: "px-4 sm:px-6 h-16",
+          wrapper: "px-4 sm:px-6 h-16 md:h-20 max-w-7xl mx-auto", // Centrado con el resto del dashboard
         }}
+        isBordered={false} // Quitamos borde default para usar el nuestro custom
         maxWidth="full"
         position="sticky"
       >
-        {/* 1. Izquierda: Menú Móvil + Logo */}
         <NavbarContent className="basis-1/5 sm:basis-full" justify="start">
-          {/* Botón Hamburguesa (Solo Móvil) */}
-          <div className="md:hidden mr-2">
+          <div className="md:hidden mr-1">
             <Button
               isIconOnly
+              radius="full"
               variant="light"
               onPress={() => setSidebarOpen(true)}
             >
-              <Menu className="w-6 h-6 text-default-500" />
+              <Menu className="w-6 h-6 text-gray-500" />
             </Button>
           </div>
 
           <NavbarBrand
-            className="gap-3 max-w-fit cursor-pointer"
+            className="gap-3 max-w-fit cursor-pointer group"
             onClick={() => navigate("/")}
           >
-            <div className="bg-blue-600 p-1.5 rounded-lg shadow-sm">
-              <Logo className="text-white" size={20} />
+            {/* Logo con el nuevo gradiente Naranja/Rosa */}
+            <div className="bg-gradient-to-br  p-2 rounded-xl shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-transform duration-300">
+              <img alt="Evalink" className="w-10 h-10" src="/CED.ico" />
             </div>
+
             <div className="hidden sm:flex flex-col">
-              <p className="font-bold text-inherit leading-none text-lg">
+              <p className="font-bold text-lg leading-none tracking-tight text-gray-800 dark:text-white group-hover:text-orange-600 transition-colors">
                 Evalink
               </p>
-              <p className="text-[10px] text-default-400 font-medium uppercase tracking-wide">
+              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">
                 Gestión {new Date().getFullYear()}
               </p>
             </div>
           </NavbarBrand>
         </NavbarContent>
 
-        {/* 2. Centro: Navegación Desktop (Opcional, si no usas Sidebar en Desktop) */}
-        {/* Si usas Sidebar lateral en desktop, esta sección puede quedar vacía o usarse para un buscador global */}
-        <NavbarContent
-          className="hidden md:flex basis-1/5 sm:basis-full"
-          justify="center"
-        >
-          {/* Ejemplo: Buscador Global podría ir aquí */}
-        </NavbarContent>
-
-        {/* 3. Derecha: Acciones y Perfil */}
-        <NavbarContent className="gap-2" justify="end">
-          {/* Switch de Tema */}
+        {/* 3. DERECHA: Acciones */}
+        <NavbarContent className="gap-4" justify="end">
           <NavbarItem>
             <ThemeSwitch />
           </NavbarItem>
 
-          {/* Dropdown de Usuario */}
-          <Dropdown showArrow placement="bottom-end">
+          {/* Dropdown Usuario Refinado */}
+          <Dropdown
+            showArrow
+            classNames={{
+              content:
+                "border border-gray-100 dark:border-white/10 shadow-xl rounded-2xl",
+            }}
+            placement="bottom-end"
+          >
             <DropdownTrigger>
               <Avatar
                 isBordered
                 as="button"
-                className="transition-transform w-8 h-8 sm:w-9 sm:h-9"
-                color="primary"
+                className="transition-transform w-9 h-9 sm:w-10 sm:h-10 ring-2 ring-offset-2 ring-orange-100 dark:ring-orange-900/20"
+                color="default" // Usamos el borde custom via ring class
                 name={displayName}
                 size="sm"
                 src={
@@ -165,60 +166,65 @@ export const Navbar: React.FC = () => {
             </DropdownTrigger>
             <DropdownMenu
               aria-label="Profile Actions"
-              className="w-60"
+              className="w-64"
               variant="flat"
             >
               <DropdownSection showDivider>
                 <DropdownItem
                   key="profile"
-                  className="h-14 gap-2"
+                  className="h-16 gap-2"
                   textValue="Perfil"
                 >
-                  <p className="font-semibold">Conectado como</p>
-                  <p className="font-semibold text-primary truncate">
-                    {user?.email}
+                  <p className="font-semibold text-xs text-gray-500 uppercase tracking-wider mb-1">
+                    Conectado como
+                  </p>
+                  <p className="font-bold text-gray-900 dark:text-white text-base truncate">
+                    {displayName}
+                  </p>
+                  <p className="text-xs text-indigo-400 truncate">
+                    {displayEmail}
                   </p>
                 </DropdownItem>
               </DropdownSection>
 
-              <DropdownSection showDivider>
+              <DropdownSection showDivider title="Cuenta">
                 <DropdownItem
                   key="settings"
-                  textValue="Mi Perfil"
+                  startContent={<UserIcon className="w-4 h-4 text-gray-500" />}
                   onPress={handleProfileClick}
                 >
-                  <div className="flex items-center gap-2">
-                    <UserIcon className="w-4 h-4" />
-                    <span>Mi Perfil</span>
-                  </div>
+                  Mi Perfil
                 </DropdownItem>
+                {/* Puedes agregar más items aquí como "Mis Evaluaciones" */}
               </DropdownSection>
 
               {is_staff ? (
-                <DropdownSection showDivider>
+                <DropdownSection showDivider title="Gestión">
                   <DropdownItem
                     key="admin"
-                    textValue="Administración"
+                    startContent={
+                      <Settings className="w-4 h-4 text-orange-500" />
+                    }
                     onPress={() =>
                       (window.location.href = `${import.meta.env.VITE_API_URL}/admin/`)
                     }
                   >
-                    <div className="flex items-center gap-2">
-                      <Settings className="w-4 h-4" />
-                      <span>Administración</span>
-                    </div>
+                    Panel Admin
                   </DropdownItem>
                   <DropdownItem
                     key="analytics"
-                    textValue="Analítica"
+                    startContent={
+                      <BarChart3 className="w-4 h-4 text-indigo-500" />
+                    }
                     onPress={() =>
-                      window.open("https://meta.gsr.cat", "_blank", "noopener")
+                      window.open(
+                        "https://meta.eva-link.com",
+                        "_blank",
+                        "noopener",
+                      )
                     }
                   >
-                    <div className="flex items-center gap-2">
-                      <BarChart3 className="w-4 h-4" />
-                      <span>Metabase</span>
-                    </div>
+                    Analítica (Metabase)
                   </DropdownItem>
                 </DropdownSection>
               ) : null}
@@ -226,51 +232,63 @@ export const Navbar: React.FC = () => {
               <DropdownSection>
                 <DropdownItem
                   key="logout"
-                  className="text-danger"
+                  className="text-danger group"
                   color="danger"
-                  textValue="Cerrar Sesión"
+                  startContent={
+                    <LogOut className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  }
                   onPress={onOpen}
                 >
-                  <div className="flex items-center gap-2">
-                    <LogOut className="w-4 h-4" />
-                    <span>Cerrar Sesión</span>
-                  </div>
+                  Cerrar Sesión
                 </DropdownItem>
               </DropdownSection>
             </DropdownMenu>
           </Dropdown>
         </NavbarContent>
 
-        {/* Modal de Confirmación Logout */}
+        {/* Modal de Logout (Estilizado) */}
         <Modal
           backdrop="blur"
+          classNames={{
+            base: "bg-white dark:bg-[#151518] border border-gray-100 dark:border-white/10 shadow-2xl rounded-3xl",
+          }}
           isOpen={isOpen}
-          size="sm"
           onOpenChange={onOpenChange}
         >
           <ModalContent>
             {(onClose) => (
               <>
-                <ModalHeader className="flex flex-col gap-1">
-                  Cerrar Sesión
+                <ModalHeader className="flex flex-col gap-1 items-center pt-8">
+                  <div className="w-12 h-12 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center mb-2">
+                    <LogOut className="w-6 h-6 text-red-500" />
+                  </div>
+                  <h3 className="text-xl font-bold">Cerrar Sesión</h3>
                 </ModalHeader>
-                <ModalBody>
-                  <p className="text-sm text-default-500">
-                    ¿Estás seguro de que deseas salir de la plataforma?
+                <ModalBody className="text-center pb-6">
+                  <p className="text-gray-500">
+                    ¿Estás seguro de que deseas salir? <br />
+                    Tendrás que ingresar tus credenciales nuevamente.
                   </p>
                 </ModalBody>
-                <ModalFooter>
-                  <Button variant="light" onPress={onClose}>
+                <ModalFooter className="justify-center pb-8">
+                  <Button
+                    className="font-medium"
+                    radius="full"
+                    variant="flat"
+                    onPress={onClose}
+                  >
                     Cancelar
                   </Button>
                   <Button
+                    className="shadow-lg shadow-red-500/20 font-bold"
                     color="danger"
+                    radius="full"
                     onPress={() => {
                       onClose();
                       handleLogout();
                     }}
                   >
-                    Salir
+                    Sí, cerrar sesión
                   </Button>
                 </ModalFooter>
               </>
@@ -279,7 +297,6 @@ export const Navbar: React.FC = () => {
         </Modal>
       </HeroUINavbar>
 
-      {/* Sidebar Drawer para Móvil (Se mantiene tu componente existente) */}
       <SidebarDrawer
         isOpen={isSidebarOpen}
         setOpen={() => setSidebarOpen(!isSidebarOpen)}

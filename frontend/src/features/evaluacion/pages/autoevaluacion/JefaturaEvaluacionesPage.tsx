@@ -3,9 +3,10 @@ import type {
   EvaluacionJefe,
   EstadoEvaluacion,
 } from "@/features/evaluacion/types/evaluacion";
+import type { DefaultLayoutContext } from "@/shared/components/layout/default";
 
-import { useCallback, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useCallback, useMemo, useState, useEffect } from "react";
+import { useNavigate, useOutletContext } from "react-router-dom";
 import { Card, CardHeader, CardBody } from "@heroui/card";
 import { Tabs, Tab } from "@heroui/tabs";
 import { Select, SelectItem } from "@heroui/select";
@@ -23,7 +24,7 @@ import { addToast } from "@heroui/toast";
 
 // Iconos
 import {
-  ClipboardDocumentCheckIcon,
+  ChevronLeftIcon,
   CheckCircleIcon,
   ChatBubbleBottomCenterTextIcon,
   PencilSquareIcon,
@@ -31,6 +32,7 @@ import {
   TableCellsIcon,
   FunnelIcon,
   ClockIcon,
+  ClipboardDocumentCheckIcon,
 } from "@heroicons/react/24/outline";
 
 // Componentes internos
@@ -67,6 +69,18 @@ const StatCard = ({ title, value, icon, color, actionLabel }: any) => (
 
 export default function JefaturaEvaluacionesPage() {
   const navigate = useNavigate();
+  const { setActionButton } = useOutletContext<DefaultLayoutContext>();
+
+  useEffect(() => {
+    setActionButton({
+      label: "Volver Menú Evaluación",
+      to: "/autoevaluacion/",
+      color: "primary",
+      startContent: <ChevronLeftIcon className="w-4 h-4" />,
+    });
+
+    return () => setActionButton(null);
+  }, [setActionButton]);
 
   // Estados de UI
   const [tab, setTab] = useState<"en-proceso" | "finalizadas">("en-proceso");

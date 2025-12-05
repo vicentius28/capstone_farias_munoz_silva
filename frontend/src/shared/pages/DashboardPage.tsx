@@ -1,57 +1,97 @@
-import React, { useMemo } from "react";
-// Asegúrate de que estos imports coinciden con tu librería de componentes (HeroUI / NextUI)
+import { useMemo, useState, useEffect } from "react";
 import { Card, CardBody } from "@heroui/card";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 
-// Usamos solo iconos estándar de HeroIcons (Outline) para evitar errores
+// Iconos
 import {
-  BuildingOfficeIcon,
-  ArrowRightIcon,
+  CalendarDaysIcon,
+  SparklesIcon,
   DocumentTextIcon,
-  ShieldCheckIcon,
+  UserIcon,
+  BriefcaseIcon,
+  AcademicCapIcon,
+  UserGroupIcon,
+  CogIcon,
+  LinkIcon,
+  ChevronRightIcon,
 } from "@heroicons/react/24/outline";
 
-// --- Imports de Lógica de Negocio ---
-// Ajusta las rutas (@/...) según la estructura de tu proyecto
+// Tus imports
 import { useSession } from "@/hooks/useSession";
 import { usePermissions } from "@/hooks/usePermissions";
 import { sections } from "@/data/sections";
 
-// --- Tipos ---
-interface DashboardAction {
-  id: string;
-  category: string;
-  title: string;
-  href: string;
-  icon: React.ReactNode;
-  description: string;
-}
+// --- TEMAS VISUALES ---
+const THEMES: Record<string, any> = {
+  rose: {
+    gradient: "from-rose-500 to-pink-600",
+    bgSoft: "bg-rose-50 dark:bg-rose-900/20",
+    text: "text-rose-700 dark:text-rose-200",
+    icon: "text-rose-600 dark:text-rose-400",
+  },
+  blue: {
+    gradient: "from-blue-500 to-indigo-600",
+    bgSoft: "bg-blue-50 dark:bg-blue-900/20",
+    text: "text-blue-700 dark:text-blue-200",
+    icon: "text-blue-600 dark:text-blue-400",
+  },
+  purple: {
+    gradient: "from-violet-500 to-purple-600",
+    bgSoft: "bg-violet-50 dark:bg-violet-900/20",
+    text: "text-violet-700 dark:text-violet-200",
+    icon: "text-violet-600 dark:text-violet-400",
+  },
+  emerald: {
+    gradient: "from-emerald-500 to-teal-600",
+    bgSoft: "bg-emerald-50 dark:bg-emerald-900/20",
+    text: "text-emerald-700 dark:text-emerald-200",
+    icon: "text-emerald-600 dark:text-emerald-400",
+  },
+  slate: {
+    gradient: "from-slate-500 to-gray-600",
+    bgSoft: "bg-slate-50 dark:bg-slate-800",
+    text: "text-slate-700 dark:text-slate-200",
+    icon: "text-slate-600 dark:text-slate-400",
+  },
+};
 
-// --- Estilos de Categoría (Colores Educativos/Profesionales) ---
-const CATEGORY_STYLES: Record<
-  string,
-  { color: string; bg: string; border: string }
-> = {
-  "RECURSOS HUMANOS": {
-    color: "text-fuchsia-600",
-    bg: "bg-fuchsia-50",
-    border: "border-fuchsia-100",
-  },
-  EVALUADOR: {
-    color: "text-violet-600",
-    bg: "bg-violet-50",
-    border: "border-violet-100",
-  },
-  TRABAJADOR: {
-    color: "text-blue-600",
-    bg: "bg-blue-50",
-    border: "border-blue-100",
-  },
-  DEFAULT: {
-    color: "text-slate-600",
-    bg: "bg-slate-50",
-    border: "border-slate-100",
-  },
+const getSectionTheme = (title: string) => {
+  const t = title.toUpperCase();
+
+  if (t.includes("HUMANOS") || t.includes("RRHH")) return THEMES.rose;
+  if (t.includes("EVALUA")) return THEMES.blue;
+  if (t.includes("TRABAJADOR") || t.includes("DOCENTE")) return THEMES.purple;
+  if (t.includes("ADMIN")) return THEMES.slate;
+
+  return THEMES.emerald;
+};
+
+const getSectionIcon = (title: string) => {
+  const t = title.toUpperCase();
+
+  if (t.includes("HUMANOS")) return <UserGroupIcon className="w-5 h-5" />;
+  if (t.includes("EVALUA")) return <AcademicCapIcon className="w-5 h-5" />;
+  if (t.includes("TRABAJADOR")) return <BriefcaseIcon className="w-5 h-5" />;
+  if (t.includes("ADMIN")) return <CogIcon className="w-5 h-5" />;
+
+  return <UserIcon className="w-5 h-5" />;
+};
+
+const getCardDescription = (label: string) => {
+  const l = label
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+
+  if (l.includes("evaluacion"))
+    return "Reflexiona sobre tu práctica pedagógica, reconoce tus logros en el aula y detecta áreas de crecimiento personal.";
+  if (l.includes("evaluar") || l.includes("pendientes"))
+    return "Brinda una mirada constructiva y guía el desarrollo profesional de tu equipo docente hacia la excelencia.";
+  if (l.includes("mixta"))
+    return "Una visión integral 180°: conecta tu autopercepción con la retroalimentación de tu liderazgo educativo.";
+
+  return "Accede a las herramientas de gestión de este módulo.";
 };
 
 export default function DashboardPage() {
@@ -59,265 +99,326 @@ export default function DashboardPage() {
   const { hasAccess } = usePermissions();
   const { user } = useSession();
 
+  const [greeting, setGreeting] = useState("Hola");
+  const [currentDate, setCurrentDate] = useState("");
+
   const displayName =
-    user?.nombres?.split(" ")[0] || user?.username || "Docente";
-  const companyName =
-    user?.empresa?.name || user?.empresa?.nombre || "Institución Educativa";
-  const companyLogoUrl = user?.empresa?.logo || user?.empresa?.logo_url || null;
+    user?.nombres?.split(" ")[0] || user?.username || "Colega";
+  const companyName = user?.empresa?.name || "Mi Institución";
+  const companyLogo = user?.empresa?.logo || user?.empresa?.logo_url || null;
 
-  // --- Lógica de Descripciones Inspiradoras (Contexto Colegio) ---
-  const getInspiringDescription = (title: string, category: string) => {
-    const t = title.toLowerCase();
-    const c = category.toLowerCase();
+  // --- LÓGICA DE DATOS ---
+  const { groupedSections, totalModules } = useMemo(() => {
+    if (!sections) return { groupedSections: [], totalModules: 0 };
 
-    if (t.includes("evaluación de")) {
-      return "Reflexiona sobre tu práctica pedagógica, reconoce tus logros en el aula y detecta áreas de crecimiento personal.";
-    }
-    if (t.includes("evaluar")) {
-      return "Brinda una mirada constructiva y guía el desarrollo profesional de tu equipo docente hacia la excelencia.";
-    }
-    if (t.includes("evaluación mixta")) {
-      return "Una visión integral 180°: conecta tu autopercepción con la retroalimentación de tu liderazgo educativo.";
-    }
-    if (t.includes("plantilla")) {
-      return "Crea plantillas de evaluación para facilitar la asignación y seguimiento de las mismas.";
-    }
-    if (t.includes("asignar")) {
-      return "Asigna las evaluaciones de desempeño a los miembros de la comunidad educativa.";
-    }
-    if (t.includes("usuario")) {
-      return "Gestiona los usuarios, roles y permisos dentro de la plataforma.";
-    }
-
-    // Fallbacks
-    if (c.includes("trabajador"))
-      return "Herramientas para gestionar tu trayectoria y evolución dentro del colegio.";
-    if (c.includes("evaluador"))
-      return "Gestiona las evaluaciones de tu equipo y fomenta el talento educativo.";
-
-    return "Explora las herramientas diseñadas para potenciar la calidad educativa.";
-  };
-
-  // --- Memoización de Acciones (Botones) ---
-  const { groupedActions, totalActions } = useMemo(() => {
-    const groups: Record<string, DashboardAction[]> = {};
     let count = 0;
+    const groups = sections
+      .map((section) => {
+        const validButtons =
+          section.buttons?.filter((btn) => hasAccess(btn.permiso)) || [];
 
-    if (sections && Array.isArray(sections)) {
-      sections.forEach((section) => {
-        if (!section.buttons) return;
-        const validButtons = section.buttons.filter((btn) =>
-          hasAccess(btn.permiso),
-        );
+        if (validButtons.length === 0) return null;
 
-        if (validButtons.length > 0) {
-          const catName = section.title
-            ? section.title.toUpperCase()
-            : "GENERAL";
+        count += validButtons.length;
+        const theme = getSectionTheme(section.title || "General");
 
-          if (!groups[catName]) groups[catName] = [];
+        const buttonsWithTheme = validButtons.map((btn) => ({
+          ...btn,
+          sectionTitle: section.title,
+          theme,
+          description: getCardDescription(btn.label),
+        }));
 
-          validButtons.forEach((btn) => {
-            groups[catName].push({
-              id: `${section.title}-${btn.label}`,
-              category: catName,
-              title: btn.label,
-              href: btn.href,
-              icon: section.icon || <DocumentTextIcon className="w-6 h-6" />,
-              description: getInspiringDescription(btn.label, catName),
-            });
-            count++;
-          });
-        }
-      });
-    }
+        return {
+          id: section.title,
+          title: section.title || "General",
+          buttons: buttonsWithTheme,
+          theme,
+          icon: getSectionIcon(section.title || ""),
+        };
+      })
+      .filter(Boolean);
 
-    return { groupedActions: groups, totalActions: count };
-  }, [hasAccess]);
+    return { groupedSections: groups, totalModules: count };
+  }, [hasAccess, sections]);
 
-  // --- Control de Hidratación ---
-  const [isHydrating, setIsHydrating] = React.useState(true);
+  useEffect(() => {
+    const h = new Date().getHours();
 
-  React.useEffect(() => {
-    if (user) setTimeout(() => setIsHydrating(false), 300);
-  }, [user]);
+    setGreeting(
+      h < 12 ? "Buenos días" : h < 20 ? "Buenas tardes" : "Buenas noches",
+    );
+    setCurrentDate(
+      new Date().toLocaleDateString("es-ES", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+      }),
+    );
+  }, []);
+
+  const daysInMonth = new Date(
+    new Date().getFullYear(),
+    new Date().getMonth() + 1,
+    0,
+  ).getDate();
+  const currentDay = new Date().getDate();
+  const daysArray = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
   return (
-    <div className="w-full min-h-screen font-sans bg-[#F8FAFC] dark:bg-[#09090b] relative overflow-x-hidden">
-      {/* 1. FONDO CON PATRÓN DE PUNTOS MEJORADO (VISIBLE EN MODO CLARO) */}
-      {/* Usamos 'text-slate-400' para modo claro y 'dark:text-slate-800' para oscuro. 
-          Esto hace que los puntos sean gris medio en fondo claro (visibles) y gris oscuro en fondo oscuro. */}
-      <div
-        className="absolute inset-0 z-0 pointer-events-none text-slate-400/40 dark:text-slate-800"
-        style={{
-          backgroundImage: `radial-gradient(currentColor 1px, transparent 1px)`,
-          backgroundSize: "24px 24px",
-          // Opcional: Un mask para que se desvanezca suavemente hacia abajo y no corte de golpe
-          maskImage:
-            "linear-gradient(to bottom, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 100%)",
-          WebkitMaskImage:
-            "linear-gradient(to bottom, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 100%)",
-        }}
-      />
+    <div className="min-h-screen w-full font-sans bg-[#FDFBF7] dark:bg-[#0c0c0e] relative overflow-x-hidden selection:bg-orange-100 dark:selection:bg-indigo-900">
+      {/* BACKGROUND */}
+      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(#a1a1aa_1px,transparent_1px)] dark:bg-[radial-gradient(#ffffff15_1px,transparent_1px)] [background-size:24px_24px] opacity-[0.15] dark:opacity-[0.1]" />
+        <motion.div
+          animate={{ opacity: [0.4, 0.6, 0.4] }}
+          className="absolute -top-[10%] -left-[10%] w-[50%] h-[60%] rounded-full bg-gradient-to-br from-amber-200/40 via-orange-100/30 to-transparent blur-[120px]"
+          transition={{ duration: 12, repeat: Infinity }}
+        />
+        <motion.div
+          animate={{ opacity: [0.3, 0.5, 0.3] }}
+          className="absolute top-[20%] -right-[10%] w-[60%] h-[70%] rounded-full bg-gradient-to-bl from-sky-200/40 via-indigo-100/30 to-transparent blur-[130px]"
+          transition={{ duration: 15, delay: 2, repeat: Infinity }}
+        />
+      </div>
 
-      {/* 2. GRADIENTE SUPERIOR SUAVE (Transparente arriba para ver los puntos) */}
-      <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-transparent via-white/40 to-white/0 dark:from-transparent dark:via-slate-900/40 dark:to-transparent z-0" />
+      <main className="relative z-10 max-w-7xl mx-auto px-6 py-10 md:py-12 flex flex-col gap-8">
+        {/* HEADER */}
+        <header className="flex flex-col md:flex-row justify-between items-center gap-6 mb-4">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 mb-3 rounded-full bg-white/60 border border-orange-200/50 backdrop-blur-md shadow-sm">
+              <CalendarDaysIcon className="w-4 h-4 text-orange-500" />
+              <span className="text-sm font-medium text-gray-600 capitalize">
+                {currentDate}
+              </span>
+            </div>
+            <h1 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white tracking-tight">
+              {greeting},{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-rose-600">
+                {displayName}.
+              </span>
+            </h1>
 
-      <div className="max-w-6xl mx-auto px-6 py-8 relative z-10">
-        {/* HERO BANNER */}
-        <div className="mb-10 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-[2rem] p-6 md:p-8 border border-white/50 dark:border-gray-800 shadow-sm relative overflow-hidden">
-          {/* Decoración superior sutil */}
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 opacity-80" />
-
-          <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-8">
-            {/* A. LOGO GRANDE */}
-            <div className="flex-shrink-0">
-              <div className="w-20 h-20 md:w-24 md:h-24 bg-gray-50 dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 flex items-center justify-center p-4 shadow-sm">
-                {companyLogoUrl ? (
+            {companyLogo && (
+              <motion.div
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-6"
+                initial={{ opacity: 0, y: -10 }}
+                transition={{ delay: 0.1 }}
+              >
+                <div className="p-4 bg-white/70 dark:bg-white/5 rounded-[1.5rem] mt-4 border border-white/50 dark:border-white/10 shadow-sm backdrop-blur-xl flex items-center gap-4 w-2xl">
                   <img
                     alt={companyName}
-                    className="w-full h-full object-contain mix-blend-multiply dark:mix-blend-normal"
-                    src={companyLogoUrl}
+                    className="h-16 w-auto object-contain mix-blend-multiply dark:mix-blend-normal opacity-95 gap-4"
+                    src={companyLogo}
                   />
-                ) : (
-                  <BuildingOfficeIcon className="w-10 h-10 text-gray-400" />
-                )}
-              </div>
+                  <p className="text-xl text-gray-500 dark:text-gray-400 font-medium max-w-2xl">
+                    Bienvenido a{" "}
+                    <span className="text-gray-800 dark:text-gray-200 font-bold">
+                      {companyName}
+                    </span>
+                    . Tu lugar para realizar evaluaciones y gestionar tu
+                    información de manera eficiente.
+                  </p>
+                </div>
+              </motion.div>
+            )}
+          </div>
+
+          {/* Cita Inspiradora (Estilo tarjeta de nota) */}
+          <motion.div
+            animate={{ opacity: 1, x: 0 }}
+            className="hidden lg:flex w-full max-w-sm bg-white/60 dark:bg-white/5 backdrop-blur-xl border border-white/60 dark:border-white/10 p-5 rounded-3xl shadow-sm items-center gap-4 hover:bg-white/80 transition-colors duration-500"
+            initial={{ opacity: 0, x: 20 }}
+            transition={{ delay: 0.3 }}
+          >
+            <div className="p-3 bg-gradient-to-br from-amber-300 to-orange-400 rounded-2xl text-white shadow-lg shadow-orange-500/20 shrink-0">
+              <SparklesIcon className="w-6 h-6" />
             </div>
-
-            {/* B. TEXTO CENTRAL */}
-            <div className="flex-1 space-y-2">
-              <span className="inline-block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">
-                {companyName}
-              </span>
-
-              <h1 className="text-3xl md:text-5xl font-black text-gray-900 dark:text-white tracking-tight leading-tight">
-                Hola, {displayName}{" "}
-                <span className="inline-block animate-bounce-slow">👋</span>
-              </h1>
-
-              <p className="text-gray-500 dark:text-gray-400 text-sm md:text-lg font-medium max-w-xl">
-                Bienvenido a tu centro de excelencia.{" "}
-                <span className="text-blue-600 dark:text-blue-400 font-bold">
-                  Tu impacto en el aula
-                </span>{" "}
-                y tu desarrollo profesional comienzan aquí.
+            <div>
+              <p className="text-sm font-serif italic text-gray-700 dark:text-gray-300 leading-relaxed">
+                "La educación es el encendido de una llama, no el llenado de un
+                recipiente."
+              </p>
+              <p className="text-xs mt-1.5 text-gray-400 font-bold tracking-wide uppercase">
+                — Sócrates
               </p>
             </div>
+          </motion.div>
+        </header>
 
-            {/* C. WIDGET KPI */}
-            <div className="w-full md:w-auto mt-4 md:mt-0 pt-4 md:pt-0 border-t md:border-t-0 border-gray-100 dark:border-gray-800 flex flex-row md:flex-col items-center md:items-end justify-between md:justify-center gap-3">
-              <div className="text-left md:text-right">
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">
-                  Total Módulos
-                </p>
-                <div className="flex items-baseline md:justify-end gap-1">
-                  <span className="text-4xl font-black text-gray-900 dark:text-white tracking-tight">
-                    {totalActions}
-                  </span>
-                  <span className="text-sm font-bold text-gray-500">
-                    Activos
-                  </span>
+        {/* LAYOUT: 2 COLUMNAS */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* COLUMNA IZQUIERDA: Módulos (Adaptativa) */}
+          <div className="lg:col-span-8 space-y-10 min-h-[500px]">
+            {groupedSections.length === 0 ? (
+              // EMPTY STATE: Se muestra si no hay NADA asignado
+              <div className="flex flex-col items-center justify-center py-20 bg-white/40 rounded-3xl border border-dashed border-gray-300">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                  <DocumentTextIcon className="w-8 h-8 text-gray-400" />
                 </div>
+                <p className="text-gray-500 font-medium">
+                  No hay módulos asignados a tu cuenta.
+                </p>
               </div>
+            ) : (
+              groupedSections.map((section: any, sectionIdx) => {
+                // LÓGICA DE GRID INTELIGENTE:
+                // Si la sección tiene 1 solo botón, usamos grid-cols-1 (tarjeta ancha).
+                // Si tiene 2+, usamos grid-cols-2.
+                // Además, si el TOTAL de módulos en toda la app es bajo (<3), forzamos tarjetas anchas para llenar espacio.
+                const useWideCards =
+                  section.buttons.length === 1 || totalModules < 3;
+
+                return (
+                  <motion.div
+                    key={sectionIdx}
+                    animate={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0, y: 15 }}
+                    transition={{ delay: sectionIdx * 0.1 }}
+                  >
+                    <div className="flex items-center gap-3 mb-4 pl-1">
+                      <div
+                        className={`w-2 h-8 rounded-full bg-gradient-to-b ${section.theme.gradient}`}
+                      />
+                      <h2 className="text-sm font-bold text-gray-500 uppercase tracking-widest">
+                        {section.title}
+                      </h2>
+                    </div>
+
+                    <div
+                      className={`grid gap-4 ${useWideCards ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2"}`}
+                    >
+                      {section.buttons.map((module: any, idx: number) => (
+                        <motion.div
+                          key={idx}
+                          transition={{ type: "spring", stiffness: 400 }}
+                          whileHover={{ y: -3 }}
+                        >
+                          <Card
+                            isPressable
+                            className={`w-full bg-white dark:bg-[#151518] border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-[0_8px_30px_-12px_rgba(0,0,0,0.1)] hover:border-orange-200/60 transition-all duration-300 rounded-2xl group overflow-hidden
+                                ${useWideCards ? "py-2" : ""} 
+                            `}
+                            onPress={() => navigate(module.href)}
+                          >
+                            <CardBody className="p-5 flex items-center gap-5">
+                              {/* Icono: Más grande si es tarjeta ancha */}
+                              <div
+                                className={`shrink-0 rounded-2xl ${section.theme.bgSoft} flex items-center justify-center group-hover:scale-110 transition-transform duration-300 ${useWideCards ? "w-16 h-16" : "w-12 h-12"}`}
+                              >
+                                <div
+                                  className={`${section.theme.icon} ${useWideCards ? "w-8 h-8" : "w-6 h-6"}`}
+                                >
+                                  {/* Si tienes iconos específicos en 'module.icon', úsalos aquí. Si no, usa el genérico de la sección */}
+                                  {section.icon}
+                                </div>
+                              </div>
+
+                              <div className="flex-1 text-left">
+                                <h3
+                                  className={`font-bold text-gray-800 dark:text-gray-100 group-hover:text-orange-600 transition-colors ${useWideCards ? "text-lg" : "text-base"}`}
+                                >
+                                  {module.label}
+                                </h3>
+                                <p
+                                  className={`text-gray-500 mt-1 ${useWideCards ? "text-sm line-clamp-2" : "text-xs line-clamp-1"}`}
+                                >
+                                  {module.description}
+                                </p>
+                              </div>
+
+                              <div
+                                className={`rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-orange-50 group-hover:text-orange-500 transition-colors ${useWideCards ? "w-10 h-10" : "w-8 h-8"}`}
+                              >
+                                <ChevronRightIcon className="w-4 h-4" />
+                              </div>
+                            </CardBody>
+                          </Card>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </motion.div>
+                );
+              })
+            )}
+          </div>
+
+          {/* COLUMNA DERECHA: Sidebar (Fija y Decorativa) */}
+          <div className="lg:col-span-4 space-y-6 sticky top-6">
+            {/* Calendario */}
+            <div className="bg-white dark:bg-[#151518] p-6 rounded-3xl border border-gray-100 dark:border-white/5 shadow-sm relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/5 rounded-bl-full -mr-4 -mt-4" />
+
+              <div className="flex justify-between items-center mb-6 relative">
+                <h3 className="font-bold text-lg text-gray-800 dark:text-white">
+                  Diciembre 2025
+                </h3>
+                <span className="text-[10px] font-bold uppercase tracking-wide px-2 py-1 bg-indigo-100 text-indigo-700 rounded-md">
+                  Semestre 2
+                </span>
+              </div>
+
+              <div className="grid grid-cols-7 gap-2 text-center text-xs text-gray-400 mb-3 font-medium">
+                <span>L</span>
+                <span>M</span>
+                <span>M</span>
+                <span>J</span>
+                <span>V</span>
+                <span>S</span>
+                <span>D</span>
+              </div>
+              <div className="grid grid-cols-7 gap-2 text-sm">
+                {[1, 2, 3].map((d) => (
+                  <div key={`e-${d}`} />
+                ))}
+                {daysArray.map((day) => (
+                  <div
+                    key={day}
+                    className={`aspect-square flex items-center justify-center rounded-xl text-xs font-semibold transition-all cursor-default
+                    ${
+                      day === currentDay
+                        ? "bg-gradient-to-br from-indigo-500 to-rose-600 text-white shadow-lg shadow-indigo-500/30 scale-110"
+                        : "text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-white/5"
+                    }`}
+                  >
+                    {day}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Accesos Rápidos */}
+            <div className="bg-white/60 dark:bg-[#151518]/60 backdrop-blur-md p-6 rounded-3xl border border-white/50 dark:border-white/5 shadow-sm">
+              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">
+                Accesos Rápidos
+              </h4>
+              <ul className="space-y-4">
+                <li>
+                  <a
+                    className="flex items-center gap-4 group"
+                    href="https://cslb.cl"
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    <div className="w-10 h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-500 group-hover:scale-110 group-hover:bg-indigo-100 transition-all">
+                      <LinkIcon className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-gray-700 dark:text-gray-200 group-hover:text-indigo-600 transition-colors">
+                        Web del Colegio
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        Noticias y comunicados
+                      </p>
+                    </div>
+                  </a>
+                </li>
+              </ul>
             </div>
           </div>
         </div>
-
-        {/* 3. GRID DE CONTENIDO */}
-        <div className="space-y-10 pb-12">
-          {isHydrating ? (
-            // Skeleton de carga
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {[1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="h-44 rounded-2xl bg-white/60 animate-pulse border border-gray-100"
-                />
-              ))}
-            </div>
-          ) : Object.entries(groupedActions).length > 0 ? (
-            Object.entries(groupedActions).map(
-              ([category, actions], catIdx) => {
-                const style =
-                  CATEGORY_STYLES[category] || CATEGORY_STYLES["DEFAULT"];
-
-                return (
-                  <div
-                    key={category}
-                    className="animate-in fade-in slide-in-from-bottom-4 duration-500"
-                    style={{ animationDelay: `${catIdx * 75}ms` }}
-                  >
-                    {/* Título de Sección */}
-                    <div className="flex items-center gap-3 mb-5 pl-1">
-                      <span
-                        className={`px-3 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-widest ${style.bg} ${style.color} border ${style.border}`}
-                      >
-                        {category}
-                      </span>
-                      <div className="h-px flex-1 bg-gray-200 dark:bg-gray-800 border-t border-dashed border-gray-300 dark:border-gray-700" />
-                    </div>
-
-                    {/* Grid de Tarjetas */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {actions.map((action, idx) => (
-                        <Card
-                          key={idx}
-                          isPressable
-                          className="w-full border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm hover:shadow-xl hover:border-blue-200 dark:hover:border-blue-800 transition-all duration-300 h-full group rounded-2xl"
-                          onPress={() => navigate(action.href)}
-                        >
-                          <CardBody className="p-6 flex flex-col justify-between h-full gap-4">
-                            {/* Header de Tarjeta */}
-                            <div className="flex justify-between items-start">
-                              <div
-                                className={`p-3 rounded-xl ${style.bg} ${style.color} group-hover:scale-110 transition-transform duration-300`}
-                              >
-                                {React.isValidElement(action.icon) ? (
-                                  React.cloneElement(
-                                    action.icon as React.ReactElement,
-                                  )
-                                ) : (
-                                  <DocumentTextIcon className="w-6 h-6" />
-                                )}
-                              </div>
-                              <ArrowRightIcon className="w-5 h-5 text-gray-300 group-hover:text-blue-500 transition-colors transform group-hover:translate-x-1" />
-                            </div>
-
-                            {/* Contenido de Texto */}
-                            <div>
-                              <h3 className="text-base font-bold text-gray-900 dark:text-gray-100 mb-2 leading-tight group-hover:text-blue-600 transition-colors">
-                                {action.title}
-                              </h3>
-                              <p className="text-xs text-gray-500 dark:text-gray-400 font-medium leading-relaxed line-clamp-3">
-                                {action.description}
-                              </p>
-                            </div>
-
-                            {/* Barra de progreso decorativa */}
-                            <div className="w-full h-1 bg-gray-50 dark:bg-gray-800 rounded-full overflow-hidden mt-1">
-                              <div className="h-full w-0 group-hover:w-full transition-all duration-700 ease-out bg-gradient-to-r from-blue-400 to-purple-500" />
-                            </div>
-                          </CardBody>
-                        </Card>
-                      ))}
-                    </div>
-                  </div>
-                );
-              },
-            )
-          ) : (
-            // Estado vacío
-            <div className="col-span-full py-16 flex flex-col items-center justify-center border border-dashed border-gray-200 bg-white/50 rounded-2xl">
-              <ShieldCheckIcon className="w-12 h-12 text-gray-300 mb-2" />
-              <h3 className="text-gray-900 font-bold">Sin módulos activos</h3>
-              <p className="text-gray-500 text-sm mt-1">
-                Todo parece estar en orden por ahora.
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
+      </main>
     </div>
   );
 }

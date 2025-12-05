@@ -1,10 +1,13 @@
+import type { DefaultLayoutContext } from "@/shared/components/layout/default";
+
 import React from "react";
+import { useEffect } from "react";
+import { useNavigate, useOutletContext } from "react-router-dom";
 import { Button } from "@heroui/button";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Chip } from "@heroui/chip";
-import { useNavigate } from "react-router-dom";
 import {
-  ClipboardDocumentCheckIcon,
+  ChevronLeftIcon,
   UserGroupIcon,
   ChartBarIcon,
   CheckBadgeIcon,
@@ -16,6 +19,18 @@ import {
 
 export default function EvaluacionDesempenoIntro() {
   const navigate = useNavigate();
+  const { setActionButton } = useOutletContext<DefaultLayoutContext>();
+
+  useEffect(() => {
+    setActionButton({
+      label: "Volver menú",
+      to: "/",
+      color: "primary",
+      startContent: <ChevronLeftIcon className="w-4 h-4" />,
+    });
+
+    return () => setActionButton(null);
+  }, [setActionButton]);
 
   return (
     <div className="w-full max-w-7xl mx-auto p-6 space-y-8 animate-in fade-in duration-500">
@@ -41,7 +56,7 @@ export default function EvaluacionDesempenoIntro() {
         <Card className="lg:col-span-2 shadow-sm border border-blue-100 dark:border-blue-900 bg-gradient-to-r from-blue-50 to-white dark:from-slate-900 dark:to-slate-800">
           <CardHeader className="px-8 pt-8 pb-0 flex flex-col items-start">
             <div className="p-3 bg-blue-600 rounded-xl mb-4 shadow-lg shadow-blue-200 dark:shadow-none">
-              <ClipboardDocumentCheckIcon className="w-8 h-8 text-white" />
+              <ChartBarIcon className="w-8 h-8 text-white" />
             </div>
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
               Es momento de evaluar

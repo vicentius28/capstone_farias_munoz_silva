@@ -1,6 +1,10 @@
-import { useEffect, useState, useMemo } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import type { DefaultLayoutContext } from "@/shared/components/layout/default";
+
+import { useLocation } from "react-router-dom";
 import { addToast } from "@heroui/toast";
+import { useMemo, useState, useEffect } from "react";
+import { useNavigate, useOutletContext } from "react-router-dom";
+import { ChevronLeftIcon } from "lucide-react";
 
 import axios from "@/services/google/axiosInstance";
 import EvaluacionDetalleCommon from "@/features/evaluacion/components/EvaluacionDetalleCommon";
@@ -18,6 +22,19 @@ export default function AutoevaluacionDetallePage() {
     null,
   );
   const [loading, setLoading] = useState(true);
+
+  const { setActionButton } = useOutletContext<DefaultLayoutContext>();
+
+  useEffect(() => {
+    setActionButton({
+      label: "Volver",
+      to: "/evaluacion-jefatura/autoevaluaciones-equipo",
+      color: "primary",
+      startContent: <ChevronLeftIcon className="w-4 h-4" />,
+    });
+
+    return () => setActionButton(null);
+  }, [setActionButton]);
 
   // Obtener ID y URL de retorno del state
   const id = location.state?.id;

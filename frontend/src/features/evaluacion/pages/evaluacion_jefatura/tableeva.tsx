@@ -4,7 +4,7 @@ import type {
 } from "@/features/evaluacion/types/evaluacion";
 
 import React, { useEffect, useState, Suspense, useMemo } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useOutletContext } from "react-router-dom";
 import { addToast } from "@heroui/toast";
 import { Spinner } from "@heroui/spinner";
 import { Card, CardBody, CardHeader } from "@heroui/card";
@@ -23,6 +23,7 @@ import {
 import { columns2 } from "@/hooks/columns";
 import axios from "@/services/google/axiosInstance";
 import { EstadoEvaluacionBadge } from "@/features/evaluacion/components/flow/EstadoEvaluacionBadge";
+import { DefaultLayoutContext } from "@/shared";
 
 // Lazy load
 const OptimizedTableComponent = React.lazy(() =>
@@ -61,6 +62,19 @@ export default function TableevaPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const state = location.state;
+
+  const { setActionButton } = useOutletContext<DefaultLayoutContext>();
+
+  useEffect(() => {
+    setActionButton({
+      label: "Volver",
+      to: "/evaluacion-jefatura",
+      color: "primary",
+      startContent: <ChevronLeftIcon className="w-4 h-4" />,
+    });
+
+    return () => setActionButton(null);
+  }, [setActionButton]);
 
   // Estados
   const [page, setPage] = useState(1);
@@ -267,20 +281,6 @@ export default function TableevaPage() {
       {/* 1. Header Contextual */}
       <div className="bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-gray-800 pt-6 pb-8 px-6 sticky top-0 z-20 shadow-sm">
         <div className="max-w-7xl mx-auto">
-          <div className="flex items-center gap-2 mb-4 text-gray-500 text-sm">
-            <button
-              className="hover:text-blue-600 flex items-center gap-1 transition-colors"
-              onClick={() => navigate(-1)}
-            >
-              <ChevronLeftIcon className="w-4 h-4" />
-              Volver al panel
-            </button>
-            <span>/</span>
-            <span className="font-medium text-gray-900 dark:text-white">
-              Evaluaciones
-            </span>
-          </div>
-
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div>
               <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white tracking-tight flex items-center gap-3">

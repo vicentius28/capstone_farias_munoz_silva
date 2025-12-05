@@ -1,5 +1,9 @@
 import { Button } from "@heroui/button";
-import { useNavigate, useSearchParams } from "react-router-dom"; // Hook para URL params
+import {
+  useNavigate,
+  useOutletContext,
+  useSearchParams,
+} from "react-router-dom"; // Hook para URL params
 import { useState, useEffect, useMemo, lazy, Suspense } from "react";
 import { Card, CardBody } from "@heroui/card";
 import { Spinner } from "@heroui/spinner";
@@ -21,6 +25,7 @@ import {
   MagnifyingGlassIcon,
   ListBulletIcon,
   Squares2X2Icon,
+  ChevronLeftIcon,
 } from "@heroicons/react/24/outline";
 
 import {
@@ -28,6 +33,7 @@ import {
   fetchAsignarEvaluacion,
 } from "@/features/evaluacion/services/asignar/evaluacion";
 import { AsignacionEvaluacion } from "@/features/evaluacion/types/asignar/evaluacion";
+import { DefaultLayoutContext } from "@/shared";
 
 // Lazy load del modal
 const ModalDetalleAsignacion = lazy(() =>
@@ -154,7 +160,18 @@ export default function AsignarEvaluacionPage() {
   const navigate = useNavigate();
   // 1. Manejo de estado por URL (Persistencia)
   const [searchParams, setSearchParams] = useSearchParams();
+  const { setActionButton } = useOutletContext<DefaultLayoutContext>();
 
+  useEffect(() => {
+    setActionButton({
+      label: "Volver menú",
+      to: "/",
+      color: "primary",
+      startContent: <ChevronLeftIcon className="w-4 h-4" />,
+    });
+
+    return () => setActionButton(null);
+  }, [setActionButton]);
   // Leemos el tab de la URL, si no existe, por defecto es 'evaluaciones'
   const tabSeleccionado =
     searchParams.get("tab") === "autoevaluaciones"

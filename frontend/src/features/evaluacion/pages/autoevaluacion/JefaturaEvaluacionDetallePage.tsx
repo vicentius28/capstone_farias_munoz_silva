@@ -1,17 +1,19 @@
 // features/evaluacion/jefatura/pages/JefaturaEvaluacionDetallePage.tsx
+import type { DefaultLayoutContext } from "@/shared/components/layout/default";
+
 import { useEffect, useMemo, useState, useCallback } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { Button } from "@heroui/button";
 import { addToast } from "@heroui/toast";
+import { useNavigate, useOutletContext } from "react-router-dom";
+import { Card, CardBody, CardHeader } from "@heroui/card";
+import ChevronLeftIcon from "@heroicons/react/24/outline/ChevronLeftIcon";
 
 import axios from "@/services/google/axiosInstance";
 import "@/features/evaluacion/styles/animations.css";
 import DenegarModal from "@/features/evaluacion/components/autoevaluacion/PageInicio/Resumen/DenegarModal";
 import AceptarModal from "@/features/evaluacion/components/autoevaluacion/PageInicio/Resumen/AceptarModal";
 import EvaluacionDetalleCommon from "@/features/evaluacion/components/EvaluacionDetalleCommon";
-
-import { Card, CardBody, CardHeader } from "@heroui/card";
-
 import { EvaluationUtils } from "@/features/evaluacion/constants/defaults";
 
 import type {
@@ -645,6 +647,19 @@ export default function JefaturaEvaluacionDetallePage() {
       day: "numeric",
     });
   };
+
+  const { setActionButton } = useOutletContext<DefaultLayoutContext>();
+
+  useEffect(() => {
+    setActionButton({
+      label: "Volver Menú Evaluación",
+      to: "/autoevaluacion/jefatura/",
+      color: "primary",
+      startContent: <ChevronLeftIcon className="w-4 h-4" />,
+    });
+
+    return () => setActionButton(null);
+  }, [setActionButton]);
 
   // Función para determinar el estado de la evaluación
   const getEstadoEvaluacion = (): string | undefined => {

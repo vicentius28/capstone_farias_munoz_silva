@@ -1,11 +1,13 @@
 import { useEffect, useState, Suspense } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useOutletContext, useParams } from "react-router-dom";
 import { Spinner } from "@heroui/spinner";
+import { ChevronLeftIcon } from "lucide-react";
 
 import { fetchEvaluacionById } from "@/features/evaluacion/services/plantilla/evaluacion";
 import { TipoEvaluacion } from "@/features/evaluacion/types/evaluacion";
 import useEvaluacionStore from "@/stores/evaluacion/plantilla/useEvaluacionStore";
 import { AreaEditor } from "@/features/evaluacion/components";
+import { DefaultLayoutContext } from "@/shared";
 
 function sanitizeEvaluacion(evaluacion: TipoEvaluacion): TipoEvaluacion {
   return {
@@ -24,6 +26,19 @@ function sanitizeEvaluacion(evaluacion: TipoEvaluacion): TipoEvaluacion {
 }
 
 export default function EditarFormularioWrapperPage() {
+  const { setActionButton } = useOutletContext<DefaultLayoutContext>();
+
+  useEffect(() => {
+    setActionButton({
+      label: "Volver",
+      to: "/evaluacion-editar",
+      color: "primary",
+      startContent: <ChevronLeftIcon className="w-4 h-4" />,
+    });
+
+    return () => setActionButton(null);
+  }, [setActionButton]);
+
   const location = useLocation();
   const { id } = useParams();
   const [loading, setLoading] = useState(true);

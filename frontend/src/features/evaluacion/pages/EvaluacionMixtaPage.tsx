@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useOutletContext } from "react-router-dom";
 import { Card, CardBody } from "@heroui/card";
 import { Tabs, Tab } from "@heroui/tabs";
 import { Popover, PopoverTrigger, PopoverContent } from "@heroui/popover";
@@ -27,8 +27,22 @@ import {
   type AreaMixto,
   type IndicadorMixto,
 } from "@/features/evaluacion/services/evaluacionMixta";
+import { DefaultLayoutContext } from "@/shared";
 
 export default function EvaluacionMixtaPage() {
+  const { setActionButton } = useOutletContext<DefaultLayoutContext>();
+
+  useEffect(() => {
+    setActionButton({
+      label: "Volver menú",
+      to: "/evaluacion-mixta",
+      color: "primary",
+      startContent: <ChevronLeftIcon className="w-4 h-4" />,
+    });
+
+    return () => setActionButton(null);
+  }, [setActionButton]);
+
   const navigate = useNavigate();
   const { detalleId } = useParams();
   const parsedId = Number(detalleId);

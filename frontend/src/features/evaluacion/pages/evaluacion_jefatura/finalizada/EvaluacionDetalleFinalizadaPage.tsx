@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useOutletContext } from "react-router-dom";
 import { Spinner } from "@heroui/spinner";
 import { addToast } from "@heroui/toast";
 
@@ -11,12 +11,28 @@ import {
   CompetenciaDetalle,
   IndicadorDetalle,
 } from "@/features/evaluacion/types/evaluacion";
+import { ChevronLeftIcon } from "lucide-react";
+import { DefaultLayoutContext } from "@/shared";
 
 export default function EvaluacionDetalleFinalizadaPage() {
   const { state } = useLocation();
   const navigate = useNavigate();
   const id = state?.id;
 
+  const { setActionButton } = useOutletContext<DefaultLayoutContext>();
+
+  useEffect(() => {
+    setActionButton({
+      label: "Volver",
+      to: "/evaluacion-jefatura",
+      color: "primary",
+      startContent: <ChevronLeftIcon className="w-4 h-4" />,
+    });
+
+    return () => setActionButton(null);
+  }, [setActionButton]);
+
+  
   const [evaluacion, setEvaluacion] = useState<EvaluacionJefe | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -80,8 +96,8 @@ export default function EvaluacionDetalleFinalizadaPage() {
       if (!estructura?.areas) {
         return {
           areas: [] as AreaDetalle[],
-          puntajeTotal: evaluacion?.puntaje_total_obtenido || 0,
-          puntajeMaximo: evaluacion?.puntaje_total_maximo || 0,
+          puntajeTotal: 0,
+          puntajeMaximo: 0,
           porcentajeTotal: evaluacion?.logro_obtenido || 0, // ✅ Usar logro_obtenido del backend
         };
       }
@@ -139,11 +155,20 @@ export default function EvaluacionDetalleFinalizadaPage() {
         },
       );
 
+      const totalObtenido = areasCalculadas.reduce(
+        (acc, a) => acc + (a.obtenido || 0),
+        0,
+      );
+      const totalMaximo = areasCalculadas.reduce(
+        (acc, a) => acc + (a.maximo || 0),
+        0,
+      );
+
       return {
         areas: areasCalculadas,
-        puntajeTotal: evaluacion?.puntaje_total_obtenido || 0, // ✅ Usar valor del backend
-        puntajeMaximo: evaluacion?.puntaje_total_maximo || 0, // ✅ Usar valor del backend
-        porcentajeTotal: evaluacion?.logro_obtenido || 0, // ✅ Usar logro_obtenido del backend
+        puntajeTotal: totalObtenido,
+        puntajeMaximo: totalMaximo,
+        porcentajeTotal: evaluacion?.logro_obtenido || 0, // ✅ Preferir porcentaje del backend (ponderado)
       };
     }, [estructura, respuestasMap, evaluacion]);
 

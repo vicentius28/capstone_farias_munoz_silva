@@ -1,7 +1,8 @@
 import { useEffect, useState, useMemo } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useOutletContext } from "react-router-dom";
 import { Spinner } from "@heroui/spinner";
 import { addToast } from "@heroui/toast";
+import { ChevronLeftIcon } from "@heroicons/react/24/outline";
 
 import axios from "@/services/google/axiosInstance";
 import EvaluacionDetalleCommon from "@/features/evaluacion/components/EvaluacionDetalleCommon";
@@ -11,12 +12,24 @@ import {
   CompetenciaDetalle,
   IndicadorDetalle,
 } from "@/features/evaluacion/types/evaluacion";
+import { DefaultLayoutContext } from "@/shared";
 
 export default function EvaluacionDetallePendientePage() {
   const { state } = useLocation();
   const navigate = useNavigate();
   const id = state?.id;
+  const { setActionButton } = useOutletContext<DefaultLayoutContext>();
 
+  useEffect(() => {
+    setActionButton({
+      label: "Volver",
+      to: "/evaluacion-jefatura/tabla",
+      color: "primary",
+      startContent: <ChevronLeftIcon className="w-4 h-4" />,
+    });
+
+    return () => setActionButton(null);
+  }, [setActionButton]);
   const [evaluacion, setEvaluacion] = useState<EvaluacionJefe | null>(null);
   const [loading, setLoading] = useState(true);
 

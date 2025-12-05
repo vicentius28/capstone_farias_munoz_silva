@@ -1,5 +1,5 @@
-import { useEffect, useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import type { DefaultLayoutContext } from "@/shared/components/layout/default";
+
 import { Card, CardBody } from "@heroui/card";
 import { Button } from "@heroui/button";
 import { Input } from "@heroui/input"; // Importamos Input
@@ -26,7 +26,10 @@ import {
   MagnifyingGlassIcon,
   RectangleStackIcon, // Para el icono de agrupar
   UserIcon,
+  ChevronLeftIcon,
 } from "@heroicons/react/24/outline";
+import { useMemo, useState, useEffect } from "react";
+import { useNavigate, useOutletContext } from "react-router-dom";
 
 import {
   HeaderSkeleton,
@@ -150,6 +153,18 @@ const useTeamData = () => {
 export default function TeamReviewsDashboard() {
   const navigate = useNavigate();
   const { loading, data } = useTeamData();
+  const { setActionButton } = useOutletContext<DefaultLayoutContext>();
+
+  useEffect(() => {
+    setActionButton({
+      label: "Volver",
+      to: "/evaluacion-jefatura",
+      color: "primary",
+      startContent: <ChevronLeftIcon className="w-4 h-4" />,
+    });
+
+    return () => setActionButton(null);
+  }, [setActionButton]);
 
   // --- ESTADOS DE UI ---
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");

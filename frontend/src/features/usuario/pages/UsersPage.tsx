@@ -1,6 +1,9 @@
-import React, { Suspense } from "react";
+import React, { Suspense, useEffect } from "react";
 import { Spinner } from "@heroui/spinner";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useOutletContext } from "react-router-dom";
+import { ChevronLeftIcon } from "lucide-react";
+
+import { DefaultLayoutContext } from "@/shared";
 
 // Lazy load de la tabla de usuarios
 const UsersTable = React.lazy(
@@ -9,6 +12,18 @@ const UsersTable = React.lazy(
 
 export default function UsersPage() {
   const navigate = useNavigate();
+  const { setActionButton } = useOutletContext<DefaultLayoutContext>();
+
+  useEffect(() => {
+    setActionButton({
+      label: "Volver",
+      to: "/",
+      color: "primary",
+      startContent: <ChevronLeftIcon className="w-4 h-4" />,
+    });
+
+    return () => setActionButton(null);
+  }, [setActionButton]);
 
   return (
     <>

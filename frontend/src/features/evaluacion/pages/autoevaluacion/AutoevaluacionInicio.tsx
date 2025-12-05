@@ -1,6 +1,8 @@
 // features/evaluacion/autoevaluacion/pages/AutoevaluacionInicioPage.tsx
-import { useCallback, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import type { DefaultLayoutContext } from "@/shared/components/layout/default";
+
+import { useCallback, useMemo, useState, useEffect } from "react";
+import { useNavigate, useOutletContext } from "react-router-dom";
 import { Card, CardHeader, CardBody } from "@heroui/card";
 import { Tabs, Tab } from "@heroui/tabs";
 import {
@@ -26,6 +28,7 @@ import {
   Squares2X2Icon,
   TableCellsIcon,
   FunnelIcon,
+  ChevronLeftIcon,
 } from "@heroicons/react/24/outline";
 
 import { useAutoevaluaciones } from "@/features/evaluacion/hooks/useAutoevaluaciones";
@@ -89,6 +92,18 @@ export default function AutoevaluacionInicioPage() {
   const navigate = useNavigate();
   const [tab, setTab] = useState<"pendientes" | "finalizadas">("pendientes");
   const { pendientes, finalizadas, loading, error } = useAutoevaluaciones();
+  const { setActionButton } = useOutletContext<DefaultLayoutContext>();
+
+  useEffect(() => {
+    setActionButton({
+      label: "Volver",
+      to: "/autoevaluacion/",
+      color: "primary",
+      startContent: <ChevronLeftIcon className="w-4 h-4" />,
+    });
+
+    return () => setActionButton(null);
+  }, [setActionButton]);
 
   // --- Lógica de Negocio (Intacta) ---
   const all = useMemo(

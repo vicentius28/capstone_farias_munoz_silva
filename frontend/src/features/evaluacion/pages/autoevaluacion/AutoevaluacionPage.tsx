@@ -1,8 +1,11 @@
+import type { DefaultLayoutContext } from "@/shared/components/layout/default";
+
 import { useEffect, useMemo, useState, lazy, Suspense } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useOutletContext } from "react-router-dom";
 import { Spinner } from "@heroui/spinner";
 import { addToast } from "@heroui/toast";
 import { Loader2, CheckCircle2, Clock, FileText } from "lucide-react";
+import { ChevronLeftIcon } from "@heroicons/react/24/outline";
 
 import axios from "@/services/google/axiosInstance";
 import { cn } from "@/lib/utils";
@@ -136,6 +139,18 @@ export default function AutoevaluacionPage() {
 
     return Number.isFinite(num as number) ? (num as number) : undefined;
   }, [state, search]);
+  const { setActionButton } = useOutletContext<DefaultLayoutContext>();
+
+  useEffect(() => {
+    setActionButton({
+      label: "Volver menú",
+      to: "/autoevaluacion/inicio",
+      color: "primary",
+      startContent: <ChevronLeftIcon className="w-4 h-4" />,
+    });
+
+    return () => setActionButton(null);
+  }, [setActionButton]);
 
   useEffect(() => {
     const cargarAutoevaluacion = async () => {
