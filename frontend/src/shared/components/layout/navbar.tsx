@@ -85,12 +85,14 @@ export const Navbar: React.FC = () => {
   // Nombre y rol visibles
   const displayName =
     `${user?.first_name ?? ""} ${user?.last_name ?? ""}`.trim() ||
-    user?.username
+    user?.username;
+
   return (
     <>
       <HeroUINavbar
-        className={`transition-transform duration-300 ease-in-out border-b border-default-200/50 bg-background/80 backdrop-blur-md ${showNavbar ? "translate-y-0" : "-translate-y-full"
-          }`}
+        className={`transition-transform duration-300 ease-in-out border-b border-default-200/50 bg-background/80 backdrop-blur-md ${
+          showNavbar ? "translate-y-0" : "-translate-y-full"
+        }`}
         classNames={{
           wrapper: "px-4 sm:px-6 h-16",
         }}
@@ -176,7 +178,6 @@ export const Navbar: React.FC = () => {
                   <p className="font-semibold text-primary truncate">
                     {user?.email}
                   </p>
-
                 </DropdownItem>
               </DropdownSection>
 

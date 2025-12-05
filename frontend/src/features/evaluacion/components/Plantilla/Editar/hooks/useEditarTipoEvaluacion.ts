@@ -11,7 +11,6 @@ import {
 } from "@/features/evaluacion/types/plantilla/plantilla";
 import { fetchEvaluacionById } from "@/features/evaluacion/services/plantilla/evaluacion";
 
-
 export function useEditarTipoEvaluacion() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -21,22 +20,24 @@ export function useEditarTipoEvaluacion() {
   const tipoEvaluacion = location.state?.tipoEvaluacion;
   const id = tipoEvaluacion?.id;
 
-  
   useEffect(() => {
     const initData = async () => {
       if (!tipoEvaluacion) return;
 
       // CASO A: Vienes de la lista optimizada (objeto ligero sin áreas)
-      if (tipoEvaluacion.id && (!tipoEvaluacion.areas || tipoEvaluacion.areas.length === 0)) {
+      if (
+        tipoEvaluacion.id &&
+        (!tipoEvaluacion.areas || tipoEvaluacion.areas.length === 0)
+      ) {
         // Mostramos loading (puedes agregar un estado local si quieres)
         const fullData = await fetchEvaluacionById(tipoEvaluacion.id);
-        
+
         if (fullData) {
           setNombre(fullData.n_tipo_evaluacion);
           setAreas(fullData.areas || []); // Aseguramos array
           setIsAutoevaluacion(fullData.auto);
         }
-      } 
+      }
       // CASO B: Ya tienes los datos completos (raro ahora, pero por seguridad)
       else {
         setNombre(tipoEvaluacion.n_tipo_evaluacion);
@@ -47,10 +48,6 @@ export function useEditarTipoEvaluacion() {
 
     initData();
   }, [tipoEvaluacion, id]); // Dependencias
-
-
-
-
 
   const {
     n_tipo_evaluacion,
@@ -79,8 +76,6 @@ export function useEditarTipoEvaluacion() {
       setIsAutoevaluacion(tipoEvaluacion.auto);
     }
   }, [tipoEvaluacion, setNombre, setAreas]);
-
-
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

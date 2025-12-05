@@ -1,6 +1,8 @@
 import { ReactNode } from "react";
-import { Loader2, Cloud } from "lucide-react"; 
+import { Loader2, Cloud } from "lucide-react";
+
 import { useEvaluacionFormularioBase } from "./hooks/useEvaluacionFormularioBase";
+
 import { cn } from "@/lib/utils";
 
 interface EvaluacionFormularioBaseProps {
@@ -20,25 +22,28 @@ const FormularioSkeleton = () => (
     {/* Content Skeleton */}
     <div className="grid gap-6">
       {[1, 2, 3].map((i) => (
-        <div key={i} className="h-40 bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800" />
+        <div
+          key={i}
+          className="h-40 bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800"
+        />
       ))}
     </div>
   </div>
 );
 
 // 2. Indicador de Guardado (Elevado para no tapar la paginación)
-const AutoSaveIndicator = ({ 
-  guardando, 
-  guardadoExitoso 
-}: { 
-  guardando: boolean; 
-  guardadoExitoso: boolean 
+const AutoSaveIndicator = ({
+  guardando,
+  guardadoExitoso,
+}: {
+  guardando: boolean;
+  guardadoExitoso: boolean;
 }) => {
   // Solo mostramos si está pasando algo
   if (!guardando && !guardadoExitoso) return null;
 
   return (
-    <div 
+    <div
       className={cn(
         // POSICIÓN CLAVE:
         // 'bottom-24': Lo sube 96px, suficiente para limpiar la barra de paginación.
@@ -46,23 +51,25 @@ const AutoSaveIndicator = ({
         // O si prefieres todo a la derecha, usa 'right-6' pero apilado. Aquí sugiero izquierda para balancear.
         "fixed bottom-24 left-4 sm:bottom-28 sm:left-8 z-40 transition-all duration-500 ease-out transform",
         guardando ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0",
-        guardadoExitoso && "translate-y-0 opacity-100"
+        guardadoExitoso && "translate-y-0 opacity-100",
       )}
     >
-      <div className={cn(
-        "flex items-center gap-3 px-4 py-2.5 rounded-full shadow-xl border backdrop-blur-md text-xs font-bold uppercase tracking-wider transition-colors duration-300",
-        // Estilo adaptativo (Light/Dark)
-        guardando 
-          ? "bg-white/90 border-indigo-100 text-indigo-600 dark:bg-slate-900/90 dark:border-indigo-900 dark:text-indigo-400" 
-          : "bg-emerald-50/90 border-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:border-emerald-900/50 dark:text-emerald-400"
-      )}>
+      <div
+        className={cn(
+          "flex items-center gap-3 px-4 py-2.5 rounded-full shadow-xl border backdrop-blur-md text-xs font-bold uppercase tracking-wider transition-colors duration-300",
+          // Estilo adaptativo (Light/Dark)
+          guardando
+            ? "bg-white/90 border-indigo-100 text-indigo-600 dark:bg-slate-900/90 dark:border-indigo-900 dark:text-indigo-400"
+            : "bg-emerald-50/90 border-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:border-emerald-900/50 dark:text-emerald-400",
+        )}
+      >
         {guardando && (
           <>
             <Loader2 className="w-3.5 h-3.5 animate-spin" />
             <span>Sincronizando...</span>
           </>
         )}
-        
+
         {!guardando && guardadoExitoso && (
           <>
             <Cloud className="w-3.5 h-3.5" />
@@ -99,7 +106,6 @@ export default function EvaluacionFormularioBase({
 
   return (
     <div className="relative min-h-screen bg-slate-50 dark:bg-slate-950 font-sans selection:bg-indigo-100 dark:selection:bg-indigo-900/30">
-      
       <main className="w-full mx-auto transition-all duration-300 ease-in-out">
         {renderPaginacion({
           evaluacionId,
@@ -113,8 +119,10 @@ export default function EvaluacionFormularioBase({
       </main>
 
       {/* Indicador Flotante (Ahora a la IZQUIERDA y ELEVADO) */}
-      <AutoSaveIndicator guardando={guardando} guardadoExitoso={guardadoExitoso} />
-      
+      <AutoSaveIndicator
+        guardadoExitoso={guardadoExitoso}
+        guardando={guardando}
+      />
     </div>
   );
 }

@@ -33,8 +33,8 @@ const TemplateListItem = ({
   isEvaluacion: boolean;
 }) => (
   <div
-    onClick={onClick}
     className="group flex items-center justify-between p-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl hover:border-primary-300 hover:shadow-md transition-all cursor-pointer mb-3"
+    onClick={onClick}
   >
     <div className="flex items-center gap-4">
       <div
@@ -56,13 +56,13 @@ const TemplateListItem = ({
         </h4>
         <div className="flex items-center gap-2 mt-1">
           <Chip
-            size="sm"
-            variant="flat"
             className={`h-5 text-[10px] ${
               isEvaluacion
                 ? "bg-blue-50 text-blue-700"
                 : "bg-purple-50 text-purple-700"
             }`}
+            size="sm"
+            variant="flat"
           >
             {isEvaluacion ? "Plantilla Evaluación" : "Plantilla AutoEvaluación"}
           </Chip>
@@ -140,8 +140,7 @@ const TemplateGridItem = ({
           Acción
         </span>
         <div className="flex items-center gap-1 text-sm font-semibold text-gray-600 group-hover:text-primary-600 transition-colors">
-          Editar Contenido{" "}
-          <ChevronRightIcon className="w-3 h-3 stroke-[3px]" />
+          Editar Contenido <ChevronRightIcon className="w-3 h-3 stroke-[3px]" />
         </div>
       </div>
     </CardBody>
@@ -160,7 +159,7 @@ export default function EditarEvaluacionPage() {
   // Estados locales
   const [tiposEvaluacion, setTiposEvaluacion] = useState<TipoEvaluacion[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Filtros y Vistas
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [searchQuery, setSearchQuery] = useState("");
@@ -170,8 +169,9 @@ export default function EditarEvaluacionPage() {
     const fetchData = async () => {
       try {
         const tiposEvaluacionResponse = await fetchEvaluacion();
+
         setTiposEvaluacion(
-          Array.isArray(tiposEvaluacionResponse) ? tiposEvaluacionResponse : []
+          Array.isArray(tiposEvaluacionResponse) ? tiposEvaluacionResponse : [],
         );
       } catch (error) {
         console.error("Error al cargar tipos de evaluación:", error);
@@ -179,6 +179,7 @@ export default function EditarEvaluacionPage() {
         setLoading(false);
       }
     };
+
     fetchData();
   }, []);
 
@@ -193,14 +194,16 @@ export default function EditarEvaluacionPage() {
     // A. Filtrar por Tab (Evaluación vs Auto)
     let filtered = tiposEvaluacion.filter((t) => {
       const esAuto = !!t.auto;
+
       return tabSeleccionado === "autoevaluaciones" ? esAuto : !esAuto;
     });
 
     // B. Filtrar por Búsqueda
     if (searchQuery) {
       const lowerQ = searchQuery.toLowerCase();
+
       filtered = filtered.filter((t) =>
-        t.n_tipo_evaluacion?.toLowerCase().includes(lowerQ)
+        t.n_tipo_evaluacion?.toLowerCase().includes(lowerQ),
       );
     }
 
@@ -208,6 +211,7 @@ export default function EditarEvaluacionPage() {
     filtered.sort((a, b) => {
       const nombreA = a.n_tipo_evaluacion || "";
       const nombreB = b.n_tipo_evaluacion || "";
+
       return nombreA.localeCompare(nombreB);
     });
 
@@ -228,8 +232,8 @@ export default function EditarEvaluacionPage() {
         {searchQuery
           ? "No se encontraron plantillas"
           : isEvaluaciones
-          ? "Sin Plantillas de Evaluación"
-          : "Sin Plantillas de Autoevaluación"}
+            ? "Sin Plantillas de Evaluación"
+            : "Sin Plantillas de Autoevaluación"}
       </h3>
       <p className="text-sm text-gray-500 text-center max-w-xs mb-6">
         {searchQuery
@@ -242,7 +246,7 @@ export default function EditarEvaluacionPage() {
           startContent={<PlusIcon className="w-4 h-4" />}
           onPress={() =>
             navigate(
-              `/evaluacion-crear?auto=${tabSeleccionado === "autoevaluaciones"}`
+              `/evaluacion-crear?auto=${tabSeleccionado === "autoevaluaciones"}`,
             )
           }
         >
@@ -267,7 +271,6 @@ export default function EditarEvaluacionPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-[#0b1220] pb-10">
-      
       {/* 1. Header Principal (Sticky & Clean) */}
       <div className="bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-gray-800 pt-8 pb-8 px-6 sticky top-0 z-20 shadow-sm">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -287,7 +290,7 @@ export default function EditarEvaluacionPage() {
             startContent={<PlusIcon className="w-5 h-5" />}
             onPress={() =>
               navigate(
-                `/evaluacion-crear?auto=${tabSeleccionado === "autoevaluaciones"}`
+                `/evaluacion-crear?auto=${tabSeleccionado === "autoevaluaciones"}`,
               )
             }
           >
@@ -297,10 +300,8 @@ export default function EditarEvaluacionPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
         {/* 2. Controles Superiores (Tabs + Buscador + Vistas) */}
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-6 gap-6">
-          
           {/* Tabs */}
           <Tabs
             aria-label="Tipo de plantilla"
@@ -338,44 +339,44 @@ export default function EditarEvaluacionPage() {
           <div className="flex flex-col sm:flex-row w-full lg:w-auto items-center gap-3 bg-white dark:bg-slate-900 p-2 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
             {/* Buscador */}
             <Input
+              isClearable
               classNames={{
                 base: "w-full sm:w-64",
                 inputWrapper: "h-10 bg-gray-50 dark:bg-slate-800 border-none",
               }}
               placeholder="Buscar plantilla..."
+              radius="lg"
+              size="sm"
               startContent={
                 <MagnifyingGlassIcon className="w-4 h-4 text-gray-400" />
               }
               value={searchQuery}
               onValueChange={setSearchQuery}
-              isClearable
-              radius="lg"
-              size="sm"
             />
 
-            <Divider orientation="vertical" className="h-6 hidden sm:block" />
+            <Divider className="h-6 hidden sm:block" orientation="vertical" />
 
             {/* Toggle Vista Grid/List */}
             <div className="flex items-center bg-gray-100 dark:bg-slate-800 rounded-lg p-1">
               <button
-                onClick={() => setViewMode("grid")}
                 className={`p-1.5 rounded-md transition-all ${
                   viewMode === "grid"
                     ? "bg-white dark:bg-slate-700 shadow text-primary"
                     : "text-gray-400 hover:text-gray-600"
                 }`}
                 title="Vista Cuadrícula"
+                onClick={() => setViewMode("grid")}
               >
                 <Squares2X2Icon className="w-5 h-5" />
               </button>
               <button
-                onClick={() => setViewMode("list")}
                 className={`p-1.5 rounded-md transition-all ${
                   viewMode === "list"
                     ? "bg-white dark:bg-slate-700 shadow text-primary"
                     : "text-gray-400 hover:text-gray-600"
                 }`}
                 title="Vista Lista"
+                onClick={() => setViewMode("list")}
               >
                 <ListBulletIcon className="w-5 h-5" />
               </button>
@@ -398,8 +399,8 @@ export default function EditarEvaluacionPage() {
               viewMode === "grid" ? (
                 <TemplateGridItem
                   key={`${tabSeleccionado}-${tipo.id || index}`}
-                  tipo={tipo}
                   isEvaluacion={isEvaluaciones}
+                  tipo={tipo}
                   onClick={() =>
                     navigate("/evaluacion-editar/edicion", {
                       state: { tipoEvaluacion: tipo },
@@ -409,15 +410,15 @@ export default function EditarEvaluacionPage() {
               ) : (
                 <TemplateListItem
                   key={`${tabSeleccionado}-${tipo.id || index}`}
-                  tipo={tipo}
                   isEvaluacion={isEvaluaciones}
+                  tipo={tipo}
                   onClick={() =>
                     navigate("/evaluacion-editar/edicion", {
                       state: { tipoEvaluacion: tipo },
                     })
                   }
                 />
-              )
+              ),
             )}
           </div>
         )}

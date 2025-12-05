@@ -69,11 +69,11 @@ export async function descargarPDFInteligente(options: {
   // Si se prefiere explícitamente "mis", intentamos forzar esa ruta primero
   // independientemente de lo que diga el objeto evaluacion (que a veces es incompleto)
   let hinted = null;
-  
+
   if (prefer === "mis") {
-     hinted = `${API_BASE}/autoevaluaciones/${evaluacionId}/generar_pdf/`;
+    hinted = `${API_BASE}/autoevaluaciones/${evaluacionId}/generar_pdf/`;
   } else if (evaluacion) {
-     hinted = getGenerarPdfUrl(evaluacion, currentUserId);
+    hinted = getGenerarPdfUrl(evaluacion, currentUserId);
   }
 
   const urls = hinted

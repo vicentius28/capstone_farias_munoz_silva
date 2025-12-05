@@ -113,6 +113,7 @@ export default function AreaTabs({
                     Math.max(parseInt(e.target.value || "0", 10), 0),
                     100,
                   );
+
                   updatePonderacion?.(activeAreaIndex, value);
                 }}
               />
@@ -155,7 +156,9 @@ export default function AreaTabs({
       ) : (
         // Estado vacío si estamos cargando o no hay áreas seleccionadas
         <div className="mt-8 p-8 border-2 border-dashed border-gray-200 rounded-xl text-center text-gray-400">
-           {areas.length === 0 ? "No hay áreas definidas." : "Selecciona un área."}
+          {areas.length === 0
+            ? "No hay áreas definidas."
+            : "Selecciona un área."}
         </div>
       )}
     </div>

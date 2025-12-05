@@ -123,8 +123,8 @@ export default function FinalComments({
                     textDestacar.length >= 500
                       ? "text-rose-500"
                       : isDestacarValid
-                      ? "text-emerald-600"
-                      : "text-slate-400"
+                        ? "text-emerald-600"
+                        : "text-slate-400",
                   )}
                 >
                   {textDestacar.length} / 500
@@ -138,7 +138,7 @@ export default function FinalComments({
                       // La lógica visual aquí causaba el problema de redibujado al perder foco
                       !isDestacarValid && textDestacar.length > 0
                         ? "border-amber-200 focus-within:border-amber-400 bg-amber-50/30"
-                        : "border-slate-100 hover:border-slate-300 focus-within:border-indigo-500 focus-within:bg-white"
+                        : "border-slate-100 hover:border-slate-300 focus-within:border-indigo-500 focus-within:bg-white",
                     ),
                     input:
                       "text-slate-700 dark:text-slate-200 placeholder:text-slate-400",
@@ -174,8 +174,8 @@ export default function FinalComments({
                     textMejorar.length >= 500
                       ? "text-rose-500"
                       : isMejorarValid
-                      ? "text-emerald-600"
-                      : "text-slate-400"
+                        ? "text-emerald-600"
+                        : "text-slate-400",
                   )}
                 >
                   {textMejorar.length} / 500
@@ -188,7 +188,7 @@ export default function FinalComments({
                       "bg-slate-50 dark:bg-slate-800 border-2 shadow-none transition-all duration-300",
                       !isMejorarValid && textMejorar.length > 0
                         ? "border-amber-200 focus-within:border-amber-400 bg-amber-50/30"
-                        : "border-slate-100 hover:border-slate-300 focus-within:border-indigo-500 focus-within:bg-white"
+                        : "border-slate-100 hover:border-slate-300 focus-within:border-indigo-500 focus-within:bg-white",
                     ),
                     input:
                       "text-slate-700 dark:text-slate-200 placeholder:text-slate-400",
@@ -223,16 +223,14 @@ export default function FinalComments({
                   "w-full sm:w-auto font-semibold shadow-lg transition-all duration-300",
                   isFormValid
                     ? "bg-indigo-600 text-white hover:bg-indigo-700 hover:scale-105 shadow-indigo-200"
-                    : "bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-600 border border-slate-200"
+                    : "bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-600 border border-slate-200",
                 )}
                 isDisabled={!isFormValid || isDisabled}
                 isLoading={isLoading}
                 size="lg"
                 startContent={!isLoading && <Send className="w-4 h-4" />}
-                
                 // --- FIX DOBLE CLIC ---
                 onMouseDown={(e) => e.preventDefault()}
-                
                 onPress={onOpen}
               >
                 {isLoading ? "Enviando..." : "Finalizar Evaluación"}
@@ -243,32 +241,33 @@ export default function FinalComments({
       </div>
 
       {/* --- MODAL DE CONFIRMACIÓN --- */}
-      <Modal 
-        isOpen={isOpen} 
-        onOpenChange={onOpenChange}
+      <Modal
+        classNames={{
+          base: "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800",
+        }} 
+        hideCloseButton={isLoading}
         backdrop="blur"
         // --- FIX BLOQUEO DE MODAL ---
         // Si está cargando, evitamos que se cierre al hacer clic fuera o presionar ESC
         isDismissable={!isLoading} 
         isKeyboardDismissDisabled={isLoading}
-        hideCloseButton={isLoading}
-        classNames={{
-          base: "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800",
-        }}
+        isOpen={isOpen}
+        onOpenChange={onOpenChange}
       >
         <ModalContent>
           {(onClose) => (
             <>
               <ModalHeader className="flex flex-col gap-1">
                 <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
-                    <CheckCircle2 className="w-6 h-6" />
-                    <span className="text-xl">Confirmar Envío</span>
+                  <CheckCircle2 className="w-6 h-6" />
+                  <span className="text-xl">Confirmar Envío</span>
                 </div>
               </ModalHeader>
               <ModalBody>
                 <div className="space-y-4">
                   <p className="text-slate-600 dark:text-slate-300">
-                    Estás a punto de finalizar el proceso de evaluación. Por favor verifica que:
+                    Estás a punto de finalizar el proceso de evaluación. Por
+                    favor verifica que:
                   </p>
                   <ul className="list-disc list-inside text-sm text-slate-500 space-y-1 ml-2">
                     <li>Has respondido todos los indicadores.</li>
@@ -278,13 +277,14 @@ export default function FinalComments({
                   <div className="bg-amber-50 dark:bg-amber-900/20 p-3 rounded-lg border border-amber-100 dark:border-amber-900/50 flex gap-3">
                     <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
                     <p className="text-xs text-amber-700 dark:text-amber-400 font-medium">
-                      Esta acción es irreversible. No podrás editar tus respuestas después de enviar.
+                      Esta acción es irreversible. No podrás editar tus
+                      respuestas después de enviar.
                     </p>
                   </div>
                 </div>
               </ModalBody>
               <ModalFooter>
-                <Button 
+                <Button
                   color="danger" 
                   variant="light" 
                   onPress={onClose}
@@ -293,13 +293,13 @@ export default function FinalComments({
                 >
                   Volver y Revisar
                 </Button>
-                <Button 
-                  className="bg-indigo-600 text-white shadow-lg shadow-indigo-200" 
+                <Button
+                  className="bg-indigo-600 text-white shadow-lg shadow-indigo-200"
                   isLoading={isLoading}
                   onPress={() => {
                     onConfirmSend();
                     // NO llamamos a onClose() aquí.
-                    // El modal se mantendrá abierto y "cargando" hasta que 
+                    // El modal se mantendrá abierto y "cargando" hasta que
                     // el componente se desmonte por la redirección.
                   }}
                 >

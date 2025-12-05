@@ -26,6 +26,7 @@ import { getEvaluacionMixta } from "@/features/evaluacion/services/evaluacionMix
 import { fetchAsignarEvaluacion } from "@/features/evaluacion/services/asignar/evaluacion";
 import axios from "@/services/google/axiosInstance";
 import { useUser } from "@/hooks/useUser";
+import { usePermissions } from "@/hooks/usePermissions";
 
 type IndicadorDetalle = {
   id: number;
@@ -114,6 +115,7 @@ export default function EvaluacionDetalleCommon({
   const [downloadingPDF, setDownloadingPDF] = useState(false);
   const selectedArea = areas[selectedAreaIndex];
   const { user } = useUser();
+  const { is_staff } = usePermissions();
   const [autoComparisonPct, setAutoComparisonPct] = useState<number | null>(
     null,
   );
@@ -156,182 +158,176 @@ export default function EvaluacionDetalleCommon({
   useEffect(() => {
     let active = true;
 
-    if (tipo === "evaluacion_jefatura" && evaluacionId) {
-      setAutoLoading(true);
-      (async () => {
-        try {
-          const asignaciones = await fetchAsignarEvaluacion();
-          const te = evaluacionData?.tipo_evaluacion?.n_tipo_evaluacion || "";
+    if (!(tipo === "evaluacion_jefatura" && evaluacionId)) {
+      setAutoComparisonPct(null);
+      setAutoLoading(false);
+
+      return () => {
+        active = false;
+      };
+    }
+
+    if (!is_staff && !(user?.id && Number.isFinite(Number(user.id)))) {
+      setAutoComparisonPct(null);
+      setAutoLoading(false);
+
+      return () => {
+        active = false;
+      };
+    }
+
+    setAutoLoading(true);
+    (async () => {
+      try {
+        const asignaciones = await fetchAsignarEvaluacion();
+        const te = evaluacionData?.tipo_evaluacion?.n_tipo_evaluacion || "";
+        const fecha = evaluacionData?.fecha_evaluacion || "";
+        const personaId = evaluacionData?.persona?.id;
+
+        const parts = String(fecha).split("-");
+        const fechaCandidates: string[] = [String(fecha)];
+
+        if (parts.length === 2) {
+          const [a, b] = parts;
+
+          if (/^\d{2}$/.test(a) && /^\d{4}$/.test(b))
+            fechaCandidates.push(`${b}-${a}`);
+          if (/^\d{4}$/.test(a) && /^\d{2}$/.test(b))
+            fechaCandidates.push(`${b}-${a}`);
+        }
+
+        let detalleId: number | null = null;
+
+        for (const a of asignaciones || []) {
+          const tipoNombre = String(
+            a?.tipo_evaluacion?.n_tipo_evaluacion ?? "",
+          );
+          const fechaAsignacion = String(a?.fecha_evaluacion ?? "");
+
+          if (
+            tipoNombre === String(te) &&
+            fechaCandidates.includes(fechaAsignacion)
+          ) {
+            for (const d of a?.detalles || []) {
+              const personaOk =
+                String(d?.persona?.id ?? "") === String(personaId ?? "");
+              const evaluadorOk = is_staff
+                ? true
+                : String(d?.evaluador?.id ?? "") === String(user?.id ?? "");
+
+              if (personaOk && evaluadorOk) {
+                detalleId = Number(d.id);
+                break;
+              }
+            }
+          }
+          if (detalleId != null) break;
+        }
+
+        if (detalleId != null) {
+          const data2 = await getEvaluacionMixta(detalleId);
+          const pct2 = data2?.resumen?.auto_pct;
+
+          if (active)
+            setAutoComparisonPct(typeof pct2 === "number" ? pct2 : null);
+        } else {
+          if (active) setAutoComparisonPct(null);
+        }
+      } catch {
+        if (active) setAutoComparisonPct(null);
+      }
+
+      try {
+        if (autoComparisonPct == null) {
+          const tipoId = evaluacionData?.tipo_evaluacion?.id;
           const fecha = evaluacionData?.fecha_evaluacion || "";
           const personaId = evaluacionData?.persona?.id;
-          const evaluadorId = user?.id;
 
-          const parts = String(fecha).split("-");
-          const fechaCandidates: string[] = [String(fecha)];
+          if (tipoId && fecha && personaId) {
+            const parts = String(fecha).split("-");
+            const candidates: string[] = [String(fecha)];
 
-          if (parts.length === 2) {
-            const [a, b] = parts;
+            if (parts.length === 2) {
+              const [a, b] = parts;
 
-            if (/^\d{2}$/.test(a) && /^\d{4}$/.test(b))
-              fechaCandidates.push(`${b}-${a}`);
-            if (/^\d{4}$/.test(a) && /^\d{2}$/.test(b))
-              fechaCandidates.push(`${b}-${a}`);
-          }
+              if (/^\d{2}$/.test(a) && /^\d{4}$/.test(b))
+                candidates.push(`${b}-${a}`);
+              if (/^\d{4}$/.test(a) && /^\d{2}$/.test(b))
+                candidates.push(`${b}-${a}`);
+            }
 
-          let detalleId: number | null = null;
+            let found: number | null = null;
 
-          for (const a of asignaciones || []) {
-            const tipoNombre = String(
-              a?.tipo_evaluacion?.n_tipo_evaluacion ?? "",
-            );
-            const fechaAsignacion = String(a?.fecha_evaluacion ?? "");
+            for (const f of candidates) {
+              const params = new URLSearchParams({
+                fecha_evaluacion: String(f),
+                persona: String(personaId),
+              });
+              const { data } = await axios.get(
+                `/evaluacion/api/autoevaluaciones-subordinados/?${params.toString()}`,
+              );
 
-            if (
-              tipoNombre === String(te) &&
-              fechaCandidates.includes(fechaAsignacion)
-            ) {
-              for (const d of a?.detalles || []) {
-                const personaOk =
-                  String(d?.persona?.id ?? "") === String(personaId ?? "");
-                const evaluadorOk =
-                  evaluadorId == null ||
-                  String(d?.evaluador?.id ?? "") === String(evaluadorId);
+              if (Array.isArray(data) && data.length) {
+                const item = data.find(
+                  (x: any) =>
+                    String(x?.persona?.id ?? "") === String(personaId),
+                );
+                const pct3n = Number(item?.logro_obtenido);
 
-                if (personaOk && evaluadorOk) {
-                  detalleId = Number(d.id);
+                if (!Number.isNaN(pct3n)) {
+                  found = pct3n;
+                  break;
+                }
+              } else if (Array.isArray(data)) {
+                const grupo = data.find(
+                  (g: any) => String(g?.fecha_evaluacion ?? "") === String(f),
+                );
+                const item = grupo?.autoevaluaciones?.find(
+                  (x: any) =>
+                    String(x?.persona?.id ?? "") === String(personaId),
+                );
+                const pct3n = Number(item?.logro_obtenido);
+
+                if (!Number.isNaN(pct3n)) {
+                  found = pct3n;
                   break;
                 }
               }
             }
-            if (detalleId != null) break;
-          }
 
-          if (detalleId != null) {
-            const data2 = await getEvaluacionMixta(detalleId);
-            const pct2 = data2?.resumen?.auto_pct;
+            if (found == null) {
+              const { data: dataAll } = await axios.get(
+                `/evaluacion/api/autoevaluaciones-subordinados/`,
+              );
 
-            if (active)
-              setAutoComparisonPct(typeof pct2 === "number" ? pct2 : null);
-          } else {
-            if (active) setAutoComparisonPct(null);
-          }
-        } catch {
-          if (active) setAutoComparisonPct(null);
-        }
-
-        try {
-          if (autoComparisonPct == null) {
-            const tipoId = evaluacionData?.tipo_evaluacion?.id;
-            const fecha = evaluacionData?.fecha_evaluacion || "";
-            const personaId = evaluacionData?.persona?.id;
-
-            if (tipoId && fecha && personaId) {
-              const parts = String(fecha).split("-");
-              const candidates: string[] = [String(fecha)];
-
-              if (parts.length === 2) {
-                const [a, b] = parts;
-
-                if (/^\d{2}$/.test(a) && /^\d{4}$/.test(b))
-                  candidates.push(`${b}-${a}`);
-                if (/^\d{4}$/.test(a) && /^\d{2}$/.test(b))
-                  candidates.push(`${b}-${a}`);
-              }
-
-              let found: number | null = null;
-
-              for (const f of candidates) {
-                // Usar solo persona + fecha (el tipo de AUTO puede diferir del tipo de JEFATURA)
-                const params = new URLSearchParams({
-                  fecha_evaluacion: String(f),
-                  persona: String(personaId),
-                });
-                const { data } = await axios.get(
-                  `/evaluacion/api/autoevaluaciones-subordinados/?${params.toString()}`,
+              if (Array.isArray(dataAll) && dataAll.length) {
+                const match = dataAll.find((g: any) =>
+                  candidates.includes(String(g?.fecha_evaluacion ?? "")),
                 );
-
-                // Puede devolver lista simple de autoevaluaciones (detalle) o lista de grupos
-                if (Array.isArray(data) && data.length) {
-                  // Lista simple
-                  const item = data.find(
-                    (x: any) =>
-                      String(x?.persona?.id ?? "") === String(personaId),
-                  );
-                  const pct3n = Number(item?.logro_obtenido);
-
-                  if (!Number.isNaN(pct3n)) {
-                    found = pct3n;
-                    break;
-                  }
-                } else if (Array.isArray(data)) {
-                  // Lista de grupos
-                  const grupo = data.find(
-                    (g: any) => String(g?.fecha_evaluacion ?? "") === String(f),
-                  );
-                  const item = grupo?.autoevaluaciones?.find(
-                    (x: any) =>
-                      String(x?.persona?.id ?? "") === String(personaId),
-                  );
-                  const pct3n = Number(item?.logro_obtenido);
-
-                  if (!Number.isNaN(pct3n)) {
-                    found = pct3n;
-                    break;
-                  }
-                } else if (data && Array.isArray(data?.autoevaluaciones)) {
-                  // Objeto con autoevaluaciones
-                  const item = data.autoevaluaciones.find(
-                    (x: any) =>
-                      String(x?.persona?.id ?? "") === String(personaId),
-                  );
-                  const pct3n = Number(item?.logro_obtenido);
-
-                  if (!Number.isNaN(pct3n)) {
-                    found = pct3n;
-                    break;
-                  }
-                }
-              }
-
-              // Si aún no encontramos, intentar sin fecha: obtener grupos y escoger el más reciente
-              if (found == null) {
-                // Buscar sin fecha: obtener todos los grupos del jefe y escoger el que coincide o el más reciente
-                const { data: dataAll } = await axios.get(
-                  `/evaluacion/api/autoevaluaciones-subordinados/`,
+                const grupo = match ?? dataAll[0];
+                const item = grupo?.autoevaluaciones?.find(
+                  (x: any) =>
+                    String(x?.persona?.id ?? "") === String(personaId),
                 );
+                const pct4n = Number(item?.logro_obtenido);
 
-                if (Array.isArray(dataAll) && dataAll.length) {
-                  const match = dataAll.find((g: any) =>
-                    candidates.includes(String(g?.fecha_evaluacion ?? "")),
-                  );
-                  const grupo = match ?? dataAll[0];
-                  const item = grupo?.autoevaluaciones?.find(
-                    (x: any) =>
-                      String(x?.persona?.id ?? "") === String(personaId),
-                  );
-                  const pct4n = Number(item?.logro_obtenido);
-
-                  if (!Number.isNaN(pct4n)) found = pct4n;
-                }
+                if (!Number.isNaN(pct4n)) found = pct4n;
               }
-
-              if (active) setAutoComparisonPct(found);
             }
+
+            if (active) setAutoComparisonPct(found);
           }
-        } catch {
-          if (active) setAutoComparisonPct(null);
         }
-        if (active) setAutoLoading(false);
-      })();
-    } else {
-      setAutoComparisonPct(null);
-      setAutoLoading(false);
-    }
+      } catch {
+        if (active) setAutoComparisonPct(null);
+      }
+      if (active) setAutoLoading(false);
+    })();
 
     return () => {
       active = false;
     };
-  }, [tipo, evaluacionId, evaluacionData, user?.id]);
+  }, [tipo, evaluacionId, evaluacionData, user?.id, is_staff]);
 
   const handleDownloadPDF = async () => {
     if (!evaluacionId) {

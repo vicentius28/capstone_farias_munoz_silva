@@ -506,9 +506,9 @@ export default function JefaturaEvaluacionDetallePage() {
     try {
       setSaving(true);
 
-      // ✅ AGREGAR: Llamada al backend para guardar el estado firmado
+      // ✅ Registrar aceptación usando el campo correcto del backend
       await axios.patch(`${BASE_URL}${evaluationId}/`, {
-        firmado: true,
+        estado_firma: "firmado",
       });
 
       addToast({
@@ -521,7 +521,12 @@ export default function JefaturaEvaluacionDetallePage() {
       // ✅ ACTUALIZAR ESTADO LOCAL
       setData((prev) =>
         prev
-          ? { ...prev, firmado: true, fecha_firma: new Date().toISOString() }
+          ? {
+              ...prev,
+              firmado: true,
+              estado_firma: "firmado",
+              fecha_firma: new Date().toISOString(),
+            }
           : null,
       );
       setIsReadOnly(true);
@@ -593,7 +598,8 @@ export default function JefaturaEvaluacionDetallePage() {
 
       addToast({
         title: "Evaluación denegada",
-        description: "Se ha enviado el motivo de aceptación con observación a la jefatura.",
+        description:
+          "Se ha enviado el motivo de aceptación con observación a la jefatura.",
         color: "warning",
         variant: "solid",
       });

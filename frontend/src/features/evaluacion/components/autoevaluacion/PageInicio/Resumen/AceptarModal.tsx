@@ -38,8 +38,8 @@ export default function AceptarModal({
             ¿Confirmas que deseas aceptar esta evaluación?
           </p>
           <p className="text-xs text-default-500">
-            Esta acción registrará tu aceptación. Si necesitas dejar una observación,
-            usa “Aceptar con Observaciones”.
+            Esta acción registrará tu aceptación. Si necesitas dejar una
+            observación, usa “Aceptar con Observaciones”.
           </p>
         </ModalBody>
         <ModalFooter>

@@ -33,7 +33,7 @@ import { AsignacionEvaluacion } from "@/features/evaluacion/types/asignar/evalua
 const ModalDetalleAsignacion = lazy(() =>
   import("@/features/evaluacion/components/Asignar").then((module) => ({
     default: module.ModalDetalleAsignacion,
-  }))
+  })),
 );
 
 // --- Sub-componente: Item en Vista Lista ---
@@ -47,8 +47,8 @@ const ListItem = ({
   isEvaluacion: boolean;
 }) => (
   <div
-    onClick={onClick}
     className="group flex items-center justify-between p-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl hover:border-primary-300 hover:shadow-md transition-all cursor-pointer mb-3"
+    onClick={onClick}
   >
     <div className="flex items-center gap-4">
       <div
@@ -75,10 +75,10 @@ const ListItem = ({
       </div>
     </div>
     <div className="flex items-center gap-3">
-        <Chip size="sm" variant="flat" className="hidden sm:flex">
-             {isEvaluacion ? "Evaluación" : "Autoevaluación"}
-        </Chip>
-        <ChevronRightIcon className="w-4 h-4 text-gray-400 group-hover:text-primary-500" />
+      <Chip className="hidden sm:flex" size="sm" variant="flat">
+        {isEvaluacion ? "Evaluación" : "Autoevaluación"}
+      </Chip>
+      <ChevronRightIcon className="w-4 h-4 text-gray-400 group-hover:text-primary-500" />
     </div>
   </div>
 );
@@ -154,13 +154,19 @@ export default function AsignarEvaluacionPage() {
   const navigate = useNavigate();
   // 1. Manejo de estado por URL (Persistencia)
   const [searchParams, setSearchParams] = useSearchParams();
-  
+
   // Leemos el tab de la URL, si no existe, por defecto es 'evaluaciones'
-  const tabSeleccionado = searchParams.get("tab") === "autoevaluaciones" ? "autoevaluaciones" : "evaluaciones";
+  const tabSeleccionado =
+    searchParams.get("tab") === "autoevaluaciones"
+      ? "autoevaluaciones"
+      : "evaluaciones";
 
   // Estados locales para UI
-  const [tiposEvaluacion, setTiposEvaluacion] = useState<AsignacionEvaluacion[]>([]);
-  const [asignacionSeleccionada, setAsignacionSeleccionada] = useState<AsignacionEvaluacion | null>(null);
+  const [tiposEvaluacion, setTiposEvaluacion] = useState<
+    AsignacionEvaluacion[]
+  >([]);
+  const [asignacionSeleccionada, setAsignacionSeleccionada] =
+    useState<AsignacionEvaluacion | null>(null);
   const [mostrarModalDetalle, setMostrarModalDetalle] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -178,6 +184,7 @@ export default function AsignarEvaluacionPage() {
           fetchAsignarAutoevaluacion(),
           fetchAsignarEvaluacion(),
         ]);
+
         setTiposEvaluacion([...evals, ...autoevals]);
       } catch (error) {
         console.error("Error al cargar tipos de evaluación:", error);
@@ -185,29 +192,32 @@ export default function AsignarEvaluacionPage() {
         setLoading(false);
       }
     };
+
     fetchData();
   }, []);
 
   // Handler para cambiar Tab y actualizar URL
   const handleTabChange = (key: string) => {
-      setSearchParams({ tab: key });
-      // Resetear filtros al cambiar de tab para mejor UX
-      setSearchQuery(""); 
-      setFilterPeriod("all"); // Importante: Resetear el periodo porque los disponibles cambian
+    setSearchParams({ tab: key });
+    // Resetear filtros al cambiar de tab para mejor UX
+    setSearchQuery("");
+    setFilterPeriod("all"); // Importante: Resetear el periodo porque los disponibles cambian
   };
 
   // 2. Pre-filtrado por TAB (Base para cálculos dinámicos)
   // Esto separa la lógica: Primero obtengo los items del contexto actual
   const itemsDelTab = useMemo(() => {
     return tiposEvaluacion.filter((t) => {
-        const esAuto = !!t.tipo_evaluacion?.auto;
-        return tabSeleccionado === "autoevaluaciones" ? esAuto : !esAuto;
+      const esAuto = !!t.tipo_evaluacion?.auto;
+
+      return tabSeleccionado === "autoevaluaciones" ? esAuto : !esAuto;
     });
   }, [tiposEvaluacion, tabSeleccionado]);
 
   // 3. Periodos Dinámicos (Basados SOLAMENTE en itemsDelTab)
   const periodosDisponibles = useMemo(() => {
     const periods = itemsDelTab.map((t) => t.fecha_evaluacion).filter(Boolean);
+
     return Array.from(new Set(periods)).sort().reverse(); // Ordenar descendente
   }, [itemsDelTab]);
 
@@ -223,17 +233,19 @@ export default function AsignarEvaluacionPage() {
 
     // C. Filtrar por Búsqueda (Texto)
     if (searchQuery) {
-        const lowerQ = searchQuery.toLowerCase();
-        filtered = filtered.filter(t => 
-            t.tipo_evaluacion?.n_tipo_evaluacion?.toLowerCase().includes(lowerQ)
-        );
+      const lowerQ = searchQuery.toLowerCase();
+
+      filtered = filtered.filter((t) =>
+        t.tipo_evaluacion?.n_tipo_evaluacion?.toLowerCase().includes(lowerQ),
+      );
     }
 
     // D. Ordenar Alfabéticamente SIEMPRE (por nombre de evaluación)
     filtered.sort((a, b) => {
-        const nombreA = a.tipo_evaluacion?.n_tipo_evaluacion || "";
-        const nombreB = b.tipo_evaluacion?.n_tipo_evaluacion || "";
-        return nombreA.localeCompare(nombreB);
+      const nombreA = a.tipo_evaluacion?.n_tipo_evaluacion || "";
+      const nombreB = b.tipo_evaluacion?.n_tipo_evaluacion || "";
+
+      return nombreA.localeCompare(nombreB);
     });
 
     return filtered;
@@ -241,14 +253,19 @@ export default function AsignarEvaluacionPage() {
 
   // Agrupación de datos si el toggle está activo
   const datosAgrupados = useMemo(() => {
-      if (!groupByPeriod) return null;
-      
-      return datosProcesados.reduce((groups, item) => {
-          const period = item.fecha_evaluacion || "Sin periodo";
-          if (!groups[period]) groups[period] = [];
-          groups[period].push(item);
-          return groups;
-      }, {} as Record<string, AsignacionEvaluacion[]>);
+    if (!groupByPeriod) return null;
+
+    return datosProcesados.reduce(
+      (groups, item) => {
+        const period = item.fecha_evaluacion || "Sin periodo";
+
+        if (!groups[period]) groups[period] = [];
+        groups[period].push(item);
+
+        return groups;
+      },
+      {} as Record<string, AsignacionEvaluacion[]>,
+    );
   }, [datosProcesados, groupByPeriod]);
 
   const isEvaluaciones = tabSeleccionado === "evaluaciones";
@@ -258,7 +275,9 @@ export default function AsignarEvaluacionPage() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-[#0b1220]">
         <div className="flex flex-col items-center gap-4">
           <Spinner color="primary" size="lg" />
-          <p className="text-sm text-gray-500 font-medium">Cargando Asignaciones...</p>
+          <p className="text-sm text-gray-500 font-medium">
+            Cargando Asignaciones...
+          </p>
         </div>
       </div>
     );
@@ -266,7 +285,6 @@ export default function AsignarEvaluacionPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-[#0b1220] pb-10">
-      
       {/* 1. Header */}
       <div className="bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-gray-800 pt-8 pb-8 px-6 sticky top-0 z-20 shadow-sm">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -276,7 +294,7 @@ export default function AsignarEvaluacionPage() {
               Asignación de Evaluaciones
             </h1>
             <p className="text-gray-500 mt-1">
-             Gestiona y asigna las evaluaciones y autoevaluaciones.
+              Gestiona y asigna las evaluaciones y autoevaluaciones.
             </p>
           </div>
           <Button
@@ -286,7 +304,7 @@ export default function AsignarEvaluacionPage() {
             startContent={<PlusIcon className="w-5 h-5" />}
             onPress={() =>
               navigate(
-                `/evaluacion-asignar/crear?auto=${tabSeleccionado === "autoevaluaciones"}`
+                `/evaluacion-asignar/crear?auto=${tabSeleccionado === "autoevaluaciones"}`,
               )
             }
           >
@@ -296,16 +314,15 @@ export default function AsignarEvaluacionPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
         {/* 2. Controles Superiores (Tabs + Filtros) */}
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-6 gap-6">
-          
           {/* Tabs */}
           <Tabs
             aria-label="Tipo de evaluación"
             classNames={{
               cursor: "w-full bg-primary",
-              tabContent: "group-data-[selected=true]:text-primary font-medium text-gray-500",
+              tabContent:
+                "group-data-[selected=true]:text-primary font-medium text-gray-500",
             }}
             color="primary"
             selectedKey={tabSeleccionado}
@@ -334,74 +351,78 @@ export default function AsignarEvaluacionPage() {
 
           {/* Barra de Herramientas (Filtros) */}
           <div className="flex flex-col sm:flex-row w-full lg:w-auto items-center gap-3 bg-white dark:bg-slate-900 p-2 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
-            
             {/* Buscador */}
-            <Input 
-                classNames={{
-                    base: "w-full sm:w-64",
-                    inputWrapper: "h-10 bg-gray-50 dark:bg-slate-800 border-none",
-                }}
-                placeholder="Buscar..."
-                startContent={<MagnifyingGlassIcon className="w-4 h-4 text-gray-400"/>}
-                value={searchQuery}
-                onValueChange={setSearchQuery}
-                isClearable
-                radius="lg"
-                size="sm"
+            <Input
+              isClearable
+              classNames={{
+                base: "w-full sm:w-64",
+                inputWrapper: "h-10 bg-gray-50 dark:bg-slate-800 border-none",
+              }}
+              placeholder="Buscar..."
+              radius="lg"
+              size="sm"
+              startContent={
+                <MagnifyingGlassIcon className="w-4 h-4 text-gray-400" />
+              }
+              value={searchQuery}
+              onValueChange={setSearchQuery}
             />
 
-            <Divider orientation="vertical" className="h-6 hidden sm:block" />
+            <Divider className="h-6 hidden sm:block" orientation="vertical" />
 
             {/* Filtro Periodo (DINÁMICO) */}
             <Select
-                aria-label="Filtrar por periodo"
-                placeholder="Todos los periodos"
-                selectedKeys={filterPeriod !== "all" ? [filterPeriod] : []}
-                className="w-full sm:w-48"
-                size="sm"
-                radius="lg"
-                classNames={{
-                    trigger: "h-10 bg-gray-50 dark:bg-slate-800 border-none",
-                }}
-                onSelectionChange={(keys) => {
-                  const k = String(Array.from(keys)[0] || "");
-                  setFilterPeriod(k || "all");
-                }}
-                startContent={<CalendarDaysIcon className="w-4 h-4 text-gray-400" />}
+              aria-label="Filtrar por periodo"
+              className="w-full sm:w-48"
+              classNames={{
+                trigger: "h-10 bg-gray-50 dark:bg-slate-800 border-none",
+              }}
+              placeholder="Todos los periodos"
+              radius="lg"
+              selectedKeys={filterPeriod !== "all" ? [filterPeriod] : []}
+              size="sm"
+              startContent={
+                <CalendarDaysIcon className="w-4 h-4 text-gray-400" />
+              }
+              onSelectionChange={(keys) => {
+                const k = String(Array.from(keys)[0] || "");
+
+                setFilterPeriod(k || "all");
+              }}
             >
-                {periodosDisponibles.map((p) => (
-                    <SelectItem key={p} textValue={p}>
-                        {p}
-                    </SelectItem>
-                ))}
+              {periodosDisponibles.map((p) => (
+                <SelectItem key={p} textValue={p}>
+                  {p}
+                </SelectItem>
+              ))}
             </Select>
 
             {/* Toggle Agrupar */}
             <Tooltip content="Agrupar por periodo">
-                <div className="flex items-center px-2">
-                    <Switch 
-                        size="sm" 
-                        isSelected={groupByPeriod} 
-                        onValueChange={setGroupByPeriod}
-                        color="secondary"
-                    />
-                </div>
+              <div className="flex items-center px-2">
+                <Switch
+                  color="secondary"
+                  isSelected={groupByPeriod}
+                  size="sm"
+                  onValueChange={setGroupByPeriod}
+                />
+              </div>
             </Tooltip>
 
             {/* Toggle Vista Grid/List */}
             <div className="flex items-center bg-gray-100 dark:bg-slate-800 rounded-lg p-1">
-                <button
-                    onClick={() => setViewMode("grid")}
-                    className={`p-1.5 rounded-md transition-all ${viewMode === "grid" ? "bg-white dark:bg-slate-700 shadow text-primary" : "text-gray-400 hover:text-gray-600"}`}
-                >
-                    <Squares2X2Icon className="w-5 h-5" />
-                </button>
-                <button
-                    onClick={() => setViewMode("list")}
-                    className={`p-1.5 rounded-md transition-all ${viewMode === "list" ? "bg-white dark:bg-slate-700 shadow text-primary" : "text-gray-400 hover:text-gray-600"}`}
-                >
-                    <ListBulletIcon className="w-5 h-5" />
-                </button>
+              <button
+                className={`p-1.5 rounded-md transition-all ${viewMode === "grid" ? "bg-white dark:bg-slate-700 shadow text-primary" : "text-gray-400 hover:text-gray-600"}`}
+                onClick={() => setViewMode("grid")}
+              >
+                <Squares2X2Icon className="w-5 h-5" />
+              </button>
+              <button
+                className={`p-1.5 rounded-md transition-all ${viewMode === "list" ? "bg-white dark:bg-slate-700 shadow text-primary" : "text-gray-400 hover:text-gray-600"}`}
+                onClick={() => setViewMode("list")}
+              >
+                <ListBulletIcon className="w-5 h-5" />
+              </button>
             </div>
           </div>
         </div>
@@ -420,74 +441,92 @@ export default function AsignarEvaluacionPage() {
             </p>
           </div>
         ) : (
-            <>
-                {/* VISTA AGRUPADA */}
-                {groupByPeriod && datosAgrupados ? (
-                    <div className="space-y-8">
-                        {Object.entries(datosAgrupados).sort((a,b) => b[0].localeCompare(a[0])).map(([periodo, items]) => (
-                            <div key={periodo}>
-                                <div className="flex items-center gap-2 mb-4">
-                                    <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200">{periodo}</h3>
-                                    <div className="h-[1px] flex-1 bg-gray-200 dark:bg-gray-800"></div>
-                                    <Chip size="sm" variant="flat">{items.length}</Chip>
-                                </div>
-                                <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" : "flex flex-col gap-2"}>
-                                    {items.map((asignacion, index) => (
-                                        viewMode === "grid" ? (
-                                            <GridItem
-                                                key={asignacion.id || index}
-                                                asignacion={asignacion}
-                                                isEvaluacion={isEvaluaciones}
-                                                onClick={() => {
-                                                    setAsignacionSeleccionada(asignacion);
-                                                    setMostrarModalDetalle(true);
-                                                }}
-                                            />
-                                        ) : (
-                                            <ListItem 
-                                                key={asignacion.id || index}
-                                                asignacion={asignacion}
-                                                isEvaluacion={isEvaluaciones}
-                                                onClick={() => {
-                                                    setAsignacionSeleccionada(asignacion);
-                                                    setMostrarModalDetalle(true);
-                                                }}
-                                            />
-                                        )
-                                    ))}
-                                </div>
-                            </div>
-                        ))}
+          <>
+            {/* VISTA AGRUPADA */}
+            {groupByPeriod && datosAgrupados ? (
+              <div className="space-y-8">
+                {Object.entries(datosAgrupados)
+                  .sort((a, b) => b[0].localeCompare(a[0]))
+                  .map(([periodo, items]) => (
+                    <div key={periodo}>
+                      <div className="flex items-center gap-2 mb-4">
+                        <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200">
+                          {periodo}
+                        </h3>
+                        <div className="h-[1px] flex-1 bg-gray-200 dark:bg-gray-800" />
+                        <Chip size="sm" variant="flat">
+                          {items.length}
+                        </Chip>
+                      </div>
+                      <div
+                        className={
+                          viewMode === "grid"
+                            ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+                            : "flex flex-col gap-2"
+                        }
+                      >
+                        {items.map((asignacion, index) =>
+                          viewMode === "grid" ? (
+                            <GridItem
+                              key={asignacion.id || index}
+                              asignacion={asignacion}
+                              isEvaluacion={isEvaluaciones}
+                              onClick={() => {
+                                setAsignacionSeleccionada(asignacion);
+                                setMostrarModalDetalle(true);
+                              }}
+                            />
+                          ) : (
+                            <ListItem
+                              key={asignacion.id || index}
+                              asignacion={asignacion}
+                              isEvaluacion={isEvaluaciones}
+                              onClick={() => {
+                                setAsignacionSeleccionada(asignacion);
+                                setMostrarModalDetalle(true);
+                              }}
+                            />
+                          ),
+                        )}
+                      </div>
                     </div>
-                ) : (
-                    /* VISTA PLANA (SIN AGRUPAR) */
-                    <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" : "flex flex-col gap-2"}>
-                        {datosProcesados.map((asignacion, index) => (
-                            viewMode === "grid" ? (
-                                <GridItem
-                                    key={asignacion.id || index}
-                                    asignacion={asignacion}
-                                    isEvaluacion={isEvaluaciones}
-                                    onClick={() => {
-                                        setAsignacionSeleccionada(asignacion);
-                                        setMostrarModalDetalle(true);
-                                    }}
-                                />
-                            ) : (
-                                <ListItem
-                                    key={asignacion.id || index}
-                                    asignacion={asignacion}
-                                    isEvaluacion={isEvaluaciones}
-                                    onClick={() => {
-                                        setAsignacionSeleccionada(asignacion);
-                                        setMostrarModalDetalle(true);
-                                    }}
-                                />
-                            )
-                        ))}
-                    </div>
+                  ))}
+              </div>
+            ) : (
+              /* VISTA PLANA (SIN AGRUPAR) */
+              <div
+                className={
+                  viewMode === "grid"
+                    ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+                    : "flex flex-col gap-2"
+                }
+              >
+                {datosProcesados.map((asignacion, index) =>
+                  viewMode === "grid" ? (
+                    <GridItem
+                      key={asignacion.id || index}
+                      asignacion={asignacion}
+                      isEvaluacion={isEvaluaciones}
+                      onClick={() => {
+                        setAsignacionSeleccionada(asignacion);
+                        setMostrarModalDetalle(true);
+                      }}
+                    />
+                  ) : (
+                    <ListItem
+                      key={asignacion.id || index}
+                      asignacion={asignacion}
+                      isEvaluacion={isEvaluaciones}
+                      onClick={() => {
+                        setAsignacionSeleccionada(asignacion);
+                        setMostrarModalDetalle(true);
+                      }}
+                    />
+                  ),
                 )}
-            </>
+              </div>
+            )}
+          </>
         )}
 
         {/* Modal (Lazy Loaded) */}

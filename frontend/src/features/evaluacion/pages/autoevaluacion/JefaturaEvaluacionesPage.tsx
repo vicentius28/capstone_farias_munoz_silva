@@ -222,7 +222,6 @@ export default function JefaturaEvaluacionesPage() {
           value={stats.porRetroalimentar}
         />
 
-
         <StatCard
           actionLabel={stats.porFirmar > 0 ? "Firma pendiente" : null}
           color="blue"

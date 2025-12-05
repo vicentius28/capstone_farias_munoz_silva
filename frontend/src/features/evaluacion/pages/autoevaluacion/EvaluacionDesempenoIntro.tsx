@@ -159,8 +159,7 @@ export default function EvaluacionDesempenoIntro() {
       <div className="flex items-center gap-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700">
         <InformationCircleIcon className="w-6 h-6 text-gray-400" />
         <p className="text-sm text-gray-600 dark:text-gray-400">
-          ¿Tienes dudas sobre el proceso?{" "}
-          puedes contactar a Recursos Humanos.
+          ¿Tienes dudas sobre el proceso? puedes contactar a Recursos Humanos.
         </p>
       </div>
     </div>

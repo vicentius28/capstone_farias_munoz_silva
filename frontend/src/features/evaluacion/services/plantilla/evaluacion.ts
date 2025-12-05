@@ -37,7 +37,10 @@ export const fetchEvaluacionById = async (
 
     return response.data;
   } catch (error) {
-    console.error(`❌ Error obteniendo el detalle de la evaluación ID ${id}:`, error);
+    console.error(
+      `❌ Error obteniendo el detalle de la evaluación ID ${id}:`,
+      error,
+    );
 
     return null;
   }
